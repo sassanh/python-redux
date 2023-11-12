@@ -51,6 +51,7 @@ class Options(TypedDict):
 class InitializeStateReturnValue(Generic[State, Action]):
     dispatch: Callable[[Action | list[Action]], None]
     subscribe: Callable[[Callable[[State], None]], Callable[[], None]]
+    autorun: Callable[[Callable[[State], Any]], Callable]
 
 
 def create_store(
@@ -80,7 +81,55 @@ def create_store(
         listeners.add(listener)
         return lambda: listeners.remove(listener)
 
+    def autorun(
+        selector: Selector,
+    ) -> Callable[
+        [
+            Callable[[ParamsType, ParamsType | None], ReturnType]
+            | Callable[[ParamsType], ReturnType],
+        ],
+        Callable[[ParamsType, ParamsType | None], ReturnType]
+        | Callable[[ParamsType], ReturnType],
+    ]:
+        def decorator(
+            fn: Callable[[ParamsType, ParamsType | None], ReturnType]
+            | Callable[[ParamsType], ReturnType],
+        ) -> (
+            Callable[[ParamsType, ParamsType | None], ReturnType]
+            | Callable[[ParamsType], ReturnType]
+        ):
+            last_result: list[ParamsType | None] = [None]
+
+            def check_and_call(state: State) -> None:
+                nonlocal last_result
+                result = selector(state)
+                if result != last_result[0]:
+                    previous_result = last_result[0]
+                    last_result[0] = result
+                    if len(signature(fn).parameters) == 1:
+                        cast(Callable[[ParamsType], ReturnType], fn)(
+                            result,
+                        )
+                    else:
+                        cast(
+                            Callable[[ParamsType, ParamsType | None], ReturnType],
+                            fn,
+                        )(
+                            result,
+                            previous_result,
+                        )
+
+            if options.get('initial_run', True) and state:
+                check_and_call(state)
+
+            subscribe(check_and_call)
+
+            return fn
+
+        return decorator
+
     return InitializeStateReturnValue(
         dispatch=dispatch,
         subscribe=subscribe,
+        autorun=autorun,
     )
