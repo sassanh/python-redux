@@ -1,0 +1,34 @@
+[tool.poetry]
+name = "python-redux"
+version = "0.1.0"
+description = "Redux implementation using RxPy and Pyrsistent"
+authors = ["Sassan Haradji <sassanh@gmail.com>"]
+license = "Apache-2.0"
+readme = "README.md"
+packages = [{ include = "redux" }]
+
+[tool.poetry.dependencies]
+python = "^3.9"
+
+
+[tool.poetry.scripts]
+demo = "demo:main"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.ruff]
+select = ['ALL']
+ignore = []
+
+fixable = ['ALL']
+unfixable = []
+
+[tool.ruff.flake8-quotes]
+docstring-quotes = "double"
+inline-quotes = "single"
+multiline-quotes = "double"
+
+[tool.ruff.format]
+quote-style = 'single'
