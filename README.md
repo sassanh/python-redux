@@ -1,1 +1,1 @@
-A redux implementation built on top of RxPy and Pyrsistent
+A redux implementation for Python

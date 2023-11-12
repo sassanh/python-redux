@@ -1,7 +1,7 @@
 [tool.poetry]
 name = "python-redux"
 version = "0.1.0"
-description = "Redux implementation using RxPy and Pyrsistent"
+description = "Redux implementation for Python"
 authors = ["Sassan Haradji <sassanh@gmail.com>"]
 license = "Apache-2.0"
 readme = "README.md"
