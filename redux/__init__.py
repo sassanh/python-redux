@@ -1,20 +1,25 @@
 # ruff: noqa: D101, D102, D103, D104, D107
 from __future__ import annotations
 
+import copy
 import uuid
-from dataclasses import dataclass
+from dataclasses import asdict, dataclass, make_dataclass
 from inspect import signature
 from typing import (
     Any,
     Callable,
     Generic,
     Literal,
-    Mapping,
     Sequence,
     TypedDict,
     TypeVar,
     cast,
 )
+
+
+@dataclass(frozen=True)
+class BaseState:
+    ...
 
 
 class InitializationActionError(Exception):
@@ -25,7 +30,7 @@ class InitializationActionError(Exception):
 
 
 # Type variables
-State = TypeVar('State', bound=Mapping[str, Any])
+State = TypeVar('State', bound=BaseState)
 State_co = TypeVar('State_co', covariant=True)
 Action = TypeVar('Action')
 ParamsType = TypeVar('ParamsType')
@@ -34,12 +39,12 @@ Selector = Callable[[State], Any]
 ReducerType = Callable[[State | None, Action], State]
 
 
-@dataclass
+@dataclass(frozen=True)
 class BaseAction:
     ...
 
 
-@dataclass
+@dataclass(frozen=True)
 class InitAction(BaseAction):
     type: Literal['INIT'] = 'INIT'
 
@@ -48,7 +53,7 @@ class Options(TypedDict):
     initial_run: bool | None
 
 
-@dataclass
+@dataclass(frozen=True)
 class InitializeStateReturnValue(Generic[State, Action]):
     dispatch: Callable[[Action | list[Action]], None]
     subscribe: Callable[[Callable[[State], None]], Callable[[], None]]
@@ -136,29 +141,29 @@ def create_store(
     )
 
 
-@dataclass
+@dataclass(frozen=True)
 class CombineReducerActionBase(BaseAction):
     _id: str
 
 
-@dataclass
+@dataclass(frozen=True)
 class CombineReducerRegisterActionPayload:
     key: str
     reducer: ReducerType
 
 
-@dataclass
+@dataclass(frozen=True)
 class CombineReducerRegisterAction(CombineReducerActionBase):
     payload: CombineReducerRegisterActionPayload
     type: Literal['REGISTER'] = 'REGISTER'
 
 
-@dataclass
+@dataclass(frozen=True)
 class CombineReducerUnregisterActionPayload:
     key: str
 
 
-@dataclass
+@dataclass(frozen=True)
 class CombineReducerUnregisterAction(CombineReducerActionBase):
     payload: CombineReducerUnregisterActionPayload
     type: Literal['UNREGISTER'] = 'UNREGISTER'
@@ -172,43 +177,69 @@ def combine_reducers(
 ) -> tuple[ReducerType, str]:
     _id = uuid.uuid4().hex
 
+    state_class = make_dataclass(
+        'combined_reducer',
+        ('_id', *reducers.keys()),
+        frozen=True,
+    )
+
     def combined_reducer(
-        state: State | None,
+        state: BaseState | None,
         action: CombineReducerAction,
-    ) -> State:
+    ) -> BaseState:
+        nonlocal state_class
         if action.type == 'REGISTER' and action._id == _id:
             key = action.payload.key
             reducer = action.payload.reducer
             reducers[key] = reducer
-            state = cast(
-                State,
-                {
-                    **(state or {}),
-                    key: reducer(
-                        None,
-                        InitAction(type='INIT'),
-                    ),
-                },
+            state_class = make_dataclass(
+                'combined_reducer',
+                ('_id', *reducers.keys()),
+                frozen=True,
+            )
+            state = state_class(
+                _id=state._id,
+                **(
+                    {
+                        key_: reducer(
+                            None,
+                            InitAction(type='INIT'),
+                        )
+                        if key == key_
+                        else getattr(state, key_)
+                        for key_ in reducers
+                    }
+                ),
             )
         if action.type == 'UNREGISTER' and action._id == _id:
             key = action.payload.key
+
             del reducers[key]
-            state = cast(
-                State,
-                {key_: state[key_] for key_ in reducers if key_ != key}
-                if state is not None
-                else {},
+            fields_copy = copy.copy(cast(Any, state_class).__dataclass_fields__)
+            annotations_copy = copy.deepcopy(state_class.__annotations__)
+            del fields_copy[key]
+            del annotations_copy[key]
+            state_class = make_dataclass('combined_reducer', annotations_copy)
+            cast(Any, state_class).__dataclass_fields__ = fields_copy
+
+            state = state_class(
+                **(
+                    {}
+                    if state is None
+                    else {
+                        key_: getattr(state, key_)
+                        for key_ in asdict(state)
+                        if key_ != key
+                    }
+                ),
             )
 
-        return cast(
-            State,
-            dict(
-                _id=_id,
-                **{
-                    key: reducer(None if state is None else state.get(key), action)
-                    for key, reducer in reducers.items()
-                },
-            ),
+        return state_class(
+            _id=_id,
+            **{
+                key: reducer(None if state is None else getattr(state, key), action)
+                for key, reducer in reducers.items()
+            },
         )
 
     return (combined_reducer, _id)

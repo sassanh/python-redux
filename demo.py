@@ -2,9 +2,10 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, TypedDict
+from typing import TYPE_CHECKING, cast
 
 from redux import (
+    BaseState,
     CombineReducerAction,
     CombineReducerRegisterAction,
     CombineReducerRegisterActionPayload,
@@ -29,11 +30,13 @@ class CountAction:
 ActionType = InitAction | CountAction | CombineReducerAction
 
 
-class CountStateType(TypedDict):
+@dataclass(frozen=True)
+class CountStateType:
     count: int
 
 
-class StateType(TypedDict):
+@dataclass(frozen=True)
+class StateType(BaseState):
     straight: CountStateType
     base10: CountStateType
     inverse: CountStateType
@@ -46,12 +49,12 @@ def straight_reducer(
 ) -> CountStateType:
     if state is None:
         if action.type == 'INIT':
-            return {'count': 0}
+            return CountStateType(count=0)
         raise InitializationActionError
     if action.type == 'INCREMENT':
-        return {**state, 'count': state['count'] + 1}
+        return CountStateType(count=state.count + 1)
     if action.type == 'DECREMENT':
-        return {**state, 'count': state['count'] - 1}
+        return CountStateType(count=state.count - 1)
     return state
 
 
@@ -61,12 +64,12 @@ def base10_reducer(
 ) -> CountStateType:
     if state is None:
         if action.type == 'INIT':
-            return {'count': 10}
+            return CountStateType(count=10)
         raise InitializationActionError
     if action.type == 'INCREMENT':
-        return {**state, 'count': state['count'] + 1}
+        return CountStateType(count=state.count + 1)
     if action.type == 'DECREMENT':
-        return {**state, 'count': state['count'] - 1}
+        return CountStateType(count=state.count - 1)
     return state
 
 
@@ -76,20 +79,20 @@ def inverse_reducer(
 ) -> CountStateType:
     if state is None:
         if action.type == 'INIT':
-            return {'count': 0}
+            return CountStateType(count=0)
         raise InitializationActionError
     if action.type == 'INCREMENT':
-        return {**state, 'count': state['count'] - 1}
+        return CountStateType(count=state.count - 1)
     if action.type == 'DECREMENT':
-        return {**state, 'count': state['count'] + 1}
+        return CountStateType(count=state.count + 1)
     return state
 
 
-reducer: ReducerType[StateType, ActionType]
 reducer, reducer_id = combine_reducers(
     straight=straight_reducer,
     base10=base10_reducer,
 )
+reducer = cast(ReducerType[StateType, ActionType], reducer)
 # >
 
 
@@ -112,8 +115,8 @@ def main() -> None:
     # -----
 
     # Autorun <
-    @store.autorun(lambda state: state['base10'])
-    def render(state: StateType, old_state: StateType):  # noqa: ANN202
+    @store.autorun(lambda state: state.base10)
+    def render(state: CountStateType, old_state: CountStateType):  # noqa: ANN202
         print('Autorun:', state, old_state)
 
     store.dispatch(CountAction(type='INCREMENT'))
