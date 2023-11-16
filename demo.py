@@ -1,6 +1,7 @@
 # ruff: noqa: D100, D101, D102, D103, D104, D107
 from __future__ import annotations
 
+import time
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, cast
 
@@ -116,10 +117,14 @@ def main() -> None:
 
     # Autorun <
     @store.autorun(lambda state: state.base10)
-    def render(state: CountStateType, old_state: CountStateType):  # noqa: ANN202
-        print('Autorun:', state, old_state)
+    def render(selector_result: CountStateType) -> int:
+        print('Autorun:', selector_result)
+        return selector_result.count
+
+    print(f'Render output {render()}')
 
     store.dispatch(CountAction(type='INCREMENT'))
+    print(f'Render output {render()}')
 
     store.dispatch(
         CombineReducerRegisterAction(
@@ -133,6 +138,7 @@ def main() -> None:
     )
 
     store.dispatch(CountAction(type='NOTHING'))
+    print(f'Render output {render()}')
 
     store.dispatch(
         CombineReducerUnregisterAction(
@@ -143,6 +149,8 @@ def main() -> None:
             ),
         ),
     )
+    print(f'Render output {render()}')
 
     store.dispatch(CountAction(type='DECREMENT'))
+    print(f'Render output {render()}')
     # >

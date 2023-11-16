@@ -1,4 +1,4 @@
-# ruff: noqa: D101, D102, D103, D104, D107
+# ruff: noqa: A003, D101, D102, D103, D104, D107
 from __future__ import annotations
 
 import copy
@@ -10,6 +10,8 @@ from typing import (
     Callable,
     Generic,
     Literal,
+    ParamSpec,
+    Protocol,
     Sequence,
     TypedDict,
     TypeVar,
@@ -33,10 +35,17 @@ class InitializationActionError(Exception):
 State = TypeVar('State', bound=BaseState)
 State_co = TypeVar('State_co', covariant=True)
 Action = TypeVar('Action')
-ParamsType = TypeVar('ParamsType')
-ReturnType = TypeVar('ReturnType')
-Selector = Callable[[State], Any]
+SelectorOutput = TypeVar('SelectorOutput')
+SelectorOutput_co = TypeVar('SelectorOutput_co', covariant=True)
+SelectorOutput_contra = TypeVar('SelectorOutput_contra', contravariant=True)
+ComparatorOutput = TypeVar('ComparatorOutput')
+ReturnType = TypeVar('ReturnType', bound=Callable[..., None])
+Selector = Callable[[State], SelectorOutput]
+Comparator = Callable[[State], ComparatorOutput]
 ReducerType = Callable[[State | None, Action], State]
+AutorunReturnType = TypeVar('AutorunReturnType')
+AutorunReturnType_co = TypeVar('AutorunReturnType_co', covariant=True)
+P = ParamSpec('P')
 
 
 @dataclass(frozen=True)
@@ -53,11 +62,33 @@ class Options(TypedDict):
     initial_run: bool | None
 
 
+class AutorunRunnerParameters(
+    Protocol, Generic[SelectorOutput_contra, AutorunReturnType_co]
+):
+    def __call__(
+        self: AutorunRunnerParameters,
+        selector_result: SelectorOutput_contra,
+    ) -> AutorunReturnType_co:
+        ...
+
+
+class AutorunType(Protocol, Generic[State_co]):
+    def __call__(
+        self: AutorunType,
+        selector: Callable[[State_co], SelectorOutput],
+        comparator: Selector | None = None,
+    ) -> Callable[
+        [AutorunRunnerParameters[SelectorOutput, AutorunReturnType]],
+        Callable[[], AutorunReturnType],
+    ]:
+        ...
+
+
 @dataclass(frozen=True)
 class InitializeStateReturnValue(Generic[State, Action]):
     dispatch: Callable[[Action | list[Action]], None]
     subscribe: Callable[[Callable[[State], None]], Callable[[], None]]
-    autorun: Callable[[Callable[[State], Any]], Callable]
+    autorun: AutorunType[State]
 
 
 def create_store(
@@ -88,40 +119,39 @@ def create_store(
         return lambda: listeners.remove(listener)
 
     def autorun(
-        selector: Selector,
-    ) -> Callable[
-        [
-            Callable[[ParamsType, ParamsType | None], ReturnType]
-            | Callable[[ParamsType], ReturnType],
-        ],
-        Callable[[ParamsType, ParamsType | None], ReturnType]
-        | Callable[[ParamsType], ReturnType],
-    ]:
-        def decorator(
-            fn: Callable[[ParamsType, ParamsType | None], ReturnType]
-            | Callable[[ParamsType], ReturnType],
-        ) -> (
-            Callable[[ParamsType, ParamsType | None], ReturnType]
-            | Callable[[ParamsType], ReturnType]
-        ):
-            last_result: list[ParamsType | None] = [None]
+        selector: Callable[[State], SelectorOutput],
+        comparator: Callable[[State], ComparatorOutput] | None = None,
+    ) -> Callable[[AutorunFunctionParameters], Callable[[], Any]]:
+        def decorator(fn: AutorunFunctionParameters) -> Callable[[], Any]:
+            last_selector_result: SelectorOutput | None = None
+            last_comparator_result: SelectorOutput | None = (
+                last_selector_result if comparator is None else None
+            )
+            last_value: Any | None = None
 
             def check_and_call(state: State) -> None:
-                nonlocal last_result
-                result = selector(state)
-                if result != last_result[0]:
-                    previous_result = last_result[0]
-                    last_result[0] = result
+                nonlocal last_selector_result, last_comparator_result, last_value
+                selector_result = selector(state)
+                if comparator is None:
+                    comparator_result = selector_result
+                else:
+                    comparator_result = cast(SelectorOutput, comparator(state))
+                if comparator_result != last_comparator_result:
+                    previous_result = last_selector_result
+                    last_selector_result = selector_result
                     if len(signature(fn).parameters) == 1:
-                        cast(Callable[[ParamsType], ReturnType], fn)(
-                            result,
+                        last_value = cast(Callable[[SelectorOutput], ReturnType], fn)(
+                            selector_result,
                         )
                     else:
-                        cast(
-                            Callable[[ParamsType, ParamsType | None], ReturnType],
+                        last_value = cast(
+                            Callable[
+                                [SelectorOutput, SelectorOutput | None],
+                                ReturnType,
+                            ],
                             fn,
                         )(
-                            result,
+                            selector_result,
                             previous_result,
                         )
 
@@ -130,7 +160,7 @@ def create_store(
 
             subscribe(check_and_call)
 
-            return fn
+            return lambda: last_value
 
         return decorator
 
@@ -184,55 +214,52 @@ def combine_reducers(
     )
 
     def combined_reducer(
-        state: BaseState | None,
+        state: CombineReducerActionBase | None,
         action: CombineReducerAction,
-    ) -> BaseState:
+    ) -> CombineReducerActionBase:
         nonlocal state_class
-        if action.type == 'REGISTER' and action._id == _id:
-            key = action.payload.key
-            reducer = action.payload.reducer
-            reducers[key] = reducer
-            state_class = make_dataclass(
-                'combined_reducer',
-                ('_id', *reducers.keys()),
-                frozen=True,
-            )
-            state = state_class(
-                _id=state._id,
-                **(
-                    {
-                        key_: reducer(
-                            None,
-                            InitAction(type='INIT'),
-                        )
-                        if key == key_
-                        else getattr(state, key_)
-                        for key_ in reducers
-                    }
-                ),
-            )
-        if action.type == 'UNREGISTER' and action._id == _id:
-            key = action.payload.key
+        if state is not None:
+            if action.type == 'REGISTER' and action._id == _id:  # noqa: SLF001
+                key = action.payload.key
+                reducer = action.payload.reducer
+                reducers[key] = reducer
+                state_class = make_dataclass(
+                    'combined_reducer',
+                    ('_id', *reducers.keys()),
+                    frozen=True,
+                )
+                state = state_class(
+                    _id=state._id,  # noqa: SLF001
+                    **(
+                        {
+                            key_: reducer(
+                                None,
+                                InitAction(type='INIT'),
+                            )
+                            if key == key_
+                            else getattr(state, key_)
+                            for key_ in reducers
+                        }
+                    ),
+                )
+            elif action.type == 'UNREGISTER' and action._id == _id:  # noqa: SLF001
+                key = action.payload.key
 
-            del reducers[key]
-            fields_copy = copy.copy(cast(Any, state_class).__dataclass_fields__)
-            annotations_copy = copy.deepcopy(state_class.__annotations__)
-            del fields_copy[key]
-            del annotations_copy[key]
-            state_class = make_dataclass('combined_reducer', annotations_copy)
-            cast(Any, state_class).__dataclass_fields__ = fields_copy
+                del reducers[key]
+                fields_copy = copy.copy(cast(Any, state_class).__dataclass_fields__)
+                annotations_copy = copy.deepcopy(state_class.__annotations__)
+                del fields_copy[key]
+                del annotations_copy[key]
+                state_class = make_dataclass('combined_reducer', annotations_copy)
+                cast(Any, state_class).__dataclass_fields__ = fields_copy
 
-            state = state_class(
-                **(
-                    {}
-                    if state is None
-                    else {
+                state = state_class(
+                    **{
                         key_: getattr(state, key_)
                         for key_ in asdict(state)
                         if key_ != key
-                    }
-                ),
-            )
+                    },
+                )
 
         return state_class(
             _id=_id,
