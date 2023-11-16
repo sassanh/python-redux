@@ -121,24 +121,23 @@ def create_store(
     def autorun(
         selector: Callable[[State], SelectorOutput],
         comparator: Callable[[State], ComparatorOutput] | None = None,
-    ) -> Callable[[AutorunFunctionParameters], Callable[[], Any]]:
-        def decorator(fn: AutorunFunctionParameters) -> Callable[[], Any]:
+    ) -> Callable[[AutorunRunnerParameters], Callable[[], Any]]:
+        def decorator(fn: AutorunRunnerParameters) -> Callable[[], Any]:
             last_selector_result: SelectorOutput | None = None
-            last_comparator_result: SelectorOutput | None = (
-                last_selector_result if comparator is None else None
-            )
+            last_comparator_result: ComparatorOutput | None = None
             last_value: Any | None = None
 
             def check_and_call(state: State) -> None:
                 nonlocal last_selector_result, last_comparator_result, last_value
                 selector_result = selector(state)
                 if comparator is None:
-                    comparator_result = selector_result
+                    comparator_result = cast(ComparatorOutput, selector_result)
                 else:
-                    comparator_result = cast(SelectorOutput, comparator(state))
+                    comparator_result = comparator(state)
                 if comparator_result != last_comparator_result:
                     previous_result = last_selector_result
                     last_selector_result = selector_result
+                    last_comparator_result = comparator_result
                     if len(signature(fn).parameters) == 1:
                         last_value = cast(Callable[[SelectorOutput], ReturnType], fn)(
                             selector_result,

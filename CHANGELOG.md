@@ -1,5 +1,9 @@
 # Changelog
 
+## Version 0.3.1
+
+- fix: last_comparator_result wasn't being updated
+
 ## Version 0.3.0
 
 - feat: add cached return value to autorun
