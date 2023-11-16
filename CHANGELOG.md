@@ -1,5 +1,9 @@
 # Changelog
 
+## Version 0.3.2
+
+- fix: autorun should re-compute the value if it is expired
+
 ## Version 0.3.1
 
 - fix: last_comparator_result wasn't being updated

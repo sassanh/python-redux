@@ -40,6 +40,7 @@ SelectorOutput_co = TypeVar('SelectorOutput_co', covariant=True)
 SelectorOutput_contra = TypeVar('SelectorOutput_contra', contravariant=True)
 ComparatorOutput = TypeVar('ComparatorOutput')
 ReturnType = TypeVar('ReturnType', bound=Callable[..., None])
+ReturnType_co = TypeVar('ReturnType_co', bound=Callable[..., None], covariant=True)
 Selector = Callable[[State], SelectorOutput]
 Comparator = Callable[[State], ComparatorOutput]
 ReducerType = Callable[[State | None, Action], State]
@@ -63,7 +64,8 @@ class Options(TypedDict):
 
 
 class AutorunRunnerParameters(
-    Protocol, Generic[SelectorOutput_contra, AutorunReturnType_co]
+    Protocol,
+    Generic[SelectorOutput_contra, AutorunReturnType_co],
 ):
     def __call__(
         self: AutorunRunnerParameters,
@@ -78,8 +80,8 @@ class AutorunType(Protocol, Generic[State_co]):
         selector: Callable[[State_co], SelectorOutput],
         comparator: Selector | None = None,
     ) -> Callable[
-        [AutorunRunnerParameters[SelectorOutput, AutorunReturnType]],
-        Callable[[], AutorunReturnType],
+        [AutorunRunnerParameters[SelectorOutput, ReturnType]],
+        Callable[[], ReturnType],
     ]:
         ...
 
@@ -121,20 +123,24 @@ def create_store(
     def autorun(
         selector: Callable[[State], SelectorOutput],
         comparator: Callable[[State], ComparatorOutput] | None = None,
-    ) -> Callable[[AutorunRunnerParameters], Callable[[], Any]]:
-        def decorator(fn: AutorunRunnerParameters) -> Callable[[], Any]:
+    ) -> Callable[[AutorunRunnerParameters], Callable[[], ReturnType_co]]:
+        def decorator(
+            fn: AutorunRunnerParameters[SelectorOutput, ReturnType_co],
+        ) -> Callable[[], ReturnType_co]:
             last_selector_result: SelectorOutput | None = None
             last_comparator_result: ComparatorOutput | None = None
-            last_value: Any | None = None
+            last_value: ReturnType_co | None = None
 
             def check_and_call(state: State) -> None:
                 nonlocal last_selector_result, last_comparator_result, last_value
-                selector_result = selector(state)
                 if comparator is None:
+                    selector_result = selector(state)
                     comparator_result = cast(ComparatorOutput, selector_result)
                 else:
                     comparator_result = comparator(state)
                 if comparator_result != last_comparator_result:
+                    if comparator is not None:
+                        selector_result = selector(state)
                     previous_result = last_selector_result
                     last_selector_result = selector_result
                     last_comparator_result = comparator_result
@@ -154,12 +160,17 @@ def create_store(
                             previous_result,
                         )
 
-            if options.get('initial_run', True) and state:
+            if options.get('initial_run', True) and state is not None:
                 check_and_call(state)
 
             subscribe(check_and_call)
 
-            return lambda: last_value
+            def call() -> ReturnType_co:
+                if state is not None:
+                    check_and_call(state)
+                return cast(ReturnType_co, last_value)
+
+            return call
 
         return decorator
 
