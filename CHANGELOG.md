@@ -1,5 +1,9 @@
 # Changelog
 
+## Version 0.3.3
+
+- refactor: improve typings
+
 ## Version 0.3.2
 
 - fix: autorun should re-compute the value if it is expired
