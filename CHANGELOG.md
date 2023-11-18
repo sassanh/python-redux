@@ -1,5 +1,9 @@
 # Changelog
 
+## Version 0.3.4
+
+- refactor: support previous_result argument, improve typings
+
 ## Version 0.3.3
 
 - refactor: improve typings
