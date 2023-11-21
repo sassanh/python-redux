@@ -1,17 +1,16 @@
 # ruff: noqa: D100, D101, D102, D103, D104, D107, A003
 from __future__ import annotations
 
-from dataclasses import dataclass
 from typing import TYPE_CHECKING, cast
 
 from redux import (
     BaseAction,
-    BaseState,
     CombineReducerAction,
     CombineReducerRegisterAction,
     CombineReducerRegisterActionPayload,
     CombineReducerUnregisterAction,
     CombineReducerUnregisterActionPayload,
+    Immutable,
     InitAction,
     InitializationActionError,
     ReducerType,
@@ -23,7 +22,6 @@ if TYPE_CHECKING:
     from typing_extensions import Literal
 
 
-@dataclass(frozen=True, kw_only=True)
 class CountAction(BaseAction):
     type: Literal['INCREMENT', 'DECREMENT', 'NOTHING']
 
@@ -31,13 +29,11 @@ class CountAction(BaseAction):
 ActionType = InitAction | CountAction | CombineReducerAction
 
 
-@dataclass(frozen=True, kw_only=True)
-class CountStateType:
+class CountStateType(Immutable):
     count: int
 
 
-@dataclass(frozen=True, kw_only=True)
-class StateType(BaseState):
+class StateType(Immutable):
     straight: CountStateType
     base10: CountStateType
     inverse: CountStateType

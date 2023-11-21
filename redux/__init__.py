@@ -1,4 +1,4 @@
-# ruff: noqa: A003, D101, D102, D103, D104, D107
+# ruff: noqa: A003, D101, D102, D103, D104, D105, D107
 from __future__ import annotations
 
 import copy
@@ -10,17 +10,35 @@ from typing import (
     Callable,
     Generic,
     Literal,
+    Mapping,
     Protocol,
     Sequence,
     TypedDict,
     TypeVar,
     cast,
+    dataclass_transform,
 )
 
+_T = TypeVar('_T')
 
-@dataclass(frozen=True, kw_only=True)
-class BaseState:
-    ...
+
+@dataclass_transform(kw_only_default=True, frozen_default=True)
+def immutable(cls: type[_T]) -> type[_T]:
+    return dataclass(frozen=True, kw_only=True)(cls)
+
+
+@dataclass_transform(kw_only_default=True, frozen_default=True)
+class Immutable:
+    def __init_subclass__(
+        cls: type[Immutable],
+        **kwargs: Mapping[str, Any],
+    ) -> None:
+        super().__init_subclass__(**kwargs)
+        immutable(cls)
+
+
+class BaseAction(Immutable):
+    type: str
 
 
 class InitializationActionError(Exception):
@@ -31,9 +49,9 @@ class InitializationActionError(Exception):
 
 
 # Type variables
-State = TypeVar('State', bound=BaseState)
+State = TypeVar('State', bound=Immutable)
 State_co = TypeVar('State_co', covariant=True)
-Action = TypeVar('Action')
+Action = TypeVar('Action', bound=BaseAction)
 SelectorOutput = TypeVar('SelectorOutput')
 SelectorOutput_co = TypeVar('SelectorOutput_co', covariant=True)
 SelectorOutput_contra = TypeVar('SelectorOutput_contra', contravariant=True)
@@ -45,12 +63,6 @@ AutorunReturnType = TypeVar('AutorunReturnType')
 AutorunReturnType_co = TypeVar('AutorunReturnType_co', covariant=True)
 
 
-@dataclass(frozen=True, kw_only=True)
-class BaseAction:
-    type: str
-
-
-@dataclass(frozen=True, kw_only=True)
 class InitAction(BaseAction):
     type: Literal['INIT'] = 'INIT'
 
@@ -74,7 +86,7 @@ class AutorunType(Protocol, Generic[State_co]):
         ...
 
 
-@dataclass(frozen=True, kw_only=True)
+@immutable
 class InitializeStateReturnValue(Generic[State, Action]):
     dispatch: Callable[[Action | list[Action]], None]
     subscribe: Callable[[Callable[[State], None]], Callable[[], None]]
@@ -177,29 +189,24 @@ def create_store(
     )
 
 
-@dataclass(frozen=True, kw_only=True)
 class CombineReducerActionBase(BaseAction):
     _id: str
 
 
-@dataclass(frozen=True, kw_only=True)
-class CombineReducerRegisterActionPayload:
+class CombineReducerRegisterActionPayload(Immutable):
     key: str
     reducer: ReducerType
 
 
-@dataclass(frozen=True, kw_only=True)
 class CombineReducerRegisterAction(CombineReducerActionBase):
     payload: CombineReducerRegisterActionPayload
     type: Literal['REGISTER'] = 'REGISTER'
 
 
-@dataclass(frozen=True, kw_only=True)
-class CombineReducerUnregisterActionPayload:
+class CombineReducerUnregisterActionPayload(Immutable):
     key: str
 
 
-@dataclass(frozen=True, kw_only=True)
 class CombineReducerUnregisterAction(CombineReducerActionBase):
     payload: CombineReducerUnregisterActionPayload
     type: Literal['UNREGISTER'] = 'UNREGISTER'
@@ -217,6 +224,7 @@ def combine_reducers(
         'combined_reducer',
         ('_id', *reducers.keys()),
         frozen=True,
+        kw_only=True,
     )
 
     def combined_reducer(

@@ -1,5 +1,12 @@
 # Changelog
 
+## Version 0.5.0
+
+- feat: introduce `immutable` decorator as a shortcut of `dataclass(kw_only=True, frozen=True)`
+- feat: introduce `Immutable` class, its subclasses automatically become `immutable`
+- refactor: `BaseAction` now inherits from `Immutable`
+- refactor: Removed `BaseState`, state classes, payload classes, etc should now inherit `Immutable`
+
 ## Version 0.4.0
 
 - refactor: make all dataclasses `kw_only=True`
