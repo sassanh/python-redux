@@ -1,5 +1,9 @@
 # Changelog
 
+## Version 0.4.0
+
+- refactor: make all dataclasses `kw_only=True`
+
 ## Version 0.3.4
 
 - refactor: support previous_result argument, improve typings

@@ -5,6 +5,7 @@ from dataclasses import dataclass
 from typing import TYPE_CHECKING, cast
 
 from redux import (
+    BaseAction,
     BaseState,
     CombineReducerAction,
     CombineReducerRegisterAction,
@@ -22,20 +23,20 @@ if TYPE_CHECKING:
     from typing_extensions import Literal
 
 
-@dataclass
-class CountAction:
+@dataclass(frozen=True, kw_only=True)
+class CountAction(BaseAction):
     type: Literal['INCREMENT', 'DECREMENT', 'NOTHING']
 
 
 ActionType = InitAction | CountAction | CombineReducerAction
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, kw_only=True)
 class CountStateType:
     count: int
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, kw_only=True)
 class StateType(BaseState):
     straight: CountStateType
     base10: CountStateType

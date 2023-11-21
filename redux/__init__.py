@@ -10,7 +10,6 @@ from typing import (
     Callable,
     Generic,
     Literal,
-    ParamSpec,
     Protocol,
     Sequence,
     TypedDict,
@@ -19,7 +18,7 @@ from typing import (
 )
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, kw_only=True)
 class BaseState:
     ...
 
@@ -44,15 +43,14 @@ Comparator = Callable[[State], ComparatorOutput]
 ReducerType = Callable[[State | None, Action], State]
 AutorunReturnType = TypeVar('AutorunReturnType')
 AutorunReturnType_co = TypeVar('AutorunReturnType_co', covariant=True)
-P = ParamSpec('P')
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, kw_only=True)
 class BaseAction:
-    ...
+    type: str
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, kw_only=True)
 class InitAction(BaseAction):
     type: Literal['INIT'] = 'INIT'
 
@@ -76,7 +74,7 @@ class AutorunType(Protocol, Generic[State_co]):
         ...
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, kw_only=True)
 class InitializeStateReturnValue(Generic[State, Action]):
     dispatch: Callable[[Action | list[Action]], None]
     subscribe: Callable[[Callable[[State], None]], Callable[[], None]]
@@ -179,29 +177,29 @@ def create_store(
     )
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, kw_only=True)
 class CombineReducerActionBase(BaseAction):
     _id: str
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, kw_only=True)
 class CombineReducerRegisterActionPayload:
     key: str
     reducer: ReducerType
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, kw_only=True)
 class CombineReducerRegisterAction(CombineReducerActionBase):
     payload: CombineReducerRegisterActionPayload
     type: Literal['REGISTER'] = 'REGISTER'
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, kw_only=True)
 class CombineReducerUnregisterActionPayload:
     key: str
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, kw_only=True)
 class CombineReducerUnregisterAction(CombineReducerActionBase):
     payload: CombineReducerUnregisterActionPayload
     type: Literal['UNREGISTER'] = 'UNREGISTER'

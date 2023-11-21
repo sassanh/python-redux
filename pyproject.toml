@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "python-redux"
-version = "0.3.4"
+version = "0.4.0"
 description = "Redux implementation for Python"
 authors = ["Sassan Haradji <sassanh@gmail.com>"]
 license = "Apache-2.0"
@@ -14,9 +14,15 @@ python = "^3.9"
 [tool.poetry.scripts]
 demo = "demo:main"
 
+[tool.poetry.group.dev.dependencies]
+poethepoet = "^0.24.3"
+
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.poe.tasks]
+lint = "pyright -p pyproject.toml ."
 
 [tool.ruff]
 select = ['ALL']
@@ -32,3 +38,6 @@ multiline-quotes = "double"
 
 [tool.ruff.format]
 quote-style = 'single'
+
+[tool.pyright]
+reportInvalidTypeVarUse = false
