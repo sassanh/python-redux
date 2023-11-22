@@ -16,8 +16,9 @@ from typing import (
     TypedDict,
     TypeVar,
     cast,
-    dataclass_transform,
 )
+
+from typing_extensions import dataclass_transform
 
 _T = TypeVar('_T')
 

@@ -1,5 +1,9 @@
 # Changelog
 
+## Version 0.5.1
+
+- fix: import `dataclass_transform` from `typing_extensions` instead of `typing`
+
 ## Version 0.5.0
 
 - feat: introduce `immutable` decorator as a shortcut of `dataclass(kw_only=True, frozen=True)`
