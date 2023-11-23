@@ -1,5 +1,10 @@
 # Changelog
 
+## Version 0.6.1
+
+- chore: split the project into multiple files
+- feat: let reducers return actions and side effects along new state
+
 ## Version 0.5.1
 
 - fix: import `dataclass_transform` from `typing_extensions` instead of `typing`

@@ -1,10 +1,12 @@
 # ruff: noqa: D100, D101, D102, D103, D104, D107, A003
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, cast
+import time
+from typing import TYPE_CHECKING
 
 from redux import (
     BaseAction,
+    BaseCombineReducerState,
     CombineReducerAction,
     CombineReducerRegisterAction,
     CombineReducerRegisterActionPayload,
@@ -13,10 +15,11 @@ from redux import (
     Immutable,
     InitAction,
     InitializationActionError,
-    ReducerType,
     combine_reducers,
     create_store,
 )
+from redux.basic_types import CompleteReducerResult, FinishAction, ReducerResult
+from redux.main import CreateStoreOptions
 
 if TYPE_CHECKING:
     from typing_extensions import Literal
@@ -26,14 +29,14 @@ class CountAction(BaseAction):
     type: Literal['INCREMENT', 'DECREMENT', 'NOTHING']
 
 
-ActionType = InitAction | CountAction | CombineReducerAction
+ActionType = InitAction | FinishAction | CountAction | CombineReducerAction
 
 
 class CountStateType(Immutable):
     count: int
 
 
-class StateType(Immutable):
+class StateType(BaseCombineReducerState):
     straight: CountStateType
     base10: CountStateType
     inverse: CountStateType
@@ -73,7 +76,7 @@ def base10_reducer(
 def inverse_reducer(
     state: CountStateType | None,
     action: ActionType,
-) -> CountStateType:
+) -> ReducerResult[CountStateType, ActionType]:
     if state is None:
         if action.type == 'INIT':
             return CountStateType(count=0)
@@ -82,14 +85,21 @@ def inverse_reducer(
         return CountStateType(count=state.count - 1)
     if action.type == 'DECREMENT':
         return CountStateType(count=state.count + 1)
+    if action.type == 'NOTHING':
+        return CompleteReducerResult(
+            state=state,
+            actions=[CountAction(type='INCREMENT')],
+            side_effects=[lambda: time.sleep(5)],
+        )
     return state
 
 
 reducer, reducer_id = combine_reducers(
+    action_type=ActionType,
+    state_type=StateType,
     straight=straight_reducer,
     base10=base10_reducer,
 )
-reducer = cast(ReducerType[StateType, ActionType], reducer)
 # >
 
 
@@ -97,7 +107,7 @@ def main() -> None:
     # Initialization <
     store = create_store(
         reducer,
-        {'initial_run': True},
+        CreateStoreOptions(initial_run=True),
     )
 
     store.dispatch(InitAction(type='INIT'))
@@ -151,4 +161,6 @@ def main() -> None:
 
     store.dispatch(CountAction(type='DECREMENT'))
     print(f'Render output {render()}')
+
+    store.dispatch(FinishAction())
     # >
