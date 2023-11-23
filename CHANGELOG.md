@@ -1,5 +1,9 @@
 # Changelog
 
+## Version 0.6.4
+
+- fix: let input reducers of `combine_reducers` have arbitrary state types
+
 ## Version 0.6.3
 
 - fix: let input reducers of `combine_reducers` have arbitrary action types irrelevant to each other

@@ -12,7 +12,6 @@ from .basic_types import (
     CompleteReducerResult,
     Immutable,
     InitAction,
-    State,
     is_reducer_result,
 )
 
@@ -62,7 +61,7 @@ def is_combine_reducer_action(action: BaseAction) -> TypeGuard[CombineReducerAct
 def combine_reducers(
     action_type: type[Action],  # noqa: ARG001
     state_type: type[CombineReducerState],
-    **reducers: ReducerType[State, Any],
+    **reducers: ReducerType,
 ) -> tuple[ReducerType[CombineReducerState, Action], str]:
     _id = uuid.uuid4().hex
 
