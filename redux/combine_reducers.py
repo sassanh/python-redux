@@ -62,7 +62,7 @@ def is_combine_reducer_action(action: BaseAction) -> TypeGuard[CombineReducerAct
 def combine_reducers(
     action_type: type[Action],  # noqa: ARG001
     state_type: type[CombineReducerState],
-    **reducers: ReducerType[State, AnyAction],
+    **reducers: ReducerType[State, Any],
 ) -> tuple[ReducerType[CombineReducerState, Action], str]:
     _id = uuid.uuid4().hex
 
@@ -127,7 +127,7 @@ def combine_reducers(
         reducers_results = {
             key: reducer(
                 None if state is None else getattr(state, key),
-                cast(AnyAction, action),
+                action,
             )
             for key, reducer in reducers.items()
         }
@@ -138,15 +138,12 @@ def combine_reducers(
                 for key, result in reducers_results.items()
             },
         )
-        result_actions = cast(
-            list[Action],
-            sum(
-                [
-                    result.actions or [] if is_reducer_result(result) else []
-                    for result in reducers_results.values()
-                ],
-                [],
-            ),
+        result_actions = sum(
+            [
+                result.actions or [] if is_reducer_result(result) else []
+                for result in reducers_results.values()
+            ],
+            [],
         )
         result_side_effects = sum(
             [
