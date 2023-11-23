@@ -1,5 +1,9 @@
 # Changelog
 
+## Version 0.6.2
+
+- fix: let input reducers of `combine_reducers` have arbitrary action types
+
 ## Version 0.6.1
 
 - chore: split the project into multiple files
