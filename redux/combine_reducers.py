@@ -9,7 +9,9 @@ from typing import TYPE_CHECKING, Any, Literal, TypeGuard, TypeVar, cast
 from .basic_types import (
     Action,
     BaseAction,
+    BaseEvent,
     CompleteReducerResult,
+    Event,
     Immutable,
     InitAction,
     is_reducer_result,
@@ -59,10 +61,11 @@ def is_combine_reducer_action(action: BaseAction) -> TypeGuard[CombineReducerAct
 
 
 def combine_reducers(
-    action_type: type[Action],  # noqa: ARG001
     state_type: type[CombineReducerState],
+    action_type: type[Action],  # noqa: ARG001
+    event_type: type[Event] = BaseEvent,  # noqa: ARG001
     **reducers: ReducerType,
-) -> tuple[ReducerType[CombineReducerState, Action], str]:
+) -> tuple[ReducerType[CombineReducerState, Action, Event], str]:
     _id = uuid.uuid4().hex
 
     state_class = cast(
@@ -78,7 +81,7 @@ def combine_reducers(
     def combined_reducer(
         state: CombineReducerState | None,
         action: Action,
-    ) -> CompleteReducerResult[CombineReducerState, Action]:
+    ) -> CompleteReducerResult[CombineReducerState, Action, Event]:
         nonlocal state_class
         if state is not None and is_combine_reducer_action(action):
             if action.type == 'REGISTER' and action._id == _id:  # noqa: SLF001

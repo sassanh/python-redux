@@ -1,5 +1,9 @@
 # Changelog
 
+## Version 0.7.2
+
+- fix: add `event_type` to `combine_reducers`
+
 ## Version 0.7.0
 
 - feat: replace side effects with events, events being immutable passive data structures

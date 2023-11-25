@@ -14,7 +14,6 @@ from .basic_types import (
     Action,
     AutorunReturnType,
     BaseAction,
-    BaseEvent,
     ComparatorOutput,
     Event,
     Immutable,
@@ -51,17 +50,17 @@ class AutorunType(Protocol, Generic[State_co]):
         ...
 
 
-class InitializeStateReturnValue(Immutable, Generic[State, Action]):
+class InitializeStateReturnValue(Immutable, Generic[State, Action, Event]):
     dispatch: Callable[[Action | list[Action]], None]
     subscribe: Callable[[Callable[[State], None]], Callable[[], None]]
-    subscribe_event: Callable[[str, Callable[[BaseEvent], None]], Callable[[], None]]
+    subscribe_event: Callable[[str, Callable[[Event], None]], Callable[[], None]]
     autorun: AutorunType[State]
 
 
 def create_store(
     reducer: ReducerType[State, Action, Event],
     options: CreateStoreOptions | None = None,
-) -> InitializeStateReturnValue[State, Action]:
+) -> InitializeStateReturnValue[State, Action, Event]:
     _options = CreateStoreOptions() if options is None else options
 
     state: State
