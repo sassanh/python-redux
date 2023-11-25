@@ -1,5 +1,9 @@
 # Changelog
 
+## Version 0.7.0
+
+- feat: replace side effects with events, events being immutable passive data structures
+
 ## Version 0.6.4
 
 - fix: let input reducers of `combine_reducers` have arbitrary state types

@@ -35,6 +35,11 @@ class BaseAction(Immutable):
     type: str
 
 
+class BaseEvent(Immutable):
+    type: str
+    payload: Any
+
+
 # Type variables
 State = TypeVar('State', bound=Immutable)
 State_co = TypeVar('State_co', covariant=True)
@@ -45,19 +50,19 @@ SelectorOutput_contra = TypeVar('SelectorOutput_contra', contravariant=True)
 ComparatorOutput = TypeVar('ComparatorOutput')
 Selector = Callable[[State], SelectorOutput]
 Comparator = Callable[[State], ComparatorOutput]
-SideEffect = Callable[[], None]
+Event = TypeVar('Event', bound=BaseEvent)
 
 
-class CompleteReducerResult(Immutable, Generic[State, Action]):
+class CompleteReducerResult(Immutable, Generic[State, Action, Event]):
     state: State
     actions: list[Action] | None = None
-    side_effects: list[SideEffect] | None = None
+    events: list[Event] | None = None
 
 
-ReducerResult = CompleteReducerResult[State, Action] | State
+ReducerResult = CompleteReducerResult[State, Action, Event] | State
 
 
-ReducerType = Callable[[State | None, Action], ReducerResult[State, Action]]
+ReducerType = Callable[[State | None, Action], ReducerResult[State, Action, Event]]
 AutorunReturnType = TypeVar('AutorunReturnType')
 AutorunReturnType_co = TypeVar('AutorunReturnType_co', covariant=True)
 
@@ -78,10 +83,10 @@ class FinishAction(BaseAction):
 
 
 def is_reducer_result(
-    result: ReducerResult[State, Action],
-) -> TypeGuard[CompleteReducerResult[State, Action]]:
+    result: ReducerResult[State, Action, Event],
+) -> TypeGuard[CompleteReducerResult[State, Action, Event]]:
     return isinstance(result, CompleteReducerResult)
 
 
-def is_state(result: ReducerResult[State, Action]) -> TypeGuard[State]:
+def is_state(result: ReducerResult[State, Action, Event]) -> TypeGuard[State]:
     return not isinstance(result, CompleteReducerResult)

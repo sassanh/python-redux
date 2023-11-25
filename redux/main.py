@@ -1,8 +1,7 @@
 # ruff: noqa: D100, D101, D102, D103, D104, D105, D107
 from __future__ import annotations
 
-import queue
-import threading
+from collections import defaultdict
 from inspect import signature
 from typing import (
     Callable,
@@ -15,12 +14,13 @@ from .basic_types import (
     Action,
     AutorunReturnType,
     BaseAction,
+    BaseEvent,
     ComparatorOutput,
+    Event,
     Immutable,
     ReducerType,
     Selector,
     SelectorOutput,
-    SideEffect,
     State,
     State_co,
     is_reducer_result,
@@ -30,7 +30,6 @@ from .basic_types import (
 
 class CreateStoreOptions(Immutable):
     initial_run: bool = True
-    threads: int = 5
 
 
 class DispatchOptions(Immutable):
@@ -55,42 +54,19 @@ class AutorunType(Protocol, Generic[State_co]):
 class InitializeStateReturnValue(Immutable, Generic[State, Action]):
     dispatch: Callable[[Action | list[Action]], None]
     subscribe: Callable[[Callable[[State], None]], Callable[[], None]]
+    subscribe_event: Callable[[str, Callable[[BaseEvent], None]], Callable[[], None]]
     autorun: AutorunType[State]
 
 
-class SideEffectRunnerThread(threading.Thread):
-    def __init__(self: SideEffectRunnerThread, task_queue: queue.Queue) -> None:
-        super().__init__()
-        self.task_queue = task_queue
-        self.daemon = True  # Optionally make the thread a daemon
-
-    def run(self: SideEffectRunnerThread) -> None:
-        while True:
-            # Get a task from the queue
-            try:
-                task = self.task_queue.get(timeout=3)  # Adjust timeout as needed
-            except queue.Empty:
-                continue
-
-            try:
-                task()  # Execute the task
-            finally:
-                self.task_queue.task_done()
-
-
 def create_store(
-    reducer: ReducerType[State, Action],
+    reducer: ReducerType[State, Action, Event],
     options: CreateStoreOptions | None = None,
 ) -> InitializeStateReturnValue[State, Action]:
     _options = CreateStoreOptions() if options is None else options
 
     state: State
     listeners: set[Callable[[State], None]] = set()
-    side_effects_queue: queue.Queue[SideEffect] = queue.Queue()
-
-    for _ in range(_options.threads):
-        worker = SideEffectRunnerThread(side_effects_queue)
-        worker.start()
+    event_listeners: defaultdict[str, set[Callable[[Event], None]]] = defaultdict(set)
 
     def dispatch(
         actions: Action | list[Action],
@@ -103,7 +79,7 @@ def create_store(
         if len(actions) == 0:
             return
         actions_queue = list(actions)
-        should_quit = False
+        events_queue: list[Event] = []
         while len(actions_queue) > 0:
             action = actions_queue.pop(0)
             result = reducer(state if 'state' in locals() else None, action)
@@ -111,24 +87,28 @@ def create_store(
                 state = result.state
                 if result.actions:
                     actions_queue.append(*result.actions)
-                if result.side_effects:
-                    for side_effect in result.side_effects:
-                        side_effects_queue.put(side_effect)
+                if result.events:
+                    events_queue.append(*result.events)
             elif is_state(result):
                 state = result
-            if action.type == 'FINISH':
-                should_quit = True
 
         for listener in listeners:
             listener(state)
 
-        if should_quit:
-            side_effects_queue.join()
+        for event in events_queue:
+            for event_listener in event_listeners[event.type]:
+                event_listener(event)
 
     def subscribe(listener: Callable[[State], None]) -> Callable[[], None]:
-        nonlocal listeners
         listeners.add(listener)
         return lambda: listeners.remove(listener)
+
+    def subscribe_event(
+        event_type: str,
+        listener: Callable[[Event], None],
+    ) -> Callable[[], None]:
+        event_listeners[event_type].add(listener)
+        return lambda: event_listeners[event_type].remove(listener)
 
     def autorun(
         selector: Callable[[State], SelectorOutput],
@@ -195,5 +175,6 @@ def create_store(
     return InitializeStateReturnValue(
         dispatch=dispatch,
         subscribe=subscribe,
+        subscribe_event=subscribe_event,
         autorun=autorun,
     )

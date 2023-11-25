@@ -144,9 +144,9 @@ def combine_reducers(
             ],
             [],
         )
-        result_side_effects = sum(
+        result_events = sum(
             [
-                result.side_effects or [] if is_reducer_result(result) else []
+                result.events or [] if is_reducer_result(result) else []
                 for result in reducers_results.values()
             ],
             [],
@@ -155,7 +155,7 @@ def combine_reducers(
         return CompleteReducerResult(
             state=result_state,
             actions=result_actions,
-            side_effects=result_side_effects,
+            events=result_events,
         )
 
     return (combined_reducer, _id)

@@ -1,4 +1,4 @@
-# ruff: noqa: D100, D101, D102, D103, D104, D107, A003
+# ruff: noqa: D100, D101, D102, D103, D104, D107, A003, T201
 from __future__ import annotations
 
 import time
@@ -18,7 +18,12 @@ from redux import (
     combine_reducers,
     create_store,
 )
-from redux.basic_types import CompleteReducerResult, FinishAction, ReducerResult
+from redux.basic_types import (
+    BaseEvent,
+    CompleteReducerResult,
+    FinishAction,
+    ReducerResult,
+)
 from redux.main import CreateStoreOptions
 
 if TYPE_CHECKING:
@@ -73,10 +78,15 @@ def base10_reducer(
     return state
 
 
+class SleepEvent(BaseEvent):
+    type: Literal['SLEEP'] = 'SLEEP'
+    payload: int
+
+
 def inverse_reducer(
     state: CountStateType | None,
     action: ActionType,
-) -> ReducerResult[CountStateType, ActionType]:
+) -> ReducerResult[CountStateType, ActionType, SleepEvent]:
     if state is None:
         if action.type == 'INIT':
             return CountStateType(count=0)
@@ -89,7 +99,7 @@ def inverse_reducer(
         return CompleteReducerResult(
             state=state,
             actions=[CountAction(type='INCREMENT')],
-            side_effects=[lambda: time.sleep(5)],
+            events=[SleepEvent(payload=3)],
         )
     return state
 
@@ -108,6 +118,10 @@ def main() -> None:
     store = create_store(
         reducer,
         CreateStoreOptions(initial_run=True),
+    )
+
+    store.subscribe_event(
+        'SLEEP', lambda event: print(event) or time.sleep(event.payload)
     )
 
     store.dispatch(InitAction(type='INIT'))

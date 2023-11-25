@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "python-redux"
-version = "0.6.4"
+version = "0.7.0"
 description = "Redux implementation for Python"
 authors = ["Sassan Haradji <sassanh@gmail.com>"]
 license = "Apache-2.0"
