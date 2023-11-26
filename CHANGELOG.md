@@ -1,5 +1,9 @@
 # Changelog
 
+## Version 0.8.0
+
+- feat: drop `type` field in actions and events altogether, recognition is done by `isinstance`
+
 ## Version 0.7.3
 
 - fix: loosen `subscribe_event` typing constraints as python doesn't have enough type narrowing mechanism at the moment

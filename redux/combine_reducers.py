@@ -4,7 +4,7 @@ from __future__ import annotations
 import copy
 import uuid
 from dataclasses import asdict, make_dataclass
-from typing import TYPE_CHECKING, Any, Literal, TypeGuard, TypeVar, cast
+from typing import TYPE_CHECKING, Any, TypeGuard, TypeVar, cast
 
 from .basic_types import (
     Action,
@@ -36,7 +36,6 @@ class CombineReducerRegisterActionPayload(Immutable):
 
 class CombineReducerRegisterAction(BaseCombineReducerAction):
     payload: CombineReducerRegisterActionPayload
-    type: Literal['REGISTER'] = 'REGISTER'
 
 
 class CombineReducerUnregisterActionPayload(Immutable):
@@ -45,7 +44,6 @@ class CombineReducerUnregisterActionPayload(Immutable):
 
 class CombineReducerUnregisterAction(BaseCombineReducerAction):
     payload: CombineReducerUnregisterActionPayload
-    type: Literal['UNREGISTER'] = 'UNREGISTER'
 
 
 CombineReducerAction = CombineReducerRegisterAction | CombineReducerUnregisterAction
@@ -62,7 +60,7 @@ def is_combine_reducer_action(action: BaseAction) -> TypeGuard[CombineReducerAct
 
 def combine_reducers(
     state_type: type[CombineReducerState],
-    action_type: type[Action],  # noqa: ARG001
+    action_type: type[Action] = BaseAction,  # noqa: ARG001
     event_type: type[Event] = BaseEvent,  # noqa: ARG001
     **reducers: ReducerType,
 ) -> tuple[ReducerType[CombineReducerState, Action, Event], str]:
@@ -84,7 +82,7 @@ def combine_reducers(
     ) -> CompleteReducerResult[CombineReducerState, Action, Event]:
         nonlocal state_class
         if state is not None and is_combine_reducer_action(action):
-            if action.type == 'REGISTER' and action._id == _id:  # noqa: SLF001
+            if isinstance(action, CombineReducerRegisterAction) and action._id == _id:  # noqa: SLF001
                 key = action.payload.key
                 reducer = action.payload.reducer
                 reducers[key] = reducer
@@ -97,17 +95,16 @@ def combine_reducers(
                     _id=state._id,  # noqa: SLF001
                     **(
                         {
-                            key_: reducer(
-                                None,
-                                InitAction(type='INIT'),
-                            )
+                            key_: reducer(None, InitAction())
                             if key == key_
                             else getattr(state, key_)
                             for key_ in reducers
                         }
                     ),
                 )
-            elif action.type == 'UNREGISTER' and action._id == _id:  # noqa: SLF001
+            elif (
+                isinstance(action, CombineReducerUnregisterAction) and action._id == _id  # noqa: SLF001
+            ):
                 key = action.payload.key
 
                 del reducers[key]

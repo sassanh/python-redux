@@ -2,7 +2,6 @@
 from __future__ import annotations
 
 import time
-from typing import TYPE_CHECKING
 
 from redux import (
     BaseAction,
@@ -26,12 +25,21 @@ from redux.basic_types import (
 )
 from redux.main import CreateStoreOptions
 
-if TYPE_CHECKING:
-    from typing_extensions import Literal
-
 
 class CountAction(BaseAction):
-    type: Literal['INCREMENT', 'DECREMENT', 'NOTHING']
+    ...
+
+
+class IncrementAction(CountAction):
+    ...
+
+
+class DecrementAction(CountAction):
+    ...
+
+
+class NothingAction(CountAction):
+    ...
 
 
 ActionType = InitAction | FinishAction | CountAction | CombineReducerAction
@@ -53,12 +61,12 @@ def straight_reducer(
     action: ActionType,
 ) -> CountStateType:
     if state is None:
-        if action.type == 'INIT':
+        if isinstance(action, InitAction):
             return CountStateType(count=0)
         raise InitializationActionError
-    if action.type == 'INCREMENT':
+    if isinstance(action, IncrementAction):
         return CountStateType(count=state.count + 1)
-    if action.type == 'DECREMENT':
+    if isinstance(action, DecrementAction):
         return CountStateType(count=state.count - 1)
     return state
 
@@ -68,19 +76,22 @@ def base10_reducer(
     action: ActionType,
 ) -> CountStateType:
     if state is None:
-        if action.type == 'INIT':
+        if isinstance(action, InitAction):
             return CountStateType(count=10)
         raise InitializationActionError
-    if action.type == 'INCREMENT':
+    if isinstance(action, IncrementAction):
         return CountStateType(count=state.count + 1)
-    if action.type == 'DECREMENT':
+    if isinstance(action, DecrementAction):
         return CountStateType(count=state.count - 1)
     return state
 
 
 class SleepEvent(BaseEvent):
-    type: Literal['SLEEP'] = 'SLEEP'
     payload: int
+
+
+class PrintEvent(BaseEvent):
+    payload: str
 
 
 def inverse_reducer(
@@ -88,25 +99,26 @@ def inverse_reducer(
     action: ActionType,
 ) -> ReducerResult[CountStateType, ActionType, SleepEvent]:
     if state is None:
-        if action.type == 'INIT':
+        if isinstance(action, InitAction):
             return CountStateType(count=0)
         raise InitializationActionError
-    if action.type == 'INCREMENT':
+    if isinstance(action, IncrementAction):
         return CountStateType(count=state.count - 1)
-    if action.type == 'DECREMENT':
+    if isinstance(action, DecrementAction):
         return CountStateType(count=state.count + 1)
-    if action.type == 'NOTHING':
+    if isinstance(action, NothingAction):
         return CompleteReducerResult(
             state=state,
-            actions=[CountAction(type='INCREMENT')],
+            actions=[IncrementAction()],
             events=[SleepEvent(payload=3)],
         )
     return state
 
 
 reducer, reducer_id = combine_reducers(
-    action_type=ActionType,
     state_type=StateType,
+    action_type=ActionType,
+    event_type=SleepEvent | PrintEvent,
     straight=straight_reducer,
     base10=base10_reducer,
 )
@@ -120,11 +132,12 @@ def main() -> None:
         CreateStoreOptions(initial_run=True),
     )
 
-    store.subscribe_event(
-        'SLEEP', lambda event: print(event) or time.sleep(event.payload)
-    )
+    def event_handler(event: SleepEvent) -> None:
+        time.sleep(event.payload)
 
-    store.dispatch(InitAction(type='INIT'))
+    store.subscribe_event(SleepEvent, event_handler)
+
+    store.dispatch(InitAction())
     # >
 
     # -----
@@ -145,12 +158,11 @@ def main() -> None:
 
     print(f'Render output {render()}')
 
-    store.dispatch(CountAction(type='INCREMENT'))
+    store.dispatch(IncrementAction())
     print(f'Render output {render()}')
 
     store.dispatch(
         CombineReducerRegisterAction(
-            type='REGISTER',
             _id=reducer_id,
             payload=CombineReducerRegisterActionPayload(
                 key='inverse',
@@ -159,12 +171,11 @@ def main() -> None:
         ),
     )
 
-    store.dispatch(CountAction(type='NOTHING'))
+    store.dispatch(NothingAction())
     print(f'Render output {render()}')
 
     store.dispatch(
         CombineReducerUnregisterAction(
-            type='UNREGISTER',
             _id=reducer_id,
             payload=CombineReducerUnregisterActionPayload(
                 key='straight',
@@ -173,7 +184,7 @@ def main() -> None:
     )
     print(f'Render output {render()}')
 
-    store.dispatch(CountAction(type='DECREMENT'))
+    store.dispatch(DecrementAction())
     print(f'Render output {render()}')
 
     store.dispatch(FinishAction())

@@ -6,7 +6,6 @@ from typing import (
     Any,
     Callable,
     Generic,
-    Literal,
     Mapping,
     TypeGuard,
     TypeVar,
@@ -32,17 +31,16 @@ class Immutable:
 
 
 class BaseAction(Immutable):
-    type: str
+    ...
 
 
 class BaseEvent(Immutable):
-    type: str
-    payload: Any
+    ...
 
 
 # Type variables
 State = TypeVar('State', bound=Immutable)
-State_co = TypeVar('State_co', covariant=True)
+State_co = TypeVar('State_co', bound=Immutable, covariant=True)
 Action = TypeVar('Action', bound=BaseAction)
 SelectorOutput = TypeVar('SelectorOutput')
 SelectorOutput_co = TypeVar('SelectorOutput_co', covariant=True)
@@ -60,26 +58,25 @@ class CompleteReducerResult(Immutable, Generic[State, Action, Event]):
 
 
 ReducerResult = CompleteReducerResult[State, Action, Event] | State
-
-
 ReducerType = Callable[[State | None, Action], ReducerResult[State, Action, Event]]
 AutorunReturnType = TypeVar('AutorunReturnType')
 AutorunReturnType_co = TypeVar('AutorunReturnType_co', covariant=True)
+EventSubscriber = Callable[[Event, Callable[[Event], None]], Callable[[], None]]
 
 
 class InitializationActionError(Exception):
     def __init__(self: InitializationActionError) -> None:
         super().__init__(
-            'The only accepted action type when state is None is "INIT"',
+            'The only accepted action type when state is None is "InitAction"',
         )
 
 
 class InitAction(BaseAction):
-    type: Literal['INIT'] = 'INIT'
+    ...
 
 
 class FinishAction(BaseAction):
-    type: Literal['FINISH'] = 'FINISH'
+    ...
 
 
 def is_reducer_result(

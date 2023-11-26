@@ -50,22 +50,34 @@ class AutorunType(Protocol, Generic[State_co]):
         ...
 
 
-class InitializeStateReturnValue(Immutable, Generic[State, Action, Event]):
+class EventSubscriber(Protocol):
+    def __call__(
+        self: EventSubscriber,
+        event_type: type[Event],
+        handler: Callable[[Event], None],
+    ) -> Callable[[], None]:  # pyright: ignore[reportGeneralTypeIssues]
+        pass
+
+
+class InitializeStateReturnValue(Immutable, Generic[State, Action]):
     dispatch: Callable[[Action | list[Action]], None]
     subscribe: Callable[[Callable[[State], None]], Callable[[], None]]
-    subscribe_event: Callable[[str, Callable[[object], None]], Callable[[], None]]
+    subscribe_event: EventSubscriber
     autorun: AutorunType[State]
 
 
 def create_store(
     reducer: ReducerType[State, Action, Event],
     options: CreateStoreOptions | None = None,
-) -> InitializeStateReturnValue[State, Action, Event]:
+) -> InitializeStateReturnValue[State, Action]:
     _options = CreateStoreOptions() if options is None else options
 
     state: State
     listeners: set[Callable[[State], None]] = set()
-    event_listeners: defaultdict[str, set[Callable[[Event], None]]] = defaultdict(set)
+    event_handlers: defaultdict[
+        type[Event],
+        set[Callable[[Event], None]],
+    ] = defaultdict(set)
 
     def dispatch(
         actions: Action | list[Action],
@@ -95,7 +107,7 @@ def create_store(
             listener(state)
 
         for event in events_queue:
-            for event_listener in event_listeners[event.type]:
+            for event_listener in event_handlers[type(event)]:
                 event_listener(event)
 
     def subscribe(listener: Callable[[State], None]) -> Callable[[], None]:
@@ -103,11 +115,11 @@ def create_store(
         return lambda: listeners.remove(listener)
 
     def subscribe_event(
-        event_type: str,
-        listener: Callable[[Event], None],
+        event_type: type[Event],
+        handler: Callable[[Event], None],
     ) -> Callable[[], None]:
-        event_listeners[event_type].add(listener)
-        return lambda: event_listeners[event_type].remove(listener)
+        event_handlers[event_type].add(handler)
+        return lambda: event_handlers[event_type].remove(handler)
 
     def autorun(
         selector: Callable[[State], SelectorOutput],
@@ -174,6 +186,6 @@ def create_store(
     return InitializeStateReturnValue(
         dispatch=dispatch,
         subscribe=subscribe,
-        subscribe_event=subscribe_event,
+        subscribe_event=cast(Callable, subscribe_event),
         autorun=autorun,
     )
