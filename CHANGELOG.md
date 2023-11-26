@@ -1,5 +1,9 @@
 # Changelog
 
+## Version 0.7.3
+
+- fix: loosen `subscribe_event` typing constraints as python doesn't have enough type narrowing mechanism at the moment
+
 ## Version 0.7.2
 
 - fix: add `event_type` to `combine_reducers`

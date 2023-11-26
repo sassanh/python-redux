@@ -53,7 +53,7 @@ class AutorunType(Protocol, Generic[State_co]):
 class InitializeStateReturnValue(Immutable, Generic[State, Action, Event]):
     dispatch: Callable[[Action | list[Action]], None]
     subscribe: Callable[[Callable[[State], None]], Callable[[], None]]
-    subscribe_event: Callable[[str, Callable[[Event], None]], Callable[[], None]]
+    subscribe_event: Callable[[str, Callable[[object], None]], Callable[[], None]]
     autorun: AutorunType[State]
 
 
