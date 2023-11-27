@@ -15,6 +15,7 @@ from .basic_types import (
     Action,
     AutorunReturnType,
     BaseAction,
+    BaseEvent,
     ComparatorOutput,
     Event,
     Immutable,
@@ -56,8 +57,8 @@ class EventSubscriber(Protocol):
         pass
 
 
-class InitializeStateReturnValue(Immutable, Generic[State, Action]):
-    dispatch: Callable[[Action | list[Action]], None]
+class InitializeStateReturnValue(Immutable, Generic[State, Action, Event]):
+    dispatch: Callable[[Action | Event | list[Action | Event]], None]
     subscribe: Callable[[Callable[[State], None]], Callable[[], None]]
     subscribe_event: EventSubscriber
     autorun: AutorunType[State]
@@ -66,7 +67,7 @@ class InitializeStateReturnValue(Immutable, Generic[State, Action]):
 def create_store(
     reducer: ReducerType[State, Action, Event],
     options: CreateStoreOptions | None = None,
-) -> InitializeStateReturnValue[State, Action]:
+) -> InitializeStateReturnValue[State, Action, Event]:
     _options = CreateStoreOptions() if options is None else options
 
     state: State
@@ -106,11 +107,19 @@ def create_store(
                         event_handler(event)
                     continue
 
-    def dispatch(actions: Action | list[Action]) -> None:
-        if isinstance(actions, BaseAction):
-            actions = [actions]
+    def dispatch(items: Action | Event | list[Action | Event]) -> None:
+        if isinstance(items, BaseAction):
+            items = [items]
 
-        actions_queue.extend(actions)
+        if isinstance(items, BaseEvent):
+            items = [items]
+
+        for item in items:
+            if isinstance(item, BaseAction):
+                actions_queue.append(item)
+            if isinstance(item, BaseEvent):
+                events_queue.append(item)
+
         if not is_running.locked():
             run()
 

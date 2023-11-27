@@ -1,5 +1,9 @@
 # Changelog
 
+## Version 0.8.2
+
+- feat: allow dispatching events with `dispatch` function
+
 ## Version 0.8.1
 
 - refactor: postpone nested dispatches
