@@ -1,5 +1,9 @@
 # Changelog
 
+## Version 0.8.1
+
+- refactor: postpone nested dispatches
+
 ## Version 0.8.0
 
 - feat: drop `type` field in actions and events altogether, recognition is done by `isinstance`

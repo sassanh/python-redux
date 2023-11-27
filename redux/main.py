@@ -3,6 +3,7 @@ from __future__ import annotations
 
 from collections import defaultdict
 from inspect import signature
+from threading import Lock
 from typing import (
     Callable,
     Generic,
@@ -29,10 +30,6 @@ from .basic_types import (
 
 class CreateStoreOptions(Immutable):
     initial_run: bool = True
-
-
-class DispatchOptions(Immutable):
-    inform_listeners: bool = False
 
 
 class AutorunType(Protocol, Generic[State_co]):
@@ -79,36 +76,43 @@ def create_store(
         set[Callable[[Event], None]],
     ] = defaultdict(set)
 
-    def dispatch(
-        actions: Action | list[Action],
-        dispatch_options: DispatchOptions | None = None,
-    ) -> None:
-        dispatch_options = dispatch_options or DispatchOptions(inform_listeners=False)
-        nonlocal state, reducer, listeners
+    actions_queue: list[Action] = []
+    events_queue: list[Event] = []
+    is_running = Lock()
+
+    def run() -> None:
+        nonlocal state, is_running
+        with is_running:
+            while len(actions_queue) > 0 or len(events_queue) > 0:
+                if len(actions_queue) > 0:
+                    action = actions_queue.pop(0)
+                    result = reducer(state if 'state' in locals() else None, action)
+                    if is_reducer_result(result):
+                        state = result.state
+                        if result.actions:
+                            actions_queue.extend(result.actions)
+                        if result.events:
+                            events_queue.extend(result.events)
+                    elif is_state(result):
+                        state = result
+
+                    if len(actions_queue) == 0:
+                        for listener in listeners.copy():
+                            listener(state)
+
+                if len(events_queue) > 0:
+                    event = events_queue.pop(0)
+                    for event_handler in event_handlers[type(event)].copy():
+                        event_handler(event)
+                    continue
+
+    def dispatch(actions: Action | list[Action]) -> None:
         if isinstance(actions, BaseAction):
             actions = [actions]
-        if len(actions) == 0:
-            return
-        actions_queue = list(actions)
-        events_queue: list[Event] = []
-        while len(actions_queue) > 0:
-            action = actions_queue.pop(0)
-            result = reducer(state if 'state' in locals() else None, action)
-            if is_reducer_result(result):
-                state = result.state
-                if result.actions:
-                    actions_queue.append(*result.actions)
-                if result.events:
-                    events_queue.append(*result.events)
-            elif is_state(result):
-                state = result
 
-        for listener in listeners:
-            listener(state)
-
-        for event in events_queue:
-            for event_listener in event_handlers[type(event)]:
-                event_listener(event)
+        actions_queue.extend(actions)
+        if not is_running.locked():
+            run()
 
     def subscribe(listener: Callable[[State], None]) -> Callable[[], None]:
         listeners.add(listener)

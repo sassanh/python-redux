@@ -143,7 +143,7 @@ def main() -> None:
     # -----
 
     # Subscription <
-    store.subscribe(lambda state: print('Subscripton state:', state))
+    store.subscribe(lambda state: print('Subscription state:', state))
     # >
 
     # -----
