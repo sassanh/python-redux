@@ -129,7 +129,7 @@ def main() -> None:
     # Initialization <
     store = create_store(
         reducer,
-        CreateStoreOptions(initial_run=True),
+        CreateStoreOptions(autorun_initial_run=True),
     )
 
     def event_handler(event: SleepEvent) -> None:
@@ -155,6 +155,8 @@ def main() -> None:
     ) -> int:
         print('Autorun:', selector_result)
         return selector_result.count
+
+    render.subscribe(lambda a: print(a))
 
     print(f'Render output {render()}')
 

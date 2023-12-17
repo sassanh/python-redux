@@ -38,6 +38,10 @@ class BaseEvent(Immutable):
     ...
 
 
+class EventSubscriptionOptions(Immutable):
+    run_async: bool = True
+
+
 # Type variables
 State = TypeVar('State', bound=Immutable)
 State_co = TypeVar('State_co', bound=Immutable, covariant=True)
@@ -49,6 +53,7 @@ ComparatorOutput = TypeVar('ComparatorOutput')
 Selector = Callable[[State], SelectorOutput]
 Comparator = Callable[[State], ComparatorOutput]
 Event = TypeVar('Event', bound=BaseEvent)
+EventHandler = Callable[[Event], Any]
 
 
 class CompleteReducerResult(Immutable, Generic[State, Action, Event]):
@@ -59,9 +64,14 @@ class CompleteReducerResult(Immutable, Generic[State, Action, Event]):
 
 ReducerResult = CompleteReducerResult[State, Action, Event] | State
 ReducerType = Callable[[State | None, Action], ReducerResult[State, Action, Event]]
-AutorunReturnType = TypeVar('AutorunReturnType')
-AutorunReturnType_co = TypeVar('AutorunReturnType_co', covariant=True)
-EventSubscriber = Callable[[Event, Callable[[Event], None]], Callable[[], None]]
+
+AutorunOriginalReturnType = TypeVar('AutorunOriginalReturnType')
+AutorunOriginalReturnType_co = TypeVar('AutorunOriginalReturnType_co', covariant=True)
+
+EventSubscriber = Callable[
+    [Event, Callable[[Event], Any], EventSubscriptionOptions | None],
+    Callable[[], None],
+]
 
 
 class InitializationActionError(Exception):

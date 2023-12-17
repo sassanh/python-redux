@@ -1,10 +1,13 @@
 # ruff: noqa: D100, D101, D102, D103, D104, D105, D107
 from __future__ import annotations
 
+import queue
+import threading
 from collections import defaultdict
 from inspect import signature
 from threading import Lock
 from typing import (
+    Any,
     Callable,
     Generic,
     Protocol,
@@ -13,12 +16,17 @@ from typing import (
 
 from .basic_types import (
     Action,
-    AutorunReturnType,
+    AutorunOriginalReturnType,
+    AutorunOriginalReturnType_co,
     BaseAction,
     BaseEvent,
     ComparatorOutput,
     Event,
+    EventHandler,
+    EventSubscriptionOptions,
+    FinishAction,
     Immutable,
+    InitAction,
     ReducerType,
     Selector,
     SelectorOutput,
@@ -30,7 +38,9 @@ from .basic_types import (
 
 
 class CreateStoreOptions(Immutable):
-    initial_run: bool = True
+    threads: int = 5
+    autorun_initial_run: bool = True
+    scheduler: Callable[[Callable], Any] | None = None
 
 
 class AutorunType(Protocol, Generic[State_co]):
@@ -40,11 +50,22 @@ class AutorunType(Protocol, Generic[State_co]):
         comparator: Selector | None = None,
     ) -> Callable[
         [
-            Callable[[SelectorOutput], AutorunReturnType]
-            | Callable[[SelectorOutput, SelectorOutput], AutorunReturnType],
+            Callable[[SelectorOutput], AutorunOriginalReturnType]
+            | Callable[[SelectorOutput, SelectorOutput], AutorunOriginalReturnType],
         ],
-        Callable[[], AutorunReturnType],
+        Callable[[], AutorunOriginalReturnType],
     ]:
+        ...
+
+
+class AutorunReturnType(Protocol, Generic[AutorunOriginalReturnType_co]):
+    def __call__(self: AutorunReturnType) -> AutorunOriginalReturnType_co:
+        ...
+
+    def subscribe(
+        self: AutorunReturnType,
+        callback: Callable[[AutorunOriginalReturnType_co], Any],
+    ) -> Callable[[], None]:
         ...
 
 
@@ -52,16 +73,37 @@ class EventSubscriber(Protocol):
     def __call__(
         self: EventSubscriber,
         event_type: type[Event],
-        handler: Callable[[Event], None],
+        handler: Callable[[Event], Any],
+        options: EventSubscriptionOptions | None = None,
     ) -> Callable[[], None]:  # pyright: ignore[reportGeneralTypeIssues]
-        pass
+        ...
 
 
 class InitializeStateReturnValue(Immutable, Generic[State, Action, Event]):
     dispatch: Callable[[Action | Event | list[Action | Event]], None]
-    subscribe: Callable[[Callable[[State], None]], Callable[[], None]]
+    subscribe: Callable[[Callable[[State], Any]], Callable[[], None]]
     subscribe_event: EventSubscriber
     autorun: AutorunType[State]
+
+
+class SideEffectRunnerThread(threading.Thread):
+    def __init__(self: SideEffectRunnerThread, task_queue: queue.Queue) -> None:
+        super().__init__()
+        self.task_queue = task_queue
+        self.daemon = True
+
+    def run(self: SideEffectRunnerThread) -> None:
+        while True:
+            task = self.task_queue.get()
+            if task is None:
+                self.task_queue.task_done()
+                break
+
+            try:
+                event_handler, event = task
+                event_handler(event)
+            finally:
+                self.task_queue.task_done()
 
 
 def create_store(
@@ -71,43 +113,52 @@ def create_store(
     _options = CreateStoreOptions() if options is None else options
 
     state: State
-    listeners: set[Callable[[State], None]] = set()
+    listeners: set[Callable[[State], Any]] = set()
     event_handlers: defaultdict[
         type[Event],
-        set[Callable[[Event], None]],
+        set[tuple[EventHandler, EventSubscriptionOptions]],
     ] = defaultdict(set)
 
-    actions_queue: list[Action] = []
-    events_queue: list[Event] = []
+    actions: list[Action] = []
+    events: list[Event] = []
+
+    event_handlers_queue = queue.Queue[tuple[EventHandler, Event] | None]()
+    for _ in range(_options.threads):
+        worker = SideEffectRunnerThread(event_handlers_queue)
+        worker.start()
+
     is_running = Lock()
 
     def run() -> None:
-        nonlocal state, is_running
         with is_running:
-            while len(actions_queue) > 0 or len(events_queue) > 0:
-                if len(actions_queue) > 0:
-                    action = actions_queue.pop(0)
+            nonlocal state
+            while len(actions) > 0 or len(events) > 0:
+                if len(actions) > 0:
+                    action = actions.pop(0)
                     result = reducer(state if 'state' in locals() else None, action)
                     if is_reducer_result(result):
                         state = result.state
                         if result.actions:
-                            actions_queue.extend(result.actions)
+                            actions.extend(result.actions)
                         if result.events:
-                            events_queue.extend(result.events)
+                            events.extend(result.events)
                     elif is_state(result):
                         state = result
 
-                    if len(actions_queue) == 0:
+                    if len(actions) == 0:
                         for listener in listeners.copy():
                             listener(state)
 
-                if len(events_queue) > 0:
-                    event = events_queue.pop(0)
-                    for event_handler in event_handlers[type(event)].copy():
-                        event_handler(event)
-                    continue
+                if len(events) > 0:
+                    event = events.pop(0)
+                    for event_handler, options in event_handlers[type(event)].copy():
+                        if options.run_async:
+                            event_handlers_queue.put((event_handler, event))
+                        else:
+                            event_handler(event)
 
     def dispatch(items: Action | Event | list[Action | Event]) -> None:
+        should_quit = False
         if isinstance(items, BaseAction):
             items = [items]
 
@@ -116,46 +167,60 @@ def create_store(
 
         for item in items:
             if isinstance(item, BaseAction):
-                actions_queue.append(item)
+                if isinstance(item, FinishAction):
+                    should_quit = True
+                actions.append(item)
             if isinstance(item, BaseEvent):
-                events_queue.append(item)
+                events.append(item)
 
-        if not is_running.locked():
+        if _options.scheduler is None and not is_running.locked():
             run()
 
-    def subscribe(listener: Callable[[State], None]) -> Callable[[], None]:
+        if should_quit:
+            for _ in range(_options.threads):
+                event_handlers_queue.put(None)
+            event_handlers_queue.join()
+
+    def subscribe(listener: Callable[[State], Any]) -> Callable[[], None]:
         listeners.add(listener)
         return lambda: listeners.remove(listener)
 
     def subscribe_event(
         event_type: type[Event],
-        handler: Callable[[Event], None],
+        handler: EventHandler,
+        options: EventSubscriptionOptions | None = None,
     ) -> Callable[[], None]:
-        event_handlers[event_type].add(handler)
-        return lambda: event_handlers[event_type].remove(handler)
+        _options = EventSubscriptionOptions() if options is None else options
+        event_handlers[event_type].add((handler, _options))
+        return lambda: event_handlers[event_type].remove((handler, _options))
 
     def autorun(
         selector: Callable[[State], SelectorOutput],
         comparator: Callable[[State], ComparatorOutput] | None = None,
     ) -> Callable[
         [
-            Callable[[SelectorOutput], AutorunReturnType]
-            | Callable[[SelectorOutput, SelectorOutput], AutorunReturnType],
+            Callable[[SelectorOutput], AutorunOriginalReturnType]
+            | Callable[[SelectorOutput, SelectorOutput], AutorunOriginalReturnType],
         ],
-        Callable[[], AutorunReturnType],
+        Callable[[], AutorunOriginalReturnType],
     ]:
         nonlocal state
 
         def decorator(
-            fn: Callable[[SelectorOutput], AutorunReturnType]
-            | Callable[[SelectorOutput, SelectorOutput], AutorunReturnType],
-        ) -> Callable[[], AutorunReturnType]:
+            fn: Callable[[SelectorOutput], AutorunOriginalReturnType]
+            | Callable[[SelectorOutput, SelectorOutput], AutorunOriginalReturnType],
+        ) -> AutorunReturnType[AutorunOriginalReturnType]:
             last_selector_result: SelectorOutput | None = None
             last_comparator_result: ComparatorOutput | None = None
-            last_value: AutorunReturnType | None = None
+            last_value: AutorunOriginalReturnType | None = None
+            subscriptions: list[Callable[[AutorunOriginalReturnType], Any]] = []
 
             def check_and_call(state: State) -> None:
-                nonlocal last_selector_result, last_comparator_result, last_value
+                nonlocal \
+                    last_selector_result, \
+                    last_comparator_result, \
+                    last_value, \
+                    subscriptions
                 selector_result = selector(state)
                 if comparator is None:
                     comparator_result = cast(ComparatorOutput, selector_result)
@@ -167,34 +232,54 @@ def create_store(
                     last_comparator_result = comparator_result
                     if len(signature(fn).parameters) == 1:
                         last_value = cast(
-                            Callable[[SelectorOutput], AutorunReturnType],
+                            Callable[[SelectorOutput], AutorunOriginalReturnType],
                             fn,
                         )(selector_result)
                     else:
                         last_value = cast(
                             Callable[
                                 [SelectorOutput, SelectorOutput | None],
-                                AutorunReturnType,
+                                AutorunOriginalReturnType,
                             ],
                             fn,
                         )(
                             selector_result,
                             previous_result,
                         )
+                    for subscriber in subscriptions:
+                        subscriber(last_value)
 
-            if _options.initial_run and state is not None:
+            if _options.autorun_initial_run and state is not None:
                 check_and_call(state)
 
             subscribe(check_and_call)
 
-            def call() -> AutorunReturnType:
-                if state is not None:
-                    check_and_call(state)
-                return cast(AutorunReturnType, last_value)
+            class Call:
+                def __call__(self: Call) -> AutorunOriginalReturnType:
+                    if state is not None:
+                        check_and_call(state)
+                    return cast(AutorunOriginalReturnType, last_value)
 
-            return call
+                def subscribe(
+                    self: Call,
+                    callback: Callable[[AutorunOriginalReturnType], Any],
+                ) -> Callable[[], None]:
+                    subscriptions.append(callback)
+
+                    def unsubscribe() -> None:
+                        subscriptions.remove(callback)
+
+                    return unsubscribe
+
+            return Call()
 
         return decorator
+
+    dispatch(cast(Action, InitAction()))
+
+    if _options.scheduler is not None:
+        _options.scheduler(run)
+        run()
 
     return InitializeStateReturnValue(
         dispatch=dispatch,

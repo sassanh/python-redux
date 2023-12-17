@@ -1,5 +1,12 @@
 # Changelog
 
+## Version 0.9.0
+
+- feat: add `scheduler` option to schedule running actions in the main loop of frameworks
+- feat: add `threads` option to run event handlers asynchronous in `threads` number of threads
+- refacotr: allow `Any` return type for event handler and subscriber functions
+- feat: add `subscribe` property to the returned function of `autorun`
+
 ## Version 0.8.2
 
 - feat: allow dispatching events with `dispatch` function
