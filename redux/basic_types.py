@@ -89,6 +89,10 @@ class FinishAction(BaseAction):
     ...
 
 
+class FinishEvent(BaseEvent):
+    ...
+
+
 def is_reducer_result(
     result: ReducerResult[State, Action, Event],
 ) -> TypeGuard[CompleteReducerResult[State, Action, Event]]:

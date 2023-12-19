@@ -25,6 +25,7 @@ from .basic_types import (
     EventHandler,
     EventSubscriptionOptions,
     FinishAction,
+    FinishEvent,
     Immutable,
     InitAction,
     ReducerType,
@@ -90,7 +91,6 @@ class SideEffectRunnerThread(threading.Thread):
     def __init__(self: SideEffectRunnerThread, task_queue: queue.Queue) -> None:
         super().__init__()
         self.task_queue = task_queue
-        self.daemon = True
 
     def run(self: SideEffectRunnerThread) -> None:
         while True:
@@ -145,6 +145,9 @@ def create_store(
                     elif is_state(result):
                         state = result
 
+                    if isinstance(action, FinishAction):
+                        events.append(cast(Event, FinishEvent()))
+
                     if len(actions) == 0:
                         for listener in listeners.copy():
                             listener(state)
@@ -158,7 +161,6 @@ def create_store(
                             event_handler(event)
 
     def dispatch(items: Action | Event | list[Action | Event]) -> None:
-        should_quit = False
         if isinstance(items, BaseAction):
             items = [items]
 
@@ -167,19 +169,12 @@ def create_store(
 
         for item in items:
             if isinstance(item, BaseAction):
-                if isinstance(item, FinishAction):
-                    should_quit = True
                 actions.append(item)
             if isinstance(item, BaseEvent):
                 events.append(item)
 
         if _options.scheduler is None and not is_running.locked():
             run()
-
-        if should_quit:
-            for _ in range(_options.threads):
-                event_handlers_queue.put(None)
-            event_handlers_queue.join()
 
     def subscribe(listener: Callable[[State], Any]) -> Callable[[], None]:
         listeners.add(listener)
@@ -193,6 +188,12 @@ def create_store(
         _options = EventSubscriptionOptions() if options is None else options
         event_handlers[event_type].add((handler, _options))
         return lambda: event_handlers[event_type].remove((handler, _options))
+
+    def handle_finish_event(_event: Event) -> None:
+        for _ in range(_options.threads):
+            event_handlers_queue.put(None)
+
+    subscribe_event(cast(type[Event], FinishEvent), handle_finish_event)
 
     def autorun(
         selector: Callable[[State], SelectorOutput],
@@ -211,7 +212,7 @@ def create_store(
             | Callable[[SelectorOutput, SelectorOutput], AutorunOriginalReturnType],
         ) -> AutorunReturnType[AutorunOriginalReturnType]:
             last_selector_result: SelectorOutput | None = None
-            last_comparator_result: ComparatorOutput | None = None
+            last_comparator_result: ComparatorOutput = cast(ComparatorOutput, object())
             last_value: AutorunOriginalReturnType | None = None
             subscriptions: list[Callable[[AutorunOriginalReturnType], Any]] = []
 

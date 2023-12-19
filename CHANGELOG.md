@@ -1,5 +1,9 @@
 # Changelog
 
+## Version 0.9.1
+
+- refactor: propagate new `FinishEvent` when `FinishAction` is dispatched
+
 ## Version 0.9.0
 
 - feat: add `scheduler` option to schedule running actions in the main loop of frameworks
