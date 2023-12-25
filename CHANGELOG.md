@@ -1,5 +1,9 @@
 # Changelog
 
+## Version 0.9.2
+
+- refactor: use `Immutable` from python-immutable package (extracted and created based on `Immutable` class of this package)
+
 ## Version 0.9.1
 
 - refactor: propagate new `FinishEvent` when `FinishAction` is dispatched
