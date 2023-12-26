@@ -31,6 +31,7 @@ from .basic_types import (
     ReducerType,
     Selector,
     SelectorOutput,
+    SelectorOutput_co,
     State,
     State_co,
     is_reducer_result,
@@ -49,13 +50,16 @@ class AutorunType(Protocol, Generic[State_co]):
         self: AutorunType,
         selector: Callable[[State_co], SelectorOutput],
         comparator: Selector | None = None,
-    ) -> Callable[
-        [
-            Callable[[SelectorOutput], AutorunOriginalReturnType]
-            | Callable[[SelectorOutput, SelectorOutput], AutorunOriginalReturnType],
-        ],
-        Callable[[], AutorunOriginalReturnType],
-    ]:
+    ) -> AutorunDecorator[State_co, SelectorOutput]:
+        ...
+
+
+class AutorunDecorator(Protocol, Generic[State_co, SelectorOutput_co]):
+    def __call__(
+        self: AutorunDecorator,
+        func: Callable[[SelectorOutput_co], AutorunOriginalReturnType]
+        | Callable[[SelectorOutput_co, SelectorOutput_co], AutorunOriginalReturnType],
+    ) -> AutorunReturnType[AutorunOriginalReturnType]:
         ...
 
 
@@ -198,17 +202,11 @@ def create_store(
     def autorun(
         selector: Callable[[State], SelectorOutput],
         comparator: Callable[[State], ComparatorOutput] | None = None,
-    ) -> Callable[
-        [
-            Callable[[SelectorOutput], AutorunOriginalReturnType]
-            | Callable[[SelectorOutput, SelectorOutput], AutorunOriginalReturnType],
-        ],
-        Callable[[], AutorunOriginalReturnType],
-    ]:
+    ) -> AutorunDecorator[State, SelectorOutput]:
         nonlocal state
 
         def decorator(
-            fn: Callable[[SelectorOutput], AutorunOriginalReturnType]
+            func: Callable[[SelectorOutput], AutorunOriginalReturnType]
             | Callable[[SelectorOutput, SelectorOutput], AutorunOriginalReturnType],
         ) -> AutorunReturnType[AutorunOriginalReturnType]:
             last_selector_result: SelectorOutput | None = None
@@ -231,10 +229,10 @@ def create_store(
                     previous_result = last_selector_result
                     last_selector_result = selector_result
                     last_comparator_result = comparator_result
-                    if len(signature(fn).parameters) == 1:
+                    if len(signature(func).parameters) == 1:
                         last_value = cast(
                             Callable[[SelectorOutput], AutorunOriginalReturnType],
-                            fn,
+                            func,
                         )(selector_result)
                     else:
                         last_value = cast(
@@ -242,7 +240,7 @@ def create_store(
                                 [SelectorOutput, SelectorOutput | None],
                                 AutorunOriginalReturnType,
                             ],
-                            fn,
+                            func,
                         )(
                             selector_result,
                             previous_result,

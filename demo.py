@@ -150,11 +150,9 @@ def main() -> None:
 
     # Autorun <
     @store.autorun(lambda state: state.base10)
-    def render(
-        selector_result: CountStateType,
-    ) -> int:
-        print('Autorun:', selector_result)
-        return selector_result.count
+    def render(base10_value: CountStateType) -> int:
+        print('Autorun:', base10_value)
+        return base10_value.count
 
     render.subscribe(lambda a: print(a))
 
