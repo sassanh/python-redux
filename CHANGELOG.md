@@ -1,5 +1,9 @@
 # Changelog
 
+## Version 0.9.6
+
+- docs: add `README.md`
+
 ## Version 0.9.5
 
 - refactor: remove `payload` and `...Payload` classes from `combine_reducers`
