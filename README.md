@@ -19,12 +19,12 @@ architecture to Python applications.
 
 - Use type annotations for all its API.
 - Immutable state management for predictable state updates using [python-immutable](https://github.com/sassanh/python-immutable).
-- Offers a streamlined, native [API](#side-effects) for handling action side-effects
-  asynchronously, eliminating the necessity for more intricate utilities such as
-  redux-thunk or redux-saga.
-- Incorporates the [autorun decorator](#autorun-decorator), inspired by the mobx
-  framework, to better integrate with elements of the software following procedural
-  patterns.
+- Offers a streamlined, native [API](#handling-side-effects-with-events) for handling
+  side-effects asynchronously, eliminating the necessity for more intricate utilities
+  such as redux-thunk or redux-saga.
+- Incorporates the [autorun decorator](#autorun-decorator), inspired
+  by the mobx framework, to better integrate with elements of the software following
+  procedural patterns.
 - Supports middlewares.
 
 ## 📦 Installation
@@ -45,16 +45,43 @@ poetry add python-redux
 
 ## 🛠 Usage
 
-### Side Effects - `store.subscribe_event`
+### Handling Side Effects with Events
 
-Reducers can return either a simple state (like normal redux) or a combination
-of a state, bunch of actions (which will be dispatched immediately) and a bunch
-of events. These events will be consumed by event listeners registered via `subscribe_event`
-asynchronously in separate worker threads.
+Python-redux introduces a powerful concept for managing side effects: **Events**.
+This approach allows reducers to remain pure while still signaling the need for
+side effects.
+
+#### Why Events?
+
+- **Separation of Concerns**: By returning events, reducers stay pure and focused
+  solely on state changes, delegating side effects to other parts of the software.
+- **Flexibility**: Events allow asynchronous operations like API calls to be handled
+  separately, enhancing scalability and maintainability.
+
+#### How to Use Events
+
+- **Reducers**: Reducers primarily return a new state. They can optionally return
+  actions and events, maintaining their purity as these do not enact side effects
+  themselves.
+- **Dispatch Function**: Besides actions, dispatch function can now accept events,
+  enabling a more integrated flow of state and side effects.
+- **Event Listeners**: Implement listeners for specific events. These listeners
+  handle the side effects (e.g., API calls) asynchronously.
+
+#### Best Practices
+
+- **Define Clear Events**: Create well-defined events that represent specific side
+  effects.
+- **Use Asynchronously**: Design event listeners to operate asynchronously, keeping
+  your application responsive. Note that python-redux, by default, runs all event
+  handler functions in new threads.
+
+This concept fills the gap in handling side effects within Redux's ecosystem, offering
+a more nuanced and integrated approach to state and side effect management.
 
 See todo sample below or check the [demo](demo.py) to see it in action.
 
-### Autorun Decorator - `store.autorun`
+### Autorun Decorator
 
 Inspired by MobX's [autorun](https://mobx.js.org/reactions.html#autorun) and
 [reaction](https://mobx.js.org/reactions.html#reaction), python-redux introduces
@@ -141,7 +168,6 @@ class RemoveTodoItemAction(BaseAction):
 
 
 # events:
-# events are non-pure side effects, like fetching information via an api, or anything
 class CallApi(BaseEvent):
     parameters: object
 

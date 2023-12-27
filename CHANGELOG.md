@@ -1,5 +1,9 @@
 # Changelog
 
+## Version 0.9.7
+
+- docs: explain events in more details in `README.md`
+
 ## Version 0.9.6
 
 - docs: add `README.md`

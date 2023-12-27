@@ -41,7 +41,6 @@ class RemoveTodoItemAction(BaseAction):
 
 
 # events:
-# events are non-pure side effects, like fetching information via an api, or anything
 class CallApi(BaseEvent):
     parameters: object
 
@@ -84,26 +83,26 @@ def reducer(
     return state
 
 
-store = create_store(reducer)
+def main() -> None:
+    store = create_store(reducer)
 
+    # subscription:
+    dummy_render = print
+    store.subscribe(dummy_render)
 
-# subscription:
-dummy_render = print
-store.subscribe(dummy_render)
+    # autorun:
+    @store.autorun(
+        lambda state: state.items[0].content if len(state.items) > 0 else None,
+    )
+    def reaction(content: str | None) -> None:
+        print(content)
 
+    # event listener, note that this will run async in a separate thread, so it can
+    # include async operations like API calls, etc:
+    dummy_api_call = print
+    store.subscribe_event(CallApi, lambda event: dummy_api_call(event.parameters))
 
-# autorun:
-@store.autorun(lambda state: state.items[0].content if len(state.items) > 0 else None)
-def reaction(content: str | None) -> None:
-    print(content)
+    # dispatch:
+    store.dispatch(AddTodoItemAction(content='New Item', timestamp=time.time()))
 
-
-# event listener, note that this will run async in a separate thread, so it can include
-# io operations like network calls, etc:
-dummy_api_call = print
-store.subscribe_event(CallApi, lambda event: dummy_api_call(event.parameters))
-
-# dispatch:
-store.dispatch(AddTodoItemAction(content='New Item', timestamp=time.time()))
-
-store.dispatch(FinishAction())
+    store.dispatch(FinishAction())

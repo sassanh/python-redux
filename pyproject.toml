@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "python-redux"
-version = "0.9.6"
+version = "0.9.7"
 description = "Redux implementation for Python"
 authors = ["Sassan Haradji <sassanh@gmail.com>"]
 license = "Apache-2.0"
@@ -14,6 +14,7 @@ python-immutable = "^1.0.0"
 
 [tool.poetry.scripts]
 demo = "demo:main"
+todo_demo = "todo_demo:main"
 
 [tool.poetry.group.dev]
 optional = true
