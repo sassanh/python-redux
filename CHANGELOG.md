@@ -1,5 +1,9 @@
 # Changelog
 
+## Version 0.9.5
+
+- refactor: remove `payload` and `...Payload` classes from `combine_reducers`
+
 ## Version 0.9.4
 
 - refactor: actions and events are queued solely via `dispatch` function, even internally

@@ -8,9 +8,7 @@ from redux import (
     BaseCombineReducerState,
     CombineReducerAction,
     CombineReducerRegisterAction,
-    CombineReducerRegisterActionPayload,
     CombineReducerUnregisterAction,
-    CombineReducerUnregisterActionPayload,
     Immutable,
     InitAction,
     InitializationActionError,
@@ -38,7 +36,7 @@ class DecrementAction(CountAction):
     ...
 
 
-class NothingAction(CountAction):
+class DoNothingAction(CountAction):
     ...
 
 
@@ -87,11 +85,11 @@ def base10_reducer(
 
 
 class SleepEvent(BaseEvent):
-    payload: int
+    duration: int
 
 
 class PrintEvent(BaseEvent):
-    payload: str
+    message: str
 
 
 def inverse_reducer(
@@ -106,11 +104,11 @@ def inverse_reducer(
         return CountStateType(count=state.count - 1)
     if isinstance(action, DecrementAction):
         return CountStateType(count=state.count + 1)
-    if isinstance(action, NothingAction):
+    if isinstance(action, DoNothingAction):
         return CompleteReducerResult(
             state=state,
             actions=[IncrementAction()],
-            events=[SleepEvent(payload=3)],
+            events=[SleepEvent(duration=3)],
         )
     return state
 
@@ -133,7 +131,7 @@ def main() -> None:
     )
 
     def event_handler(event: SleepEvent) -> None:
-        time.sleep(event.payload)
+        time.sleep(event.duration)
 
     store.subscribe_event(SleepEvent, event_handler)
 
@@ -164,22 +162,18 @@ def main() -> None:
     store.dispatch(
         CombineReducerRegisterAction(
             _id=reducer_id,
-            payload=CombineReducerRegisterActionPayload(
-                key='inverse',
-                reducer=inverse_reducer,
-            ),
+            key='inverse',
+            reducer=inverse_reducer,
         ),
     )
 
-    store.dispatch(NothingAction())
+    store.dispatch(DoNothingAction())
     print(f'Render output {render()}')
 
     store.dispatch(
         CombineReducerUnregisterAction(
             _id=reducer_id,
-            payload=CombineReducerUnregisterActionPayload(
-                key='straight',
-            ),
+            key='straight',
         ),
     )
     print(f'Render output {render()}')

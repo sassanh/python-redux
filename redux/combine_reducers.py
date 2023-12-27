@@ -29,21 +29,13 @@ class BaseCombineReducerAction(BaseAction):
     _id: str
 
 
-class CombineReducerRegisterActionPayload(Immutable):
+class CombineReducerRegisterAction(BaseCombineReducerAction):
     key: str
     reducer: ReducerType
 
 
-class CombineReducerRegisterAction(BaseCombineReducerAction):
-    payload: CombineReducerRegisterActionPayload
-
-
-class CombineReducerUnregisterActionPayload(Immutable):
-    key: str
-
-
 class CombineReducerUnregisterAction(BaseCombineReducerAction):
-    payload: CombineReducerUnregisterActionPayload
+    key: str
 
 
 CombineReducerAction = CombineReducerRegisterAction | CombineReducerUnregisterAction
@@ -83,8 +75,8 @@ def combine_reducers(
         nonlocal state_class
         if state is not None and is_combine_reducer_action(action):
             if isinstance(action, CombineReducerRegisterAction) and action._id == _id:  # noqa: SLF001
-                key = action.payload.key
-                reducer = action.payload.reducer
+                key = action.key
+                reducer = action.reducer
                 reducers[key] = reducer
                 state_class = make_dataclass(
                     'combined_reducer',
@@ -105,7 +97,7 @@ def combine_reducers(
             elif (
                 isinstance(action, CombineReducerUnregisterAction) and action._id == _id  # noqa: SLF001
             ):
-                key = action.payload.key
+                key = action.key
 
                 del reducers[key]
                 fields_copy = copy.copy(cast(Any, state_class).__dataclass_fields__)
