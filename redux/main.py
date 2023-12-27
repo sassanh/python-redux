@@ -43,6 +43,8 @@ class CreateStoreOptions(Immutable):
     threads: int = 5
     autorun_initial_run: bool = True
     scheduler: Callable[[Callable], Any] | None = None
+    action_middleware: Callable[[BaseAction], Any] | None = None
+    event_middleware: Callable[[BaseEvent], Any] | None = None
 
 
 class AutorunType(Protocol, Generic[State_co]):
@@ -142,10 +144,7 @@ def create_store(
                     result = reducer(state if 'state' in locals() else None, action)
                     if is_reducer_result(result):
                         state = result.state
-                        if result.actions:
-                            actions.extend(result.actions)
-                        if result.events:
-                            events.extend(result.events)
+                        dispatch([*(result.actions or []), *(result.events or [])])
                     elif is_state(result):
                         state = result
 
@@ -173,8 +172,12 @@ def create_store(
 
         for item in items:
             if isinstance(item, BaseAction):
+                if _options.action_middleware:
+                    _options.action_middleware(item)
                 actions.append(item)
             if isinstance(item, BaseEvent):
+                if _options.event_middleware:
+                    _options.event_middleware(item)
                 events.append(item)
 
         if _options.scheduler is None and not is_running.locked():

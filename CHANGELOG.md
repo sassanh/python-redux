@@ -1,5 +1,10 @@
 # Changelog
 
+## Version 0.9.4
+
+- refactor: actions and events are queued solely via `dispatch` function, even internally
+- feat: add `action_middleware` and `event_middleware` fields to `CreateStoreOptions`
+
 ## Version 0.9.3
 
 - refactor: add `subscribe` property to the type of the return value of an
