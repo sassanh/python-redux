@@ -40,6 +40,7 @@ from .basic_types import (
 
 
 class CreateStoreOptions(Immutable):
+    auto_init: bool = False
     threads: int = 5
     autorun_initial_run: bool = True
     scheduler: Callable[[Callable], Any] | None = None
@@ -118,7 +119,7 @@ def create_store(
 ) -> InitializeStateReturnValue[State, Action, Event]:
     _options = CreateStoreOptions() if options is None else options
 
-    state: State
+    state: State | None = None
     listeners: set[Callable[[State], Any]] = set()
     event_handlers: defaultdict[
         type[Event],
@@ -151,7 +152,7 @@ def create_store(
                     if isinstance(action, FinishAction):
                         events.append(cast(Event, FinishEvent()))
 
-                    if len(actions) == 0:
+                    if len(actions) == 0 and state:
                         for listener in listeners.copy():
                             listener(state)
 
@@ -223,7 +224,10 @@ def create_store(
                     last_comparator_result, \
                     last_value, \
                     subscriptions
-                selector_result = selector(state)
+                try:
+                    selector_result = selector(state)
+                except AttributeError:
+                    return
                 if comparator is None:
                     comparator_result = cast(ComparatorOutput, selector_result)
                 else:
@@ -251,7 +255,11 @@ def create_store(
                     for subscriber in subscriptions:
                         subscriber(last_value)
 
-            if _options.autorun_initial_run and state is not None:
+            if (
+                _options.autorun_initial_run
+                and 'state' in locals()
+                and state is not None
+            ):
                 check_and_call(state)
 
             subscribe(check_and_call)
@@ -277,11 +285,12 @@ def create_store(
 
         return decorator
 
-    dispatch(cast(Action, InitAction()))
-
-    if _options.scheduler is not None:
-        _options.scheduler(run)
-        run()
+    if _options.auto_init:
+        if _options.scheduler:
+            _options.scheduler(lambda: dispatch(cast(Action, InitAction())))
+            _options.scheduler(run)
+        else:
+            dispatch(cast(Action, InitAction()))
 
     return InitializeStateReturnValue(
         dispatch=dispatch,

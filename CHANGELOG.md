@@ -1,5 +1,9 @@
 # Changelog
 
+## Version 0.9.8
+
+- feat: autorun now recovers from selector attribute errors = uninitialized store
+
 ## Version 0.9.7
 
 - docs: explain events in more details in `README.md`
