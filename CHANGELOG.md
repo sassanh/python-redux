@@ -1,5 +1,10 @@
 # Changelog
 
+## Version 0.9.9
+
+- refactor: improve typehints and allow dispatch to get multiple actions/events
+  via `*args`
+
 ## Version 0.9.8
 
 - feat: autorun now recovers from selector attribute errors = uninitialized store

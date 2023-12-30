@@ -6,10 +6,10 @@ from typing import (
     Callable,
     Generic,
     TypeGuard,
-    TypeVar,
 )
 
 from immutable import Immutable
+from typing_extensions import TypeVar
 
 
 class BaseAction(Immutable):
@@ -25,16 +25,14 @@ class EventSubscriptionOptions(Immutable):
 
 
 # Type variables
-State = TypeVar('State', bound=Immutable)
-State_co = TypeVar('State_co', bound=Immutable, covariant=True)
-Action = TypeVar('Action', bound=BaseAction)
-SelectorOutput = TypeVar('SelectorOutput')
-SelectorOutput_co = TypeVar('SelectorOutput_co', covariant=True)
-SelectorOutput_contra = TypeVar('SelectorOutput_contra', contravariant=True)
-ComparatorOutput = TypeVar('ComparatorOutput')
+State = TypeVar('State', bound=Immutable, infer_variance=True)
+Action = TypeVar('Action', bound=BaseAction, infer_variance=True)
+Event = TypeVar('Event', bound=BaseEvent, infer_variance=True)
+Event2 = TypeVar('Event2', bound=BaseEvent, infer_variance=True)
+SelectorOutput = TypeVar('SelectorOutput', infer_variance=True)
+ComparatorOutput = TypeVar('ComparatorOutput', infer_variance=True)
 Selector = Callable[[State], SelectorOutput]
 Comparator = Callable[[State], ComparatorOutput]
-Event = TypeVar('Event', bound=BaseEvent)
 EventHandler = Callable[[Event], Any]
 
 
@@ -47,8 +45,7 @@ class CompleteReducerResult(Immutable, Generic[State, Action, Event]):
 ReducerResult = CompleteReducerResult[State, Action, Event] | State
 ReducerType = Callable[[State | None, Action], ReducerResult[State, Action, Event]]
 
-AutorunOriginalReturnType = TypeVar('AutorunOriginalReturnType')
-AutorunOriginalReturnType_co = TypeVar('AutorunOriginalReturnType_co', covariant=True)
+AutorunOriginalReturnType = TypeVar('AutorunOriginalReturnType', infer_variance=True)
 
 EventSubscriber = Callable[
     [Event, Callable[[Event], Any], EventSubscriptionOptions | None],
@@ -57,9 +54,10 @@ EventSubscriber = Callable[
 
 
 class InitializationActionError(Exception):
-    def __init__(self: InitializationActionError) -> None:
+    def __init__(self: InitializationActionError, action: BaseAction) -> None:
         super().__init__(
-            'The only accepted action type when state is None is "InitAction"',
+            f"""The only accepted action type when state is None is "InitAction", \
+action with type "{type(action)}" is passed""",
         )
 
 

@@ -17,11 +17,11 @@ from typing import (
 from .basic_types import (
     Action,
     AutorunOriginalReturnType,
-    AutorunOriginalReturnType_co,
     BaseAction,
     BaseEvent,
     ComparatorOutput,
     Event,
+    Event2,
     EventHandler,
     EventSubscriptionOptions,
     FinishAction,
@@ -31,9 +31,7 @@ from .basic_types import (
     ReducerType,
     Selector,
     SelectorOutput,
-    SelectorOutput_co,
     State,
-    State_co,
     is_reducer_result,
     is_state,
 )
@@ -48,31 +46,31 @@ class CreateStoreOptions(Immutable):
     event_middleware: Callable[[BaseEvent], Any] | None = None
 
 
-class AutorunType(Protocol, Generic[State_co]):
+class AutorunType(Protocol, Generic[State]):
     def __call__(
         self: AutorunType,
-        selector: Callable[[State_co], SelectorOutput],
+        selector: Callable[[State], SelectorOutput],
         comparator: Selector | None = None,
-    ) -> AutorunDecorator[State_co, SelectorOutput]:
+    ) -> AutorunDecorator[State, SelectorOutput]:
         ...
 
 
-class AutorunDecorator(Protocol, Generic[State_co, SelectorOutput_co]):
+class AutorunDecorator(Protocol, Generic[State, SelectorOutput]):
     def __call__(
         self: AutorunDecorator,
-        func: Callable[[SelectorOutput_co], AutorunOriginalReturnType]
-        | Callable[[SelectorOutput_co, SelectorOutput_co], AutorunOriginalReturnType],
+        func: Callable[[SelectorOutput], AutorunOriginalReturnType]
+        | Callable[[SelectorOutput, SelectorOutput], AutorunOriginalReturnType],
     ) -> AutorunReturnType[AutorunOriginalReturnType]:
         ...
 
 
-class AutorunReturnType(Protocol, Generic[AutorunOriginalReturnType_co]):
-    def __call__(self: AutorunReturnType) -> AutorunOriginalReturnType_co:
+class AutorunReturnType(Protocol, Generic[AutorunOriginalReturnType]):
+    def __call__(self: AutorunReturnType) -> AutorunOriginalReturnType:
         ...
 
     def subscribe(
         self: AutorunReturnType,
-        callback: Callable[[AutorunOriginalReturnType_co], Any],
+        callback: Callable[[AutorunOriginalReturnType], Any],
     ) -> Callable[[], None]:
         ...
 
@@ -87,8 +85,13 @@ class EventSubscriber(Protocol):
         ...
 
 
+class Dispatch(Protocol, Generic[Action, Event]):
+    def __call__(self: Dispatch, *items: Action | Event | list[Action | Event]) -> None:
+        ...
+
+
 class InitializeStateReturnValue(Immutable, Generic[State, Action, Event]):
-    dispatch: Callable[[Action | Event | list[Action | Event]], None]
+    dispatch: Dispatch[Action, Event]
     subscribe: Callable[[Callable[[State], Any]], Callable[[], None]]
     subscribe_event: EventSubscriber
     autorun: AutorunType[State]
@@ -164,12 +167,12 @@ def create_store(
                         else:
                             event_handler(event)
 
-    def dispatch(items: Action | Event | list[Action | Event]) -> None:
-        if isinstance(items, BaseAction):
-            items = [items]
-
-        if isinstance(items, BaseEvent):
-            items = [items]
+    def dispatch(*parameters: Action | Event | list[Action | Event]) -> None:
+        items = [
+            item
+            for items in parameters
+            for item in (items if isinstance(items, list) else [items])
+        ]
 
         for item in items:
             if isinstance(item, BaseAction):
@@ -189,13 +192,15 @@ def create_store(
         return lambda: listeners.remove(listener)
 
     def subscribe_event(
-        event_type: type[Event],
-        handler: EventHandler,
+        event_type: type[Event2],
+        handler: EventHandler[Event2],
         options: EventSubscriptionOptions | None = None,
     ) -> Callable[[], None]:
         _options = EventSubscriptionOptions() if options is None else options
-        event_handlers[event_type].add((handler, _options))
-        return lambda: event_handlers[event_type].remove((handler, _options))
+        event_handlers[cast(type[Event], event_type)].add((handler, _options))
+        return lambda: event_handlers[cast(type[Event], event_type)].remove(
+            (handler, _options),
+        )
 
     def handle_finish_event(_event: Event) -> None:
         for _ in range(_options.threads):
@@ -295,6 +300,6 @@ def create_store(
     return InitializeStateReturnValue(
         dispatch=dispatch,
         subscribe=subscribe,
-        subscribe_event=cast(Callable, subscribe_event),
+        subscribe_event=subscribe_event,
         autorun=autorun,
     )
