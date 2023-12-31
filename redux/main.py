@@ -29,7 +29,6 @@ from .basic_types import (
     Immutable,
     InitAction,
     ReducerType,
-    Selector,
     SelectorOutput,
     State,
     is_reducer_result,
@@ -50,7 +49,7 @@ class AutorunType(Protocol, Generic[State]):
     def __call__(
         self: AutorunType,
         selector: Callable[[State], SelectorOutput],
-        comparator: Selector | None = None,
+        comparator: Callable[[State], Any] | None = None,
     ) -> AutorunDecorator[State, SelectorOutput]:
         ...
 

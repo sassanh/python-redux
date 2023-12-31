@@ -1,5 +1,10 @@
 # Changelog
 
+## Version 0.9.10
+
+- feat: `InitializationActionError` shows the incorrect passed action
+- refactor: improve typing of autorun's `Comparator`
+
 ## Version 0.9.9
 
 - refactor: improve typehints and allow dispatch to get multiple actions/events

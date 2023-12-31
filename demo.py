@@ -61,7 +61,7 @@ def straight_reducer(
     if state is None:
         if isinstance(action, InitAction):
             return CountStateType(count=0)
-        raise InitializationActionError
+        raise InitializationActionError(action)
     if isinstance(action, IncrementAction):
         return CountStateType(count=state.count + 1)
     if isinstance(action, DecrementAction):
@@ -76,7 +76,7 @@ def base10_reducer(
     if state is None:
         if isinstance(action, InitAction):
             return CountStateType(count=10)
-        raise InitializationActionError
+        raise InitializationActionError(action)
     if isinstance(action, IncrementAction):
         return CountStateType(count=state.count + 1)
     if isinstance(action, DecrementAction):
@@ -99,7 +99,7 @@ def inverse_reducer(
     if state is None:
         if isinstance(action, InitAction):
             return CountStateType(count=0)
-        raise InitializationActionError
+        raise InitializationActionError(action)
     if isinstance(action, IncrementAction):
         return CountStateType(count=state.count - 1)
     if isinstance(action, DecrementAction):

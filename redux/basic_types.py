@@ -31,7 +31,6 @@ Event = TypeVar('Event', bound=BaseEvent, infer_variance=True)
 Event2 = TypeVar('Event2', bound=BaseEvent, infer_variance=True)
 SelectorOutput = TypeVar('SelectorOutput', infer_variance=True)
 ComparatorOutput = TypeVar('ComparatorOutput', infer_variance=True)
-Selector = Callable[[State], SelectorOutput]
 Comparator = Callable[[State], ComparatorOutput]
 EventHandler = Callable[[Event], Any]
 
@@ -57,7 +56,7 @@ class InitializationActionError(Exception):
     def __init__(self: InitializationActionError, action: BaseAction) -> None:
         super().__init__(
             f"""The only accepted action type when state is None is "InitAction", \
-action with type "{type(action)}" is passed""",
+action "{action}" is not allowed.""",
         )
 
 
