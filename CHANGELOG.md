@@ -1,5 +1,11 @@
 # Changelog
 
+## Version 0.9.11
+
+- feat: the provided `scheduler`, if any, should have a `interval` parameter, if
+  set to `False`, it should schedule only once, otherwise it should periodically
+  call the `callback`
+
 ## Version 0.9.10
 
 - feat: `InitializationActionError` shows the incorrect passed action

@@ -1,12 +1,7 @@
 # ruff: noqa: A003, D100, D101, D102, D103, D104, D105, D107
 from __future__ import annotations
 
-from typing import (
-    Any,
-    Callable,
-    Generic,
-    TypeGuard,
-)
+from typing import Any, Callable, Generic, Sequence, TypeGuard
 
 from immutable import Immutable
 from typing_extensions import TypeVar
@@ -37,8 +32,8 @@ EventHandler = Callable[[Event], Any]
 
 class CompleteReducerResult(Immutable, Generic[State, Action, Event]):
     state: State
-    actions: list[Action] | None = None
-    events: list[Event] | None = None
+    actions: Sequence[Action] | None = None
+    events: Sequence[Event] | None = None
 
 
 ReducerResult = CompleteReducerResult[State, Action, Event] | State

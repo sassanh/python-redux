@@ -6,13 +6,7 @@ import threading
 from collections import defaultdict
 from inspect import signature
 from threading import Lock
-from typing import (
-    Any,
-    Callable,
-    Generic,
-    Protocol,
-    cast,
-)
+from typing import Any, Callable, Generic, Protocol, cast
 
 from .basic_types import (
     Action,
@@ -36,11 +30,16 @@ from .basic_types import (
 )
 
 
+class Scheduler(Protocol):
+    def __call__(self: Scheduler, callback: Callable, *, interval: bool) -> None:
+        ...
+
+
 class CreateStoreOptions(Immutable):
     auto_init: bool = False
     threads: int = 5
     autorun_initial_run: bool = True
-    scheduler: Callable[[Callable], Any] | None = None
+    scheduler: Scheduler | None = None
     action_middleware: Callable[[BaseAction], Any] | None = None
     event_middleware: Callable[[BaseEvent], Any] | None = None
 
@@ -291,10 +290,15 @@ def create_store(
 
     if _options.auto_init:
         if _options.scheduler:
-            _options.scheduler(lambda: dispatch(cast(Action, InitAction())))
-            _options.scheduler(run)
+            _options.scheduler(
+                lambda: dispatch(cast(Action, InitAction())),
+                interval=False,
+            )
         else:
             dispatch(cast(Action, InitAction()))
+
+    if _options.scheduler:
+        _options.scheduler(run, interval=True)
 
     return InitializeStateReturnValue(
         dispatch=dispatch,
