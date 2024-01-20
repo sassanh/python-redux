@@ -282,6 +282,7 @@ def create_store(
                     callback: Callable[[AutorunOriginalReturnType], Any],
                 ) -> Callable[[], None]:
                     subscriptions.append(callback)
+                    callback(self.value)
 
                     def unsubscribe() -> None:
                         subscriptions.remove(callback)

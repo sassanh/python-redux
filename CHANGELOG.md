@@ -1,5 +1,10 @@
 # Changelog
 
+## Version 0.9.13
+
+- feat: make `subscribe` method of `autorun`'s return value, call its callback with
+  the latest value immediately
+
 ## Version 0.9.12
 
 - feat: add the latest value of `autorun` to the `value` field of its returned value
