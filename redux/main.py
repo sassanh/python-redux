@@ -66,6 +66,10 @@ class AutorunReturnType(Protocol, Generic[AutorunOriginalReturnType]):
     def __call__(self: AutorunReturnType) -> AutorunOriginalReturnType:
         ...
 
+    @property
+    def value(self: AutorunReturnType) -> AutorunOriginalReturnType:
+        ...
+
     def subscribe(
         self: AutorunReturnType,
         callback: Callable[[AutorunOriginalReturnType], Any],
@@ -143,7 +147,7 @@ def create_store(
             while len(actions) > 0 or len(events) > 0:
                 if len(actions) > 0:
                     action = actions.pop(0)
-                    result = reducer(state if 'state' in locals() else None, action)
+                    result = reducer(state, action)
                     if is_reducer_result(result):
                         state = result.state
                         dispatch([*(result.actions or []), *(result.events or [])])
@@ -258,11 +262,7 @@ def create_store(
                     for subscriber in subscriptions:
                         subscriber(last_value)
 
-            if (
-                _options.autorun_initial_run
-                and 'state' in locals()
-                and state is not None
-            ):
+            if _options.autorun_initial_run and state is not None:
                 check_and_call(state)
 
             subscribe(check_and_call)
@@ -271,6 +271,10 @@ def create_store(
                 def __call__(self: Call) -> AutorunOriginalReturnType:
                     if state is not None:
                         check_and_call(state)
+                    return cast(AutorunOriginalReturnType, last_value)
+
+                @property
+                def value(self: Call) -> AutorunOriginalReturnType:
                     return cast(AutorunOriginalReturnType, last_value)
 
                 def subscribe(

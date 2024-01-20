@@ -1,5 +1,9 @@
 # Changelog
 
+## Version 0.9.12
+
+- feat: add the latest value of `autorun` to the `value` field of its returned value
+
 ## Version 0.9.11
 
 - feat: the provided `scheduler`, if any, should have a `interval` parameter, if
