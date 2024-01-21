@@ -1,5 +1,9 @@
 # Changelog
 
+## Version 0.9.15
+
+- refactor: improve typing of `SideEffectRunnerThread`
+
 ## Version 0.9.14
 
 - feat: allow `subscribe_event` callback parameter take zero arguments

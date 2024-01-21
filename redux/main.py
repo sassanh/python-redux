@@ -99,12 +99,15 @@ class InitializeStateReturnValue(Immutable, Generic[State, Action, Event]):
     autorun: AutorunType[State]
 
 
-class SideEffectRunnerThread(threading.Thread):
-    def __init__(self: SideEffectRunnerThread, task_queue: queue.Queue) -> None:
+class SideEffectRunnerThread(threading.Thread, Generic[Event]):
+    def __init__(
+        self: SideEffectRunnerThread[Event],
+        task_queue: queue.Queue[tuple[EventHandler[Event], Event] | None],
+    ) -> None:
         super().__init__()
         self.task_queue = task_queue
 
-    def run(self: SideEffectRunnerThread) -> None:
+    def run(self: SideEffectRunnerThread[Event]) -> None:
         while True:
             task = self.task_queue.get()
             if task is None:
@@ -113,7 +116,10 @@ class SideEffectRunnerThread(threading.Thread):
 
             try:
                 event_handler, event = task
-                event_handler(event)
+                if len(signature(event_handler).parameters) == 1:
+                    cast(Callable[[Event], Any], event_handler)(event)
+                else:
+                    cast(Callable[[], Any], event_handler)()
             finally:
                 self.task_queue.task_done()
 
@@ -134,7 +140,7 @@ def create_store(
     actions: list[Action] = []
     events: list[Event] = []
 
-    event_handlers_queue = queue.Queue[tuple[EventHandler, Event] | None]()
+    event_handlers_queue = queue.Queue[tuple[EventHandler[Event], Event] | None]()
     for _ in range(_options.threads):
         worker = SideEffectRunnerThread(event_handlers_queue)
         worker.start()
