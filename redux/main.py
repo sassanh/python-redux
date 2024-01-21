@@ -81,7 +81,7 @@ class EventSubscriber(Protocol):
     def __call__(
         self: EventSubscriber,
         event_type: type[Event],
-        handler: Callable[[Event], Any],
+        handler: EventHandler[Event],
         options: EventSubscriptionOptions | None = None,
     ) -> Callable[[], None]:  # pyright: ignore[reportGeneralTypeIssues]
         ...
@@ -166,8 +166,10 @@ def create_store(
                     for event_handler, options in event_handlers[type(event)].copy():
                         if options.run_async:
                             event_handlers_queue.put((event_handler, event))
+                        elif len(signature(event_handler).parameters) == 1:
+                            cast(Callable[[Event], Any], event_handler)(event)
                         else:
-                            event_handler(event)
+                            cast(Callable[[], Any], event_handler)()
 
     def dispatch(*parameters: Action | Event | list[Action | Event]) -> None:
         items = [

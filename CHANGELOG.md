@@ -1,5 +1,9 @@
 # Changelog
 
+## Version 0.9.14
+
+- feat: allow `subscribe_event` callback parameter take zero arguments
+
 ## Version 0.9.13
 
 - feat: make `subscribe` method of `autorun`'s return value, call its callback with

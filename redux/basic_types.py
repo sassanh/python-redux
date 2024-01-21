@@ -27,7 +27,7 @@ Event2 = TypeVar('Event2', bound=BaseEvent, infer_variance=True)
 SelectorOutput = TypeVar('SelectorOutput', infer_variance=True)
 ComparatorOutput = TypeVar('ComparatorOutput', infer_variance=True)
 Comparator = Callable[[State], ComparatorOutput]
-EventHandler = Callable[[Event], Any]
+EventHandler = Callable[[Event], Any] | Callable[[], Any]
 
 
 class CompleteReducerResult(Immutable, Generic[State, Action, Event]):
