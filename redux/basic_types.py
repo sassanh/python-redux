@@ -1,7 +1,7 @@
 # ruff: noqa: A003, D100, D101, D102, D103, D104, D105, D107
 from __future__ import annotations
 
-from typing import Any, Callable, Generic, Sequence, TypeGuard
+from typing import Any, Callable, Generic, Protocol, Sequence, TypeAlias, TypeGuard
 
 from immutable import Immutable
 from typing_extensions import TypeVar
@@ -41,11 +41,6 @@ ReducerType = Callable[[State | None, Action], ReducerResult[State, Action, Even
 
 AutorunOriginalReturnType = TypeVar('AutorunOriginalReturnType', infer_variance=True)
 
-EventSubscriber = Callable[
-    [Event, Callable[[Event], Any], EventSubscriptionOptions | None],
-    Callable[[], None],
-]
-
 
 class InitializationActionError(Exception):
     def __init__(self: InitializationActionError, action: BaseAction) -> None:
@@ -75,3 +70,79 @@ def is_reducer_result(
 
 def is_state(result: ReducerResult[State, Action, Event]) -> TypeGuard[State]:
     return not isinstance(result, CompleteReducerResult)
+
+
+class Scheduler(Protocol):
+    def __call__(self: Scheduler, callback: Callable, *, interval: bool) -> None:
+        ...
+
+
+class CreateStoreOptions(Immutable):
+    auto_init: bool = False
+    threads: int = 5
+    autorun_initial_run: bool = True
+    scheduler: Scheduler | None = None
+    action_middleware: Callable[[BaseAction], Any] | None = None
+    event_middleware: Callable[[BaseEvent], Any] | None = None
+
+
+class AutorunType(Protocol, Generic[State]):
+    def __call__(
+        self: AutorunType,
+        selector: Callable[[State], SelectorOutput],
+        comparator: Callable[[State], Any] | None = None,
+    ) -> AutorunDecorator[State, SelectorOutput]:
+        ...
+
+
+class AutorunDecorator(Protocol, Generic[State, SelectorOutput]):
+    def __call__(
+        self: AutorunDecorator,
+        func: Callable[[SelectorOutput], AutorunOriginalReturnType]
+        | Callable[[SelectorOutput, SelectorOutput], AutorunOriginalReturnType],
+    ) -> AutorunReturnType[AutorunOriginalReturnType]:
+        ...
+
+
+class AutorunReturnType(Protocol, Generic[AutorunOriginalReturnType]):
+    def __call__(self: AutorunReturnType) -> AutorunOriginalReturnType:
+        ...
+
+    @property
+    def value(self: AutorunReturnType) -> AutorunOriginalReturnType:
+        ...
+
+    def subscribe(
+        self: AutorunReturnType,
+        callback: Callable[[AutorunOriginalReturnType], Any],
+    ) -> Callable[[], None]:
+        ...
+
+
+class EventSubscriber(Protocol):
+    def __call__(
+        self: EventSubscriber,
+        event_type: type[Event],
+        handler: EventHandler[Event],
+        options: EventSubscriptionOptions | None = None,
+    ) -> Callable[[], None]:
+        ...
+
+
+DispatchParameters: TypeAlias = Action | Event | list[Action | Event]
+
+
+class Dispatch(Protocol, Generic[State, Action, Event]):
+    def __call__(
+        self: Dispatch,
+        *items: Action | Event | list[Action | Event],
+        with_state: Callable[[State | None], Action | Event | list[Action | Event]],
+    ) -> None:
+        ...
+
+
+class InitializeStateReturnValue(Immutable, Generic[State, Action, Event]):
+    dispatch: Dispatch[State, Action, Event]
+    subscribe: Callable[[Callable[[State], Any]], Callable[[], None]]
+    subscribe_event: EventSubscriber
+    autorun: AutorunType[State]

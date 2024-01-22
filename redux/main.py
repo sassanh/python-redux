@@ -6,97 +6,32 @@ import threading
 from collections import defaultdict
 from inspect import signature
 from threading import Lock
-from typing import Any, Callable, Generic, Protocol, cast
+from typing import Any, Callable, Generic, cast
 
 from .basic_types import (
     Action,
+    AutorunDecorator,
     AutorunOriginalReturnType,
+    AutorunReturnType,
     BaseAction,
     BaseEvent,
     ComparatorOutput,
+    CreateStoreOptions,
+    DispatchParameters,
     Event,
     Event2,
     EventHandler,
     EventSubscriptionOptions,
     FinishAction,
     FinishEvent,
-    Immutable,
     InitAction,
+    InitializeStateReturnValue,
     ReducerType,
     SelectorOutput,
     State,
     is_reducer_result,
     is_state,
 )
-
-
-class Scheduler(Protocol):
-    def __call__(self: Scheduler, callback: Callable, *, interval: bool) -> None:
-        ...
-
-
-class CreateStoreOptions(Immutable):
-    auto_init: bool = False
-    threads: int = 5
-    autorun_initial_run: bool = True
-    scheduler: Scheduler | None = None
-    action_middleware: Callable[[BaseAction], Any] | None = None
-    event_middleware: Callable[[BaseEvent], Any] | None = None
-
-
-class AutorunType(Protocol, Generic[State]):
-    def __call__(
-        self: AutorunType,
-        selector: Callable[[State], SelectorOutput],
-        comparator: Callable[[State], Any] | None = None,
-    ) -> AutorunDecorator[State, SelectorOutput]:
-        ...
-
-
-class AutorunDecorator(Protocol, Generic[State, SelectorOutput]):
-    def __call__(
-        self: AutorunDecorator,
-        func: Callable[[SelectorOutput], AutorunOriginalReturnType]
-        | Callable[[SelectorOutput, SelectorOutput], AutorunOriginalReturnType],
-    ) -> AutorunReturnType[AutorunOriginalReturnType]:
-        ...
-
-
-class AutorunReturnType(Protocol, Generic[AutorunOriginalReturnType]):
-    def __call__(self: AutorunReturnType) -> AutorunOriginalReturnType:
-        ...
-
-    @property
-    def value(self: AutorunReturnType) -> AutorunOriginalReturnType:
-        ...
-
-    def subscribe(
-        self: AutorunReturnType,
-        callback: Callable[[AutorunOriginalReturnType], Any],
-    ) -> Callable[[], None]:
-        ...
-
-
-class EventSubscriber(Protocol):
-    def __call__(
-        self: EventSubscriber,
-        event_type: type[Event],
-        handler: EventHandler[Event],
-        options: EventSubscriptionOptions | None = None,
-    ) -> Callable[[], None]:  # pyright: ignore[reportGeneralTypeIssues]
-        ...
-
-
-class Dispatch(Protocol, Generic[Action, Event]):
-    def __call__(self: Dispatch, *items: Action | Event | list[Action | Event]) -> None:
-        ...
-
-
-class InitializeStateReturnValue(Immutable, Generic[State, Action, Event]):
-    dispatch: Dispatch[Action, Event]
-    subscribe: Callable[[Callable[[State], Any]], Callable[[], None]]
-    subscribe_event: EventSubscriber
-    autorun: AutorunType[State]
 
 
 class SideEffectRunnerThread(threading.Thread, Generic[Event]):
@@ -177,7 +112,14 @@ def create_store(
                         else:
                             cast(Callable[[], Any], event_handler)()
 
-    def dispatch(*parameters: Action | Event | list[Action | Event]) -> None:
+    def dispatch(
+        *parameters: DispatchParameters[Action, Event],
+        with_state: Callable[[State | None], DispatchParameters[Action, Event]]
+        | None = None,
+    ) -> None:
+        if with_state is not None:
+            dispatch(with_state(state))
+
         items = [
             item
             for items in parameters

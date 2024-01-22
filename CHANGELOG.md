@@ -1,5 +1,10 @@
 # Changelog
 
+## Version 0.9.16
+
+- refactor: make `dispatch` accept a `with_state(store)` function as parameter, if
+  provided it will dispatch return value of this function
+
 ## Version 0.9.15
 
 - refactor: improve typing of `SideEffectRunnerThread`
