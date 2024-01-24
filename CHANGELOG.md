@@ -1,5 +1,9 @@
 # Changelog
 
+## Version 0.9.19
+
+- feat: add `immediate` parameter to `subscribe` method of `autorun`'s returned value
+
 ## Version 0.9.18
 
 - feat: `autorun` decorator accepts a default value for when store is not initialized

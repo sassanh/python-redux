@@ -121,6 +121,8 @@ class AutorunReturnType(Protocol, Generic[AutorunOriginalReturnType]):
     def subscribe(
         self: AutorunReturnType,
         callback: Callable[[AutorunOriginalReturnType], Any],
+        *,
+        immediate: bool = False,
     ) -> Callable[[], None]:
         ...
 
