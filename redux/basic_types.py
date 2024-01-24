@@ -91,11 +91,17 @@ class AutorunType(Protocol, Generic[State]):
         self: AutorunType,
         selector: Callable[[State], SelectorOutput],
         comparator: Callable[[State], Any] | None = None,
-    ) -> AutorunDecorator[State, SelectorOutput]:
+        *,
+        default_value: AutorunOriginalReturnType | None = None,
+        initial_run: bool = True,
+    ) -> AutorunDecorator[State, SelectorOutput, AutorunOriginalReturnType]:
         ...
 
 
-class AutorunDecorator(Protocol, Generic[State, SelectorOutput]):
+class AutorunDecorator(
+    Protocol,
+    Generic[State, SelectorOutput, AutorunOriginalReturnType],
+):
     def __call__(
         self: AutorunDecorator,
         func: Callable[[SelectorOutput], AutorunOriginalReturnType]
@@ -136,7 +142,8 @@ class Dispatch(Protocol, Generic[State, Action, Event]):
     def __call__(
         self: Dispatch,
         *items: Action | Event | list[Action | Event],
-        with_state: Callable[[State | None], Action | Event | list[Action | Event]],
+        with_state: Callable[[State | None], Action | Event | list[Action | Event]]
+        | None = None,
     ) -> None:
         ...
 

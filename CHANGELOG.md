@@ -1,6 +1,11 @@
 # Changelog
 
-## Version 0.9.16
+## Version 0.9.18
+
+- feat: `autorun` decorator accepts a default value for when store is not initialized
+- feat: `autorun` decorator takes its options in its keyword arguments
+
+## Version 0.9.17
 
 - refactor: make `dispatch` accept a `with_state(store)` function as parameter, if
   provided it will dispatch return value of this function

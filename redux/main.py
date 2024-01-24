@@ -163,7 +163,10 @@ def create_store(
     def autorun(
         selector: Callable[[State], SelectorOutput],
         comparator: Callable[[State], ComparatorOutput] | None = None,
-    ) -> AutorunDecorator[State, SelectorOutput]:
+        *,
+        default_value: AutorunOriginalReturnType | None = None,
+        initial_run: bool = _options.autorun_initial_run,
+    ) -> AutorunDecorator[State, SelectorOutput, AutorunOriginalReturnType]:
         nonlocal state
 
         def decorator(
@@ -172,7 +175,7 @@ def create_store(
         ) -> AutorunReturnType[AutorunOriginalReturnType]:
             last_selector_result: SelectorOutput | None = None
             last_comparator_result: ComparatorOutput = cast(ComparatorOutput, object())
-            last_value: AutorunOriginalReturnType | None = None
+            last_value: AutorunOriginalReturnType | None = default_value
             subscriptions: list[Callable[[AutorunOriginalReturnType], Any]] = []
 
             def check_and_call(state: State) -> None:
@@ -212,7 +215,7 @@ def create_store(
                     for subscriber in subscriptions:
                         subscriber(last_value)
 
-            if _options.autorun_initial_run and state is not None:
+            if initial_run and state is not None:
                 check_and_call(state)
 
             subscribe(check_and_call)
