@@ -1,7 +1,7 @@
 # ruff: noqa: A003, D100, D101, D102, D103, D104, D105, D107
 from __future__ import annotations
 
-from typing import Any, Callable, Generic, Protocol, Sequence, TypeAlias, TypeGuard
+from typing import Any, Callable, Generic, Protocol, TypeAlias, TypeGuard
 
 from immutable import Immutable
 from typing_extensions import TypeVar
@@ -26,20 +26,19 @@ Event = TypeVar('Event', bound=BaseEvent, infer_variance=True)
 Event2 = TypeVar('Event2', bound=BaseEvent, infer_variance=True)
 SelectorOutput = TypeVar('SelectorOutput', infer_variance=True)
 ComparatorOutput = TypeVar('ComparatorOutput', infer_variance=True)
+AutorunOriginalReturnType = TypeVar('AutorunOriginalReturnType', infer_variance=True)
 Comparator = Callable[[State], ComparatorOutput]
 EventHandler = Callable[[Event], Any] | Callable[[], Any]
 
 
 class CompleteReducerResult(Immutable, Generic[State, Action, Event]):
     state: State
-    actions: Sequence[Action] | None = None
-    events: Sequence[Event] | None = None
+    actions: list[Action] | None = None
+    events: list[Event] | None = None
 
 
 ReducerResult = CompleteReducerResult[State, Action, Event] | State
 ReducerType = Callable[[State | None, Action], ReducerResult[State, Action, Event]]
-
-AutorunOriginalReturnType = TypeVar('AutorunOriginalReturnType', infer_variance=True)
 
 
 class InitializationActionError(Exception):
@@ -80,10 +79,18 @@ class Scheduler(Protocol):
 class CreateStoreOptions(Immutable):
     auto_init: bool = False
     threads: int = 5
-    autorun_initial_run: bool = True
     scheduler: Scheduler | None = None
     action_middleware: Callable[[BaseAction], Any] | None = None
     event_middleware: Callable[[BaseEvent], Any] | None = None
+
+
+CreStoreOptions = CreateStoreOptions(auto_init=True)
+
+
+class AutorunOptions(Immutable, Generic[AutorunOriginalReturnType]):
+    default_value: AutorunOriginalReturnType | None = None
+    initial_run: bool = True
+    subscribers_immediate_run: bool = True
 
 
 class AutorunType(Protocol, Generic[State]):
@@ -92,15 +99,22 @@ class AutorunType(Protocol, Generic[State]):
         selector: Callable[[State], SelectorOutput],
         comparator: Callable[[State], Any] | None = None,
         *,
-        default_value: AutorunOriginalReturnType | None = None,
-        initial_run: bool = True,
-    ) -> AutorunDecorator[State, SelectorOutput, AutorunOriginalReturnType]:
+        options: AutorunOptions[AutorunOriginalReturnType] | None = None,
+    ) -> AutorunDecorator[
+        State,
+        SelectorOutput,
+        AutorunOriginalReturnType,
+    ]:
         ...
 
 
 class AutorunDecorator(
     Protocol,
-    Generic[State, SelectorOutput, AutorunOriginalReturnType],
+    Generic[
+        State,
+        SelectorOutput,
+        AutorunOriginalReturnType,
+    ],
 ):
     def __call__(
         self: AutorunDecorator,
@@ -110,7 +124,10 @@ class AutorunDecorator(
         ...
 
 
-class AutorunReturnType(Protocol, Generic[AutorunOriginalReturnType]):
+class AutorunReturnType(
+    Protocol,
+    Generic[AutorunOriginalReturnType],
+):
     def __call__(self: AutorunReturnType) -> AutorunOriginalReturnType:
         ...
 
@@ -122,7 +139,7 @@ class AutorunReturnType(Protocol, Generic[AutorunOriginalReturnType]):
         self: AutorunReturnType,
         callback: Callable[[AutorunOriginalReturnType], Any],
         *,
-        immediate: bool = False,
+        immediate_run: bool | None = None,
     ) -> Callable[[], None]:
         ...
 
@@ -150,7 +167,10 @@ class Dispatch(Protocol, Generic[State, Action, Event]):
         ...
 
 
-class InitializeStateReturnValue(Immutable, Generic[State, Action, Event]):
+class InitializeStateReturnValue(
+    Immutable,
+    Generic[State, Action, Event],
+):
     dispatch: Dispatch[State, Action, Event]
     subscribe: Callable[[Callable[[State], Any]], Callable[[], None]]
     subscribe_event: EventSubscriber

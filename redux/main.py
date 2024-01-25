@@ -11,6 +11,7 @@ from typing import Any, Callable, Generic, cast
 from .basic_types import (
     Action,
     AutorunDecorator,
+    AutorunOptions,
     AutorunOriginalReturnType,
     AutorunReturnType,
     BaseAction,
@@ -63,7 +64,7 @@ def create_store(
     reducer: ReducerType[State, Action, Event],
     options: CreateStoreOptions | None = None,
 ) -> InitializeStateReturnValue[State, Action, Event]:
-    _options = CreateStoreOptions() if options is None else options
+    store_options = options or CreateStoreOptions()
 
     state: State | None = None
     listeners: set[Callable[[State], Any]] = set()
@@ -76,7 +77,7 @@ def create_store(
     events: list[Event] = []
 
     event_handlers_queue = queue.Queue[tuple[EventHandler[Event], Event] | None]()
-    for _ in range(_options.threads):
+    for _ in range(store_options.threads):
         worker = SideEffectRunnerThread(event_handlers_queue)
         worker.start()
 
@@ -128,15 +129,15 @@ def create_store(
 
         for item in items:
             if isinstance(item, BaseAction):
-                if _options.action_middleware:
-                    _options.action_middleware(item)
+                if store_options.action_middleware:
+                    store_options.action_middleware(item)
                 actions.append(item)
             if isinstance(item, BaseEvent):
-                if _options.event_middleware:
-                    _options.event_middleware(item)
+                if store_options.event_middleware:
+                    store_options.event_middleware(item)
                 events.append(item)
 
-        if _options.scheduler is None and not is_running.locked():
+        if store_options.scheduler is None and not is_running.locked():
             run()
 
     def subscribe(listener: Callable[[State], Any]) -> Callable[[], None]:
@@ -155,7 +156,7 @@ def create_store(
         )
 
     def handle_finish_event(_event: Event) -> None:
-        for _ in range(_options.threads):
+        for _ in range(store_options.threads):
             event_handlers_queue.put(None)
 
     subscribe_event(cast(type[Event], FinishEvent), handle_finish_event)
@@ -164,9 +165,13 @@ def create_store(
         selector: Callable[[State], SelectorOutput],
         comparator: Callable[[State], ComparatorOutput] | None = None,
         *,
-        default_value: AutorunOriginalReturnType | None = None,
-        initial_run: bool = _options.autorun_initial_run,
-    ) -> AutorunDecorator[State, SelectorOutput, AutorunOriginalReturnType]:
+        options: AutorunOptions[AutorunOriginalReturnType] | None = None,
+    ) -> AutorunDecorator[
+        State,
+        SelectorOutput,
+        AutorunOriginalReturnType,
+    ]:
+        autorun_options = options or AutorunOptions()
         nonlocal state
 
         def decorator(
@@ -175,7 +180,7 @@ def create_store(
         ) -> AutorunReturnType[AutorunOriginalReturnType]:
             last_selector_result: SelectorOutput | None = None
             last_comparator_result: ComparatorOutput = cast(ComparatorOutput, object())
-            last_value: AutorunOriginalReturnType | None = default_value
+            last_value: AutorunOriginalReturnType | None = autorun_options.default_value
             subscriptions: list[Callable[[AutorunOriginalReturnType], Any]] = []
 
             def check_and_call(state: State) -> None:
@@ -215,7 +220,7 @@ def create_store(
                     for subscriber in subscriptions:
                         subscriber(last_value)
 
-            if initial_run and state is not None:
+            if autorun_options.initial_run and state is not None:
                 check_and_call(state)
 
             subscribe(check_and_call)
@@ -234,11 +239,12 @@ def create_store(
                     self: Call,
                     callback: Callable[[AutorunOriginalReturnType], Any],
                     *,
-                    immediate: bool = False,
+                    immediate_run: bool
+                    | None = autorun_options.subscribers_immediate_run,
                 ) -> Callable[[], None]:
                     subscriptions.append(callback)
 
-                    if immediate:
+                    if immediate_run:
                         callback(self.value)
 
                     def unsubscribe() -> None:
@@ -250,17 +256,17 @@ def create_store(
 
         return decorator
 
-    if _options.auto_init:
-        if _options.scheduler:
-            _options.scheduler(
+    if store_options.auto_init:
+        if store_options.scheduler:
+            store_options.scheduler(
                 lambda: dispatch(cast(Action, InitAction())),
                 interval=False,
             )
         else:
             dispatch(cast(Action, InitAction()))
 
-    if _options.scheduler:
-        _options.scheduler(run, interval=True)
+    if store_options.scheduler:
+        store_options.scheduler(run, interval=True)
 
     return InitializeStateReturnValue(
         dispatch=dispatch,

@@ -127,15 +127,13 @@ def main() -> None:
     # Initialization <
     store = create_store(
         reducer,
-        CreateStoreOptions(autorun_initial_run=True),
+        CreateStoreOptions(auto_init=True, threads=2),
     )
 
     def event_handler(event: SleepEvent) -> None:
         time.sleep(event.duration)
 
     store.subscribe_event(SleepEvent, event_handler)
-
-    store.dispatch(InitAction())
     # >
 
     # -----

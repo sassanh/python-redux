@@ -1,5 +1,13 @@
 # Changelog
 
+## Version 0.9.20
+
+- refactor: encapsulate autorun options previously provided as multiple keyword arguments,
+  in a single `AutorunOptions` immutable class
+- refactor: rename `immediate` to `immediate_run` in autorun subscribers
+- feat: default value of `immediate_run` can be set for all subscribers of an autorun
+  instance by settings `subscribers_immediate_run` option for the autorun
+
 ## Version 0.9.19
 
 - feat: add `immediate` parameter to `subscribe` method of `autorun`'s returned value
