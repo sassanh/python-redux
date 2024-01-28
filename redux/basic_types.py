@@ -17,6 +17,7 @@ class BaseEvent(Immutable):
 
 class EventSubscriptionOptions(Immutable):
     run_async: bool = True
+    keep_ref: bool = True
 
 
 # Type variables
@@ -91,6 +92,7 @@ class AutorunOptions(Immutable, Generic[AutorunOriginalReturnType]):
     default_value: AutorunOriginalReturnType | None = None
     initial_run: bool = True
     subscribers_immediate_run: bool = True
+    subscribers_keep_ref: bool = True
 
 
 class AutorunType(Protocol, Generic[State]):
@@ -140,6 +142,7 @@ class AutorunReturnType(
         callback: Callable[[AutorunOriginalReturnType], Any],
         *,
         immediate_run: bool | None = None,
+        keep_ref: bool | None = None,
     ) -> Callable[[], None]:
         ...
 
@@ -149,6 +152,7 @@ class EventSubscriber(Protocol):
         self: EventSubscriber,
         event_type: type[Event],
         handler: EventHandler[Event],
+        *,
         options: EventSubscriptionOptions | None = None,
     ) -> Callable[[], None]:
         ...

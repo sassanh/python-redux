@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import queue
 import threading
+import weakref
 from collections import defaultdict
 from inspect import signature
 from threading import Lock
@@ -67,10 +68,10 @@ def create_store(
     store_options = options or CreateStoreOptions()
 
     state: State | None = None
-    listeners: set[Callable[[State], Any]] = set()
+    listeners: set[Callable[[State], Any] | weakref.ref[Callable[[State], Any]]] = set()
     event_handlers: defaultdict[
         type[Event],
-        set[tuple[EventHandler, EventSubscriptionOptions]],
+        set[tuple[EventHandler | weakref.ref[EventHandler], EventSubscriptionOptions]],
     ] = defaultdict(set)
 
     actions: list[Action] = []
@@ -97,15 +98,31 @@ def create_store(
                         state = result
 
                     if isinstance(action, FinishAction):
-                        events.append(cast(Event, FinishEvent()))
+                        dispatch(cast(Event, FinishEvent()))
 
                     if len(actions) == 0 and state:
-                        for listener in listeners.copy():
+                        for listener_ in listeners.copy():
+                            if isinstance(listener_, weakref.ref):
+                                listener = listener_()
+                                if listener is None:
+                                    listeners.remove(listener_)
+                                    continue
+                            else:
+                                listener = listener_
                             listener(state)
 
                 if len(events) > 0:
                     event = events.pop(0)
-                    for event_handler, options in event_handlers[type(event)].copy():
+                    for event_handler_, options in event_handlers[type(event)].copy():
+                        if isinstance(event_handler_, weakref.ref):
+                            event_handler = event_handler_()
+                            if event_handler is None:
+                                event_handlers[type(event)].remove(
+                                    (event_handler_, options),
+                                )
+                                continue
+                        else:
+                            event_handler = event_handler_
                         if options.run_async:
                             event_handlers_queue.put((event_handler, event))
                         elif len(signature(event_handler).parameters) == 1:
@@ -140,19 +157,33 @@ def create_store(
         if store_options.scheduler is None and not is_running.locked():
             run()
 
-    def subscribe(listener: Callable[[State], Any]) -> Callable[[], None]:
-        listeners.add(listener)
-        return lambda: listeners.remove(listener)
+    def subscribe(
+        listener: Callable[[State], Any],
+        *,
+        keep_ref: bool = True,
+    ) -> Callable[[], None]:
+        listener_ref = listener if keep_ref else weakref.ref(listener)
+
+        listeners.add(listener_ref)
+        return lambda: listeners.remove(listener_ref)
 
     def subscribe_event(
         event_type: type[Event2],
         handler: EventHandler[Event2],
+        *,
         options: EventSubscriptionOptions | None = None,
     ) -> Callable[[], None]:
-        _options = EventSubscriptionOptions() if options is None else options
-        event_handlers[cast(type[Event], event_type)].add((handler, _options))
+        subscription_options = (
+            EventSubscriptionOptions() if options is None else options
+        )
+
+        handler_ref = handler if subscription_options.keep_ref else weakref.ref(handler)
+
+        event_handlers[cast(type[Event], event_type)].add(
+            (handler_ref, subscription_options),
+        )
         return lambda: event_handlers[cast(type[Event], event_type)].remove(
-            (handler, _options),
+            (handler_ref, subscription_options),
         )
 
     def handle_finish_event(_event: Event) -> None:
@@ -181,7 +212,10 @@ def create_store(
             last_selector_result: SelectorOutput | None = None
             last_comparator_result: ComparatorOutput = cast(ComparatorOutput, object())
             last_value: AutorunOriginalReturnType | None = autorun_options.default_value
-            subscriptions: list[Callable[[AutorunOriginalReturnType], Any]] = []
+            subscriptions: set[
+                Callable[[AutorunOriginalReturnType], Any]
+                | weakref.ref[Callable[[AutorunOriginalReturnType], Any]]
+            ] = set()
 
             def check_and_call(state: State) -> None:
                 nonlocal \
@@ -217,7 +251,14 @@ def create_store(
                             selector_result,
                             previous_result,
                         )
-                    for subscriber in subscriptions:
+                    for subscriber_ in subscriptions.copy():
+                        if isinstance(subscriber_, weakref.ref):
+                            subscriber = subscriber_()
+                            if subscriber is None:
+                                subscriptions.remove(subscriber_)
+                                continue
+                        else:
+                            subscriber = subscriber_
                         subscriber(last_value)
 
             if autorun_options.initial_run and state is not None:
@@ -241,14 +282,16 @@ def create_store(
                     *,
                     immediate_run: bool
                     | None = autorun_options.subscribers_immediate_run,
+                    keep_ref: bool | None = autorun_options.subscribers_keep_ref,
                 ) -> Callable[[], None]:
-                    subscriptions.append(callback)
+                    callback_ref = callback if keep_ref else weakref.ref(callback)
+                    subscriptions.add(callback_ref)
 
                     if immediate_run:
                         callback(self.value)
 
                     def unsubscribe() -> None:
-                        subscriptions.remove(callback)
+                        subscriptions.remove(callback_ref)
 
                     return unsubscribe
 

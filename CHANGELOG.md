@@ -1,5 +1,9 @@
 # Changelog
 
+## Version 0.9.21
+
+- feat: new option for all subscriptions to hint them keep a weakref of the callback
+
 ## Version 0.9.20
 
 - refactor: encapsulate autorun options previously provided as multiple keyword arguments,
