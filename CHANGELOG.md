@@ -1,5 +1,10 @@
 # Changelog
 
+## Version 0.9.22
+
+- fix: `CombineReducerRegisterAction` should take care of `CompleteReducerResult`
+  returned by the sub-reducer on its initialization.
+
 ## Version 0.9.21
 
 - feat: new option for all subscriptions to hint them keep a weakref of the callback

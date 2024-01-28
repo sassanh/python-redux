@@ -56,6 +56,7 @@ def combine_reducers(
     event_type: type[Event] = BaseEvent,  # noqa: ARG001
     **reducers: ReducerType,
 ) -> tuple[ReducerType[CombineReducerState, Action, Event], str]:
+    reducers = reducers.copy()
     _id = uuid.uuid4().hex
 
     state_class = cast(
@@ -72,6 +73,8 @@ def combine_reducers(
         state: CombineReducerState | None,
         action: Action,
     ) -> CompleteReducerResult[CombineReducerState, Action, Event]:
+        result_actions = []
+        result_events = []
         nonlocal state_class
         if state is not None and is_combine_reducer_action(action):
             if isinstance(action, CombineReducerRegisterAction) and action._id == _id:  # noqa: SLF001
@@ -83,16 +86,31 @@ def combine_reducers(
                     ('_id', *reducers.keys()),
                     frozen=True,
                 )
+                reducer_result = reducer(None, InitAction())
                 state = state_class(
                     _id=state._id,  # noqa: SLF001
                     **(
                         {
-                            key_: reducer(None, InitAction())
+                            key_: (
+                                reducer_result.state
+                                if is_reducer_result(reducer_result)
+                                else reducer_result
+                            )
                             if key == key_
                             else getattr(state, key_)
                             for key_ in reducers
                         }
                     ),
+                )
+                result_actions += (
+                    reducer_result.actions or []
+                    if is_reducer_result(reducer_result)
+                    else []
+                )
+                result_events += (
+                    reducer_result.events or []
+                    if is_reducer_result(reducer_result)
+                    else []
                 )
             elif (
                 isinstance(action, CombineReducerUnregisterAction) and action._id == _id  # noqa: SLF001
@@ -129,14 +147,14 @@ def combine_reducers(
                 for key, result in reducers_results.items()
             },
         )
-        result_actions = sum(
+        result_actions += sum(
             [
                 result.actions or [] if is_reducer_result(result) else []
                 for result in reducers_results.values()
             ],
             [],
         )
-        result_events = sum(
+        result_events += sum(
             [
                 result.events or [] if is_reducer_result(result) else []
                 for result in reducers_results.values()
@@ -150,4 +168,4 @@ def combine_reducers(
             events=result_events,
         )
 
-    return (combined_reducer, _id)
+    return combined_reducer, _id
