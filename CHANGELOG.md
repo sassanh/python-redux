@@ -1,5 +1,10 @@
 # Changelog
 
+## Version 0.9.23
+
+- feat(combine_reducers): initialization of sub-reducers is done with `CombineReducerInitAction`
+  containing `_id` instead of normal `InitAction`
+
 ## Version 0.9.22
 
 - fix: `CombineReducerRegisterAction` should take care of `CompleteReducerResult`

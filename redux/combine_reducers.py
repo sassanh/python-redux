@@ -4,7 +4,7 @@ from __future__ import annotations
 import copy
 import uuid
 from dataclasses import asdict, make_dataclass
-from typing import TYPE_CHECKING, Any, TypeGuard, TypeVar, cast
+from typing import TYPE_CHECKING, Any, TypeVar, cast
 
 from .basic_types import (
     Action,
@@ -25,20 +25,23 @@ class BaseCombineReducerState(Immutable):
     _id: str
 
 
-class BaseCombineReducerAction(BaseAction):
+class CombineReducerAction(BaseAction):
     _id: str
 
 
-class CombineReducerRegisterAction(BaseCombineReducerAction):
+class CombineReducerInitAction(CombineReducerAction, InitAction):
+    key: str
+
+
+class CombineReducerRegisterAction(CombineReducerAction):
     key: str
     reducer: ReducerType
 
 
-class CombineReducerUnregisterAction(BaseCombineReducerAction):
+class CombineReducerUnregisterAction(CombineReducerAction):
     key: str
 
 
-CombineReducerAction = CombineReducerRegisterAction | CombineReducerUnregisterAction
 CombineReducerState = TypeVar(
     'CombineReducerState',
     bound=BaseCombineReducerState,
@@ -46,16 +49,13 @@ CombineReducerState = TypeVar(
 AnyAction = TypeVar('AnyAction', bound=BaseAction)
 
 
-def is_combine_reducer_action(action: BaseAction) -> TypeGuard[CombineReducerAction]:
-    return isinstance(action, BaseCombineReducerAction)
-
-
 def combine_reducers(
     state_type: type[CombineReducerState],
-    action_type: type[Action] = BaseAction,  # noqa: ARG001
-    event_type: type[Event] = BaseEvent,  # noqa: ARG001
+    action_type: type[Action] = BaseAction,
+    event_type: type[Event] = BaseEvent,
     **reducers: ReducerType,
 ) -> tuple[ReducerType[CombineReducerState, Action, Event], str]:
+    _ = action_type, event_type
     reducers = reducers.copy()
     _id = uuid.uuid4().hex
 
@@ -76,7 +76,7 @@ def combine_reducers(
         result_actions = []
         result_events = []
         nonlocal state_class
-        if state is not None and is_combine_reducer_action(action):
+        if state is not None and isinstance(action, CombineReducerAction):
             if isinstance(action, CombineReducerRegisterAction) and action._id == _id:  # noqa: SLF001
                 key = action.key
                 reducer = action.reducer
@@ -86,7 +86,10 @@ def combine_reducers(
                     ('_id', *reducers.keys()),
                     frozen=True,
                 )
-                reducer_result = reducer(None, InitAction())
+                reducer_result = reducer(
+                    None,
+                    CombineReducerInitAction(_id=_id, key=key),
+                )
                 state = state_class(
                     _id=state._id,  # noqa: SLF001
                     **(
@@ -136,7 +139,9 @@ def combine_reducers(
         reducers_results = {
             key: reducer(
                 None if state is None else getattr(state, key),
-                action,
+                CombineReducerInitAction(key=key, _id=_id)
+                if isinstance(action, InitAction)
+                else action,
             )
             for key, reducer in reducers.items()
         }

@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "python-redux"
-version = "0.9.22"
+version = "0.9.23"
 description = "Redux implementation for Python"
 authors = ["Sassan Haradji <sassanh@gmail.com>"]
 license = "Apache-2.0"
@@ -11,7 +11,6 @@ packages = [{ include = "redux" }]
 python = "^3.9"
 python-immutable = "^1.0.0"
 typing-extensions = "^4.9.0"
-pyright = "^1.1.348"
 
 
 [tool.poetry.scripts]
@@ -23,7 +22,7 @@ optional = true
 
 [tool.poetry.group.dev.dependencies]
 poethepoet = "^0.24.3"
-pyright = "^1.1.348"
+pyright = "^1.1.349"
 ruff = "^0.1.9"
 
 [build-system]
