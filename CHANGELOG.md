@@ -1,5 +1,9 @@
 # Changelog
 
+## Version 0.9.24
+
+- refactor: no error if an unsubscription function is called multiple times
+
 ## Version 0.9.23
 
 - feat(combine_reducers): initialization of sub-reducers is done with `CombineReducerInitAction`

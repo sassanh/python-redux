@@ -105,7 +105,7 @@ def create_store(
                             if isinstance(listener_, weakref.ref):
                                 listener = listener_()
                                 if listener is None:
-                                    listeners.remove(listener_)
+                                    listeners.discard(listener_)
                                     continue
                             else:
                                 listener = listener_
@@ -117,7 +117,7 @@ def create_store(
                         if isinstance(event_handler_, weakref.ref):
                             event_handler = event_handler_()
                             if event_handler is None:
-                                event_handlers[type(event)].remove(
+                                event_handlers[type(event)].discard(
                                     (event_handler_, options),
                                 )
                                 continue
@@ -182,7 +182,7 @@ def create_store(
         event_handlers[cast(type[Event], event_type)].add(
             (handler_ref, subscription_options),
         )
-        return lambda: event_handlers[cast(type[Event], event_type)].remove(
+        return lambda: event_handlers[cast(type[Event], event_type)].discard(
             (handler_ref, subscription_options),
         )
 
@@ -255,7 +255,7 @@ def create_store(
                         if isinstance(subscriber_, weakref.ref):
                             subscriber = subscriber_()
                             if subscriber is None:
-                                subscriptions.remove(subscriber_)
+                                subscriptions.discard(subscriber_)
                                 continue
                         else:
                             subscriber = subscriber_
@@ -291,7 +291,7 @@ def create_store(
                         callback(self.value)
 
                     def unsubscribe() -> None:
-                        subscriptions.remove(callback_ref)
+                        subscriptions.discard(callback_ref)
 
                     return unsubscribe
 
