@@ -62,13 +62,15 @@ class FinishEvent(BaseEvent):
     ...
 
 
-def is_reducer_result(
+def is_complete_reducer_result(
     result: ReducerResult[State, Action, Event],
 ) -> TypeGuard[CompleteReducerResult[State, Action, Event]]:
     return isinstance(result, CompleteReducerResult)
 
 
-def is_state(result: ReducerResult[State, Action, Event]) -> TypeGuard[State]:
+def is_state_reducer_result(
+    result: ReducerResult[State, Action, Event],
+) -> TypeGuard[State]:
     return not isinstance(result, CompleteReducerResult)
 
 
@@ -83,9 +85,6 @@ class CreateStoreOptions(Immutable):
     scheduler: Scheduler | None = None
     action_middleware: Callable[[BaseAction], Any] | None = None
     event_middleware: Callable[[BaseEvent], Any] | None = None
-
-
-CreStoreOptions = CreateStoreOptions(auto_init=True)
 
 
 class AutorunOptions(Immutable, Generic[AutorunOriginalReturnType]):
@@ -169,13 +168,3 @@ class Dispatch(Protocol, Generic[State, Action, Event]):
         | None = None,
     ) -> None:
         ...
-
-
-class InitializeStateReturnValue(
-    Immutable,
-    Generic[State, Action, Event],
-):
-    dispatch: Dispatch[State, Action, Event]
-    subscribe: Callable[[Callable[[State], Any]], Callable[[], None]]
-    subscribe_event: EventSubscriber
-    autorun: AutorunType[State]

@@ -3,17 +3,18 @@ from __future__ import annotations
 
 import time
 
+from immutable import Immutable
+
 from redux import (
     BaseAction,
     BaseCombineReducerState,
     CombineReducerAction,
     CombineReducerRegisterAction,
     CombineReducerUnregisterAction,
-    Immutable,
     InitAction,
     InitializationActionError,
+    Store,
     combine_reducers,
-    create_store,
 )
 from redux.basic_types import (
     BaseEvent,
@@ -115,8 +116,8 @@ def inverse_reducer(
 
 reducer, reducer_id = combine_reducers(
     state_type=StateType,
-    action_type=ActionType,
-    event_type=SleepEvent | PrintEvent,
+    action_type=ActionType,  # pyright: ignore [reportArgumentType]
+    event_type=SleepEvent | PrintEvent,  # pyright: ignore [reportArgumentType]
     straight=straight_reducer,
     base10=base10_reducer,
 )
@@ -125,7 +126,7 @@ reducer, reducer_id = combine_reducers(
 
 def main() -> None:
     # Initialization <
-    store = create_store(
+    store = Store(
         reducer,
         CreateStoreOptions(auto_init=True, threads=2),
     )

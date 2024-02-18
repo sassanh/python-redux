@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "python-redux"
-version = "0.9.24"
+version = "0.10.0"
 description = "Redux implementation for Python"
 authors = ["Sassan Haradji <sassanh@gmail.com>"]
 license = "Apache-2.0"
@@ -8,38 +8,38 @@ readme = "README.md"
 packages = [{ include = "redux" }]
 
 [tool.poetry.dependencies]
-python = "^3.9"
-python-immutable = "^1.0.0"
+python = "^3.11"
+python-immutable = "^1.0.2"
 typing-extensions = "^4.9.0"
-
-
-[tool.poetry.scripts]
-demo = "demo:main"
-todo_demo = "todo_demo:main"
 
 [tool.poetry.group.dev]
 optional = true
 
 [tool.poetry.group.dev.dependencies]
-poethepoet = "^0.24.3"
-pyright = "^1.1.349"
-ruff = "^0.1.9"
+poethepoet = "^0.24.4"
+pyright = "^1.1.350"
+ruff = "^0.2.2"
 
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
 
+[tool.poetry.scripts]
+demo = "demo:main"
+todo_demo = "todo_demo:main"
+
 [tool.poe.tasks]
-lint = "pyright -p pyproject.toml ."
+lint = "ruff . --unsafe-fixes"
+typecheck = "pyright -p pyproject.toml ."
+sanity = ["typecheck", "lint"]
 
 [tool.ruff]
-select = ['ALL']
-ignore = []
+lint.select = ['ALL']
+lint.ignore = ['INP001', 'PLR0911', 'D203', 'D213']
+lint.fixable = ['ALL']
+lint.unfixable = []
 
-fixable = ['ALL']
-unfixable = []
-
-[tool.ruff.flake8-quotes]
+[tool.ruff.lint.flake8-quotes]
 docstring-quotes = "double"
 inline-quotes = "single"
 multiline-quotes = "double"
@@ -49,3 +49,6 @@ quote-style = 'single'
 
 [tool.isort]
 profile = "black"
+
+[tool.pyright]
+exclude = ['typings']

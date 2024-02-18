@@ -6,11 +6,9 @@ import uuid
 from dataclasses import replace
 from typing import Sequence
 
-from redux import (
-    BaseAction,
-    Immutable,
-    create_store,
-)
+from immutable import Immutable
+
+from redux import BaseAction, Store
 from redux.basic_types import (
     BaseEvent,
     CompleteReducerResult,
@@ -84,7 +82,7 @@ def reducer(
 
 
 def main() -> None:
-    store = create_store(reducer)
+    store = Store(reducer)
 
     # subscription:
     dummy_render = print

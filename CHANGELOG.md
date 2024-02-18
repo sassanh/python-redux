@@ -1,5 +1,10 @@
 # Changelog
 
+## Version 0.10.0
+
+- refactor: remove `create_store` closure in favor of `Store` class with identical
+  api
+
 ## Version 0.9.25
 
 - feat: all subscriptions/listeners with `keep_ref`, now use `WeakMethod` for methods

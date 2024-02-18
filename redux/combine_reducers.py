@@ -16,7 +16,7 @@ from .basic_types import (
     Event,
     Immutable,
     InitAction,
-    is_reducer_result,
+    is_complete_reducer_result,
 )
 
 if TYPE_CHECKING:
@@ -98,7 +98,7 @@ def combine_reducers(
                         {
                             key_: (
                                 reducer_result.state
-                                if is_reducer_result(reducer_result)
+                                if is_complete_reducer_result(reducer_result)
                                 else reducer_result
                             )
                             if key == key_
@@ -109,12 +109,12 @@ def combine_reducers(
                 )
                 result_actions += (
                     reducer_result.actions or []
-                    if is_reducer_result(reducer_result)
+                    if is_complete_reducer_result(reducer_result)
                     else []
                 )
                 result_events += (
                     reducer_result.events or []
-                    if is_reducer_result(reducer_result)
+                    if is_complete_reducer_result(reducer_result)
                     else []
                 )
             elif (
@@ -150,14 +150,14 @@ def combine_reducers(
         result_state = state_class(
             _id=_id,
             **{
-                key: result.state if is_reducer_result(result) else result
+                key: result.state if is_complete_reducer_result(result) else result
                 for key, result in reducers_results.items()
             },
         )
         result_actions += functools.reduce(
             operator.iadd,
             [
-                result.actions or [] if is_reducer_result(result) else []
+                result.actions or [] if is_complete_reducer_result(result) else []
                 for result in reducers_results.values()
             ],
             [],
@@ -165,7 +165,7 @@ def combine_reducers(
         result_events += functools.reduce(
             operator.iadd,
             [
-                result.events or [] if is_reducer_result(result) else []
+                result.events or [] if is_complete_reducer_result(result) else []
                 for result in reducers_results.values()
             ],
             [],
