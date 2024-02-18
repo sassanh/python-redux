@@ -1,5 +1,9 @@
 # Changelog
 
+## Version 0.9.25
+
+- feat: all subscriptions/listeners with `keep_ref`, now use `WeakMethod` for methods
+
 ## Version 0.9.24
 
 - refactor: no error if an unsubscription function is called multiple times

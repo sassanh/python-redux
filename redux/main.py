@@ -7,6 +7,7 @@ import weakref
 from collections import defaultdict
 from inspect import signature
 from threading import Lock
+from types import MethodType
 from typing import Any, Callable, Generic, cast
 
 from .basic_types import (
@@ -162,7 +163,12 @@ def create_store(
         *,
         keep_ref: bool = True,
     ) -> Callable[[], None]:
-        listener_ref = listener if keep_ref else weakref.ref(listener)
+        if keep_ref:
+            listener_ref = listener
+        elif isinstance(listener, MethodType):
+            listener_ref = weakref.WeakMethod(listener)
+        else:
+            listener_ref = weakref.ref(listener)
 
         listeners.add(listener_ref)
         return lambda: listeners.remove(listener_ref)
@@ -177,7 +183,12 @@ def create_store(
             EventSubscriptionOptions() if options is None else options
         )
 
-        handler_ref = handler if subscription_options.keep_ref else weakref.ref(handler)
+        if subscription_options.keep_ref:
+            handler_ref = handler
+        elif isinstance(handler, MethodType):
+            handler_ref = weakref.WeakMethod(handler)
+        else:
+            handler_ref = weakref.ref(handler)
 
         event_handlers[cast(type[Event], event_type)].add(
             (handler_ref, subscription_options),
@@ -284,7 +295,12 @@ def create_store(
                     | None = autorun_options.subscribers_immediate_run,
                     keep_ref: bool | None = autorun_options.subscribers_keep_ref,
                 ) -> Callable[[], None]:
-                    callback_ref = callback if keep_ref else weakref.ref(callback)
+                    if keep_ref:
+                        callback_ref = callback
+                    elif isinstance(callback, MethodType):
+                        callback_ref = weakref.WeakMethod(callback)
+                    else:
+                        callback_ref = weakref.ref(callback)
                     subscriptions.add(callback_ref)
 
                     if immediate_run:

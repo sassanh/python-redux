@@ -2,6 +2,8 @@
 from __future__ import annotations
 
 import copy
+import functools
+import operator
 import uuid
 from dataclasses import asdict, make_dataclass
 from typing import TYPE_CHECKING, Any, TypeVar, cast
@@ -152,14 +154,16 @@ def combine_reducers(
                 for key, result in reducers_results.items()
             },
         )
-        result_actions += sum(
+        result_actions += functools.reduce(
+            operator.iadd,
             [
                 result.actions or [] if is_reducer_result(result) else []
                 for result in reducers_results.values()
             ],
             [],
         )
-        result_events += sum(
+        result_events += functools.reduce(
+            operator.iadd,
             [
                 result.events or [] if is_reducer_result(result) else []
                 for result in reducers_results.values()
