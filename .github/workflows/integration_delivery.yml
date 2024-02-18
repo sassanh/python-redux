@@ -1,0 +1,215 @@
+name: CI/CD
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+env:
+  PYTHON_VERSION: '3.11'
+
+jobs:
+  dependencies:
+    name: Install Dependencies
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        name: Checkout
+
+      - uses: actions/setup-python@v5
+        name: Setup Python
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          architecture: x64
+
+      - name: Install Poetry
+        uses: snok/install-poetry@v1
+        with:
+          virtualenvs-create: true
+
+      - name: Install dependencies
+        run: poetry install --with dev
+
+      - name: Save Cached Poetry
+        id: cached-poetry
+        uses: actions/cache/save@v4
+        with:
+          path: |
+            ~/.cache
+            ~/.local
+          key: poetry-0
+
+  type-check:
+    name: Type Check
+    needs:
+      - dependencies
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        name: Checkout
+
+      - uses: actions/setup-python@v5
+        name: Setup Python
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          architecture: x64
+
+      - name: Load Cached Poetry
+        id: cached-poetry
+        uses: actions/cache/restore@v4
+        with:
+          path: |
+            ~/.cache
+            ~/.local
+          key: poetry-0
+
+      - name: Type Check
+        run: poetry run poe typecheck
+
+  lint:
+    name: Lint
+    needs:
+      - dependencies
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        name: Checkout
+
+      - uses: actions/setup-python@v5
+        name: Setup Python
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          architecture: x64
+
+      - name: Load Cached Poetry
+        id: cached-poetry
+        uses: actions/cache/restore@v4
+        with:
+          path: |
+            ~/.cache
+            ~/.local
+          key: poetry-0
+
+      - name: Lint
+        run: poetry run poe lint
+
+  build:
+    name: Build
+    needs:
+      - dependencies
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.extract_version.outputs.version }}
+      name: ${{ steps.extract_version.outputs.name }}
+    steps:
+      - uses: actions/checkout@v4
+        name: Checkout
+        with:
+          lfs: true
+
+      - uses: actions/setup-python@v5
+        name: Setup Python
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          architecture: x64
+
+      - name: Load Cached Poetry
+        id: cached-poetry
+        uses: actions/cache/restore@v4
+        with:
+          path: |
+            ~/.cache
+            ~/.local
+          key: poetry-0
+
+      - name: Build
+        run: poetry build
+
+      - name: Extract Version
+        id: extract_version
+        run: |
+          echo "version=$(poetry version --short)" >> "$GITHUB_OUTPUT"
+          echo "name=$(poetry version | cut -d' ' -f1)" >> "$GITHUB_OUTPUT"
+
+      - name: Upload wheel
+        uses: actions/upload-artifact@v4
+        with:
+          name: wheel
+          path: dist/*.whl
+          if-no-files-found: error
+
+      - name: Upload binary
+        uses: actions/upload-artifact@v4
+        with:
+          name: binary
+          path: dist/*.tar.gz
+          if-no-files-found: error
+
+  pypi-publish:
+    name: Publish to PyPI
+    if: >-
+      github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
+    needs:
+      - type-check
+      - lint
+      - build
+    runs-on: ubuntu-latest
+    environment:
+      name: release
+      url: https://pypi.org/p/${{ needs.build.outputs.name }}
+    permissions:
+      id-token: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: wheel
+          path: dist
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: binary
+          path: dist
+
+      - name: Publish package distributions to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          packages-dir: dist
+          verbose: true
+
+  release:
+    name: Release
+    needs:
+      - type-check
+      - lint
+      - build
+      - pypi-publish
+    environment:
+      name: release
+      url: https://pypi.org/p/${{ needs.build.outputs.name }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
+    steps:
+      - name: Procure Wheel
+        uses: actions/download-artifact@v4
+        with:
+          name: wheel
+          path: artifacts
+
+      - name: Procure Binary
+        uses: actions/download-artifact@v4
+        with:
+          name: binary
+          path: artifacts
+
+      - name: Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: artifacts/*
+          tag_name: v${{ needs.build.outputs.version }}
+          body: |
+            Release of version ${{ needs.build.outputs.version }}
+            PyPI package: https://pypi.org/project/${{ needs.build.outputs.name }}/${{ needs.build.outputs.version }}
+          prerelease: false
+          draft: false

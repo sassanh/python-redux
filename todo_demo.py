@@ -95,6 +95,8 @@ def main() -> None:
     def reaction(content: str | None) -> None:
         print(content)
 
+    _ = reaction
+
     # event listener, note that this will run async in a separate thread, so it can
     # include async operations like API calls, etc:
     dummy_api_call = print

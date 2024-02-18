@@ -1,5 +1,11 @@
 # Changelog
 
+## Version 0.10.4
+
+- chore: GitHub workflow to publish pushes on `main` branch to PyPI
+- chore: create GitHub release for main branch in GitHub workflows
+- refactor: fix lint issues and typing issues
+
 ## Version 0.10.0
 
 - refactor: remove `create_store` closure in favor of `Store` class with identical
