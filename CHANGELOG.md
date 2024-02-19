@@ -1,5 +1,9 @@
 # Changelog
 
+## Version 0.10.5
+
+- fix: `self_workers` in `Store.__init__` -> local variable `workers`
+
 ## Version 0.10.4
 
 - chore: GitHub workflow to publish pushes on `main` branch to PyPI
