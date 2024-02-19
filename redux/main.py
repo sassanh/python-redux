@@ -91,11 +91,12 @@ class Store(Generic[State, Action, Event]):
         self._event_handlers_queue = queue.Queue[
             tuple[EventHandler[Event], Event] | None
         ]()
-        self_workers = [
+        self._workers = [
             _SideEffectRunnerThread(self._event_handlers_queue)
             for _ in range(self.store_options.threads)
         ]
-        for worker in self_workers:
+        for worker in self._workers:
+            worker.setDaemon(True)
             worker.start()
 
         self._is_running = Lock()
