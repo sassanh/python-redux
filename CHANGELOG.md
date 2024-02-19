@@ -1,5 +1,10 @@
 # Changelog
 
+## Version 0.10.7
+
+- fix: autorun now correctly updates its value when the store is updated
+- feat: add `__repr__` to `Autorun` class
+
 ## Version 0.10.6
 
 - chore: improve github workflow caching

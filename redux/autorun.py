@@ -44,20 +44,20 @@ class Autorun(
         self._selector = selector
         self._comparator = comparator
         self._func = func
-        self.options = options
+        self._options = options
 
         self._last_selector_result: SelectorOutput | None = None
         self._last_comparator_result: ComparatorOutput = cast(
             ComparatorOutput,
             object(),
         )
-        self._last_value: AutorunOriginalReturnType | None = options.default_value
+        self._latest_value: AutorunOriginalReturnType | None = options.default_value
         self._subscriptions: set[
             Callable[[AutorunOriginalReturnType], Any]
             | weakref.ref[Callable[[AutorunOriginalReturnType], Any]]
         ] = set()
 
-        if self.options.initial_run and store._state is not None:  # noqa: SLF001
+        if self._options.initial_run and store._state is not None:  # noqa: SLF001
             self.check_and_call(store._state)  # noqa: SLF001
 
         store.subscribe(self.check_and_call)
@@ -76,12 +76,12 @@ class Autorun(
             self._last_selector_result = selector_result
             self._last_comparator_result = comparator_result
             if len(signature(self._func).parameters) == 1:
-                last_value = cast(
+                self._latest_value = cast(
                     Callable[[SelectorOutput], AutorunOriginalReturnType],
                     self._func,
                 )(selector_result)
             else:
-                last_value = cast(
+                self._latest_value = cast(
                     Callable[
                         [SelectorOutput, SelectorOutput | None],
                         AutorunOriginalReturnType,
@@ -99,7 +99,7 @@ class Autorun(
                         continue
                 else:
                     subscriber = subscriber_
-                subscriber(last_value)
+                subscriber(self._latest_value)
 
     def __call__(
         self: Autorun[
@@ -113,7 +113,20 @@ class Autorun(
     ) -> AutorunOriginalReturnType:
         if self._store._state is not None:  # noqa: SLF001
             self.check_and_call(self._store._state)  # noqa: SLF001
-        return cast(AutorunOriginalReturnType, self._last_value)
+        return cast(AutorunOriginalReturnType, self._latest_value)
+
+    def __repr__(
+        self: Autorun[
+            State,
+            Action,
+            Event,
+            SelectorOutput,
+            ComparatorOutput,
+            AutorunOriginalReturnType,
+        ],
+    ) -> str:
+        return f"""{super().__repr__()}(func: {self._func}, last_value: {
+        self._latest_value})"""
 
     @property
     def value(
@@ -126,7 +139,7 @@ class Autorun(
             AutorunOriginalReturnType,
         ],
     ) -> AutorunOriginalReturnType:
-        return cast(AutorunOriginalReturnType, self._last_value)
+        return cast(AutorunOriginalReturnType, self._latest_value)
 
     def subscribe(
         self: Autorun[
@@ -143,9 +156,9 @@ class Autorun(
         keep_ref: bool | None = None,
     ) -> Callable[[], None]:
         if immediate_run is None:
-            immediate_run = self.options.subscribers_immediate_run
+            immediate_run = self._options.subscribers_immediate_run
         if keep_ref is None:
-            keep_ref = self.options.subscribers_keep_ref
+            keep_ref = self._options.subscribers_keep_ref
         if keep_ref:
             callback_ref = callback
         elif isinstance(callback, MethodType):
