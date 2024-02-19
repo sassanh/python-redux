@@ -1,5 +1,9 @@
 # Changelog
 
+## Version 0.10.6
+
+- chore: improve github workflow caching
+
 ## Version 0.10.5
 
 - fix: `self_workers` in `Store.__init__` -> local variable `workers`

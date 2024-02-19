@@ -16,6 +16,15 @@ jobs:
       - uses: actions/checkout@v4
         name: Checkout
 
+      - name: Save Cached Poetry
+        id: cached-poetry
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cache
+            ~/.local
+          key: poetry-${{ hashFiles('poetry.lock') }}
+
       - uses: actions/setup-python@v5
         name: Setup Python
         with:
@@ -29,15 +38,6 @@ jobs:
 
       - name: Install dependencies
         run: poetry install --with dev
-
-      - name: Save Cached Poetry
-        id: cached-poetry
-        uses: actions/cache/save@v4
-        with:
-          path: |
-            ~/.cache
-            ~/.local
-          key: poetry-0
 
   type-check:
     name: Type Check
@@ -61,7 +61,7 @@ jobs:
           path: |
             ~/.cache
             ~/.local
-          key: poetry-0
+          key: poetry-${{ hashFiles('poetry.lock') }}
 
       - name: Type Check
         run: poetry run poe typecheck
@@ -88,7 +88,7 @@ jobs:
           path: |
             ~/.cache
             ~/.local
-          key: poetry-0
+          key: poetry-${{ hashFiles('poetry.lock') }}
 
       - name: Lint
         run: poetry run poe lint
@@ -104,8 +104,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         name: Checkout
-        with:
-          lfs: true
 
       - uses: actions/setup-python@v5
         name: Setup Python
@@ -120,7 +118,7 @@ jobs:
           path: |
             ~/.cache
             ~/.local
-          key: poetry-0
+          key: poetry-${{ hashFiles('poetry.lock') }}
 
       - name: Build
         run: poetry build
