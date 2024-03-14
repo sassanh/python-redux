@@ -1,7 +1,7 @@
 # ruff: noqa: A003, D100, D101, D102, D103, D104, D105, D107
 from __future__ import annotations
 
-from typing import Any, Callable, Generic, Protocol, TypeAlias, TypeGuard
+from typing import Any, Callable, Coroutine, Generic, Protocol, TypeAlias, TypeGuard
 
 from immutable import Immutable
 from typing_extensions import TypeVar
@@ -16,7 +16,7 @@ class BaseEvent(Immutable):
 
 
 class EventSubscriptionOptions(Immutable):
-    run_async: bool = True
+    immediate_run: bool = False
     keep_ref: bool = True
 
 
@@ -85,12 +85,14 @@ class CreateStoreOptions(Immutable):
     scheduler: Scheduler | None = None
     action_middleware: Callable[[BaseAction], Any] | None = None
     event_middleware: Callable[[BaseEvent], Any] | None = None
+    task_creator: Callable[[Coroutine], Any] | None = None
 
 
 class AutorunOptions(Immutable, Generic[AutorunOriginalReturnType]):
     default_value: AutorunOriginalReturnType | None = None
     initial_run: bool = True
-    subscribers_immediate_run: bool = True
+    keep_ref: bool = True
+    subscribers_immediate_run: bool | None = None
     subscribers_keep_ref: bool = True
 
 

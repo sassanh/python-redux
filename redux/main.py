@@ -1,14 +1,15 @@
 # ruff: noqa: D100, D101, D102, D103, D104, D105, D107
 from __future__ import annotations
 
+import inspect
 import queue
 import threading
 import weakref
+from asyncio import create_task, iscoroutine
 from collections import defaultdict
 from inspect import signature
 from threading import Lock
-from types import MethodType
-from typing import Any, Callable, Generic, cast
+from typing import Any, Callable, Coroutine, Generic, cast
 
 from redux.autorun import Autorun
 from redux.basic_types import (
@@ -41,9 +42,11 @@ class _SideEffectRunnerThread(threading.Thread, Generic[Event]):
     def __init__(
         self: _SideEffectRunnerThread[Event],
         task_queue: queue.Queue[tuple[EventHandler[Event], Event] | None],
+        task_creator: Callable[[Coroutine], Any],
     ) -> None:
         super().__init__()
         self.task_queue = task_queue
+        self.create_task = task_creator
 
     def run(self: _SideEffectRunnerThread[Event]) -> None:
         while True:
@@ -55,9 +58,11 @@ class _SideEffectRunnerThread(threading.Thread, Generic[Event]):
             try:
                 event_handler, event = task
                 if len(signature(event_handler).parameters) == 1:
-                    cast(Callable[[Event], Any], event_handler)(event)
+                    result = cast(Callable[[Event], Any], event_handler)(event)
                 else:
-                    cast(Callable[[], Any], event_handler)()
+                    result = cast(Callable[[], Any], event_handler)()
+                if iscoroutine(result):
+                    self.create_task(result)
             finally:
                 self.task_queue.task_done()
 
@@ -70,6 +75,9 @@ class Store(Generic[State, Action, Event]):
     ) -> None:
         self.store_options = options or CreateStoreOptions()
         self.reducer = reducer
+        self._create_task: Callable[[Coroutine], Any] = (
+            self.store_options.task_creator or create_task
+        )
 
         self._state: State | None = None
         self._listeners: set[
@@ -92,7 +100,7 @@ class Store(Generic[State, Action, Event]):
             tuple[EventHandler[Event], Event] | None
         ]()
         workers = [
-            _SideEffectRunnerThread(self._event_handlers_queue)
+            _SideEffectRunnerThread(self._event_handlers_queue, self._create_task)
             for _ in range(self.store_options.threads)
         ]
         for worker in workers:
@@ -135,7 +143,9 @@ class Store(Generic[State, Action, Event]):
                         continue
                 else:
                     listener = listener_
-                listener(self._state)
+                result = listener(self._state)
+                if iscoroutine(result):
+                    self._create_task(result)
 
     def _run_event_handlers(self: Store[State, Action, Event]) -> None:
         event = self._events.pop(0)
@@ -149,7 +159,7 @@ class Store(Generic[State, Action, Event]):
                     continue
             else:
                 event_handler = event_handler_
-            if options.run_async:
+            if not options.immediate_run:
                 self._event_handlers_queue.put((event_handler, event))
             elif len(signature(event_handler).parameters) == 1:
                 cast(Callable[[Event], Any], event_handler)(event)
@@ -201,7 +211,7 @@ class Store(Generic[State, Action, Event]):
     ) -> Callable[[], None]:
         if keep_ref:
             listener_ref = listener
-        elif isinstance(listener, MethodType):
+        elif inspect.ismethod(listener):
             listener_ref = weakref.WeakMethod(listener)
         else:
             listener_ref = weakref.ref(listener)
@@ -222,7 +232,7 @@ class Store(Generic[State, Action, Event]):
 
         if subscription_options.keep_ref:
             handler_ref = handler
-        elif isinstance(handler, MethodType):
+        elif inspect.ismethod(handler):
             handler_ref = weakref.WeakMethod(handler)
         else:
             handler_ref = weakref.ref(handler)

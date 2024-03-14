@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "python-redux"
-version = "0.10.7"
+version = "0.11.0"
 description = "Redux implementation for Python"
 authors = ["Sassan Haradji <sassanh@gmail.com>"]
 license = "Apache-2.0"
@@ -17,8 +17,8 @@ optional = true
 
 [tool.poetry.group.dev.dependencies]
 poethepoet = "^0.24.4"
-pyright = "^1.1.350"
-ruff = "^0.2.2"
+pyright = "^1.1.354"
+ruff = "^0.3.2"
 
 [build-system]
 requires = ["poetry-core"]
@@ -29,7 +29,7 @@ demo = "demo:main"
 todo_demo = "todo_demo:main"
 
 [tool.poe.tasks]
-lint = "ruff . --unsafe-fixes"
+lint = "ruff check . --unsafe-fixes"
 typecheck = "pyright -p pyproject.toml ."
 sanity = ["typecheck", "lint"]
 

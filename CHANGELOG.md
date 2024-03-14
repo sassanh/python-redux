@@ -1,5 +1,11 @@
 # Changelog
 
+## Version 0.11.0
+
+- feat: add `keep_ref` parameter to subscriptions and autoruns, defaulting to `True`,
+  if set to `False`, the subscription/autorun will not keep a reference to the callback
+- refacotr: general housekeeping
+
 ## Version 0.10.7
 
 - fix: autorun now correctly updates its value when the store is updated
