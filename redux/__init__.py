@@ -5,7 +5,12 @@ from .basic_types import (
     AutorunReturnType,
     AutorunType,
     BaseAction,
+    BaseCombineReducerState,
     BaseEvent,
+    CombineReducerAction,
+    CombineReducerInitAction,
+    CombineReducerRegisterAction,
+    CombineReducerUnregisterAction,
     CompleteReducerResult,
     CreateStoreOptions,
     Dispatch,
@@ -22,14 +27,7 @@ from .basic_types import (
     is_complete_reducer_result,
     is_state_reducer_result,
 )
-from .combine_reducers import (
-    BaseCombineReducerState,
-    CombineReducerAction,
-    CombineReducerInitAction,
-    CombineReducerRegisterAction,
-    CombineReducerUnregisterAction,
-    combine_reducers,
-)
+from .combine_reducers import combine_reducers
 from .main import Store
 
 __all__ = (

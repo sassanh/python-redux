@@ -170,3 +170,24 @@ class Dispatch(Protocol, Generic[State, Action, Event]):
         | None = None,
     ) -> None:
         ...
+
+
+class BaseCombineReducerState(Immutable):
+    _id: str
+
+
+class CombineReducerAction(BaseAction):
+    _id: str
+
+
+class CombineReducerInitAction(CombineReducerAction, InitAction):
+    key: str
+
+
+class CombineReducerRegisterAction(CombineReducerAction):
+    key: str
+    reducer: ReducerType
+
+
+class CombineReducerUnregisterAction(CombineReducerAction):
+    key: str

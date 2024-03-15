@@ -1,5 +1,13 @@
 # Changelog
 
+## Version 0.12.0
+
+- refactor: improve creating new state classes in `combine_reducers` upon registering/unregistering
+  sub-reducers
+- feat: add test fixture for snapshot testing the store
+- chore(test): add test infrastructure for snapshot testing the store
+- test: move demo files to test files and update the to use snapshot fixture
+
 ## Version 0.11.0
 
 - feat: add `keep_ref` parameter to subscriptions and autoruns, defaulting to `True`,

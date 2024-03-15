@@ -1,5 +1,7 @@
 # 🚀 Python Redux
 
+[![codecov](https://codecov.io/gh/sassanh/python-redux/graph/badge.svg?token=4F3EWZRLCL)](https://codecov.io/gh/sassanh/python-redux)
+
 ## 🌟 Overview
 
 Python Redux is a Redux implementation for Python, bringing Redux's state management

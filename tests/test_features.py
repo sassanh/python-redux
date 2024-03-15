@@ -2,27 +2,26 @@
 from __future__ import annotations
 
 import time
+from typing import TYPE_CHECKING, TypeAlias
 
 from immutable import Immutable
 
-from redux import (
+if TYPE_CHECKING:
+    from logging import Logger
+
+    from redux.test import StoreSnapshotContext
+
+from redux.basic_types import (
     BaseAction,
     BaseCombineReducerState,
-    CombineReducerAction,
-    CombineReducerRegisterAction,
-    CombineReducerUnregisterAction,
-    InitAction,
-    InitializationActionError,
-    Store,
-    combine_reducers,
-)
-from redux.basic_types import (
     BaseEvent,
+    CombineReducerAction,
     CompleteReducerResult,
     FinishAction,
+    InitAction,
+    InitializationActionError,
     ReducerResult,
 )
-from redux.main import CreateStoreOptions
 
 
 class CountAction(BaseAction):
@@ -41,9 +40,6 @@ class DoNothingAction(CountAction):
     ...
 
 
-ActionType = InitAction | FinishAction | CountAction | CombineReducerAction
-
-
 class CountStateType(Immutable):
     count: int
 
@@ -52,6 +48,9 @@ class StateType(BaseCombineReducerState):
     straight: CountStateType
     base10: CountStateType
     inverse: CountStateType
+
+
+ActionType: TypeAlias = InitAction | FinishAction | CountAction | CombineReducerAction
 
 
 # Reducers <
@@ -114,22 +113,32 @@ def inverse_reducer(
     return state
 
 
-reducer, reducer_id = combine_reducers(
-    state_type=StateType,
-    action_type=ActionType,  # pyright: ignore [reportArgumentType]
-    event_type=SleepEvent | PrintEvent,  # pyright: ignore [reportArgumentType]
-    straight=straight_reducer,
-    base10=base10_reducer,
-)
 # >
 
 
-def main() -> None:
+def test_general(snapshot_store: StoreSnapshotContext, logger: Logger) -> None:
+    from redux import (
+        CombineReducerRegisterAction,
+        CombineReducerUnregisterAction,
+        Store,
+    )
+    from redux.combine_reducers import combine_reducers
+    from redux.main import CreateStoreOptions
+
+    reducer, reducer_id = combine_reducers(
+        state_type=StateType,
+        action_type=ActionType,  # pyright: ignore [reportArgumentType]
+        event_type=SleepEvent | PrintEvent,  # pyright: ignore [reportArgumentType]
+        straight=straight_reducer,
+        base10=base10_reducer,
+    )
+
     # Initialization <
     store = Store(
         reducer,
         CreateStoreOptions(auto_init=True, threads=2),
     )
+    snapshot_store.set_store(store)
 
     def event_handler(event: SleepEvent) -> None:
         time.sleep(event.duration)
@@ -140,7 +149,7 @@ def main() -> None:
     # -----
 
     # Subscription <
-    store.subscribe(lambda state: print('Subscription state:', state))
+    store.subscribe(lambda _: snapshot_store.take())
     # >
 
     # -----
@@ -148,15 +157,15 @@ def main() -> None:
     # Autorun <
     @store.autorun(lambda state: state.base10)
     def render(base10_value: CountStateType) -> int:
-        print('Autorun:', base10_value)
+        snapshot_store.take()
         return base10_value.count
 
-    render.subscribe(lambda a: print(a))
+    render.subscribe(lambda a: logger.info(a))
 
-    print(f'Render output {render()}')
+    snapshot_store.take()
 
     store.dispatch(IncrementAction())
-    print(f'Render output {render()}')
+    snapshot_store.take()
 
     store.dispatch(
         CombineReducerRegisterAction(
@@ -167,7 +176,7 @@ def main() -> None:
     )
 
     store.dispatch(DoNothingAction())
-    print(f'Render output {render()}')
+    snapshot_store.take()
 
     store.dispatch(
         CombineReducerUnregisterAction(
@@ -175,10 +184,10 @@ def main() -> None:
             key='straight',
         ),
     )
-    print(f'Render output {render()}')
+    snapshot_store.take()
 
     store.dispatch(DecrementAction())
-    print(f'Render output {render()}')
+    snapshot_store.take()
 
     store.dispatch(FinishAction())
     # >

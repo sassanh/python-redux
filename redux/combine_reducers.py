@@ -5,43 +5,26 @@ import copy
 import functools
 import operator
 import uuid
-from dataclasses import asdict, make_dataclass
+from dataclasses import asdict, fields, make_dataclass
 from typing import TYPE_CHECKING, Any, TypeVar, cast
 
 from .basic_types import (
     Action,
     BaseAction,
+    BaseCombineReducerState,
     BaseEvent,
+    CombineReducerAction,
+    CombineReducerInitAction,
+    CombineReducerRegisterAction,
+    CombineReducerUnregisterAction,
     CompleteReducerResult,
     Event,
-    Immutable,
     InitAction,
     is_complete_reducer_result,
 )
 
 if TYPE_CHECKING:
     from redux import ReducerType
-
-
-class BaseCombineReducerState(Immutable):
-    _id: str
-
-
-class CombineReducerAction(BaseAction):
-    _id: str
-
-
-class CombineReducerInitAction(CombineReducerAction, InitAction):
-    key: str
-
-
-class CombineReducerRegisterAction(CombineReducerAction):
-    key: str
-    reducer: ReducerType
-
-
-class CombineReducerUnregisterAction(CombineReducerAction):
-    key: str
 
 
 CombineReducerState = TypeVar(
@@ -64,7 +47,7 @@ def combine_reducers(
     state_class = cast(
         type[state_type],
         make_dataclass(
-            'combined_reducer',
+            state_type.__name__,
             ('_id', *reducers.keys()),
             frozen=True,
             kw_only=True,
@@ -84,9 +67,10 @@ def combine_reducers(
                 reducer = action.reducer
                 reducers[key] = reducer
                 state_class = make_dataclass(
-                    'combined_reducer',
+                    state_type.__name__,
                     ('_id', *reducers.keys()),
                     frozen=True,
+                    kw_only=True,
                 )
                 reducer_result = reducer(
                     None,
@@ -123,11 +107,16 @@ def combine_reducers(
                 key = action.key
 
                 del reducers[key]
-                fields_copy = copy.copy(cast(Any, state_class).__dataclass_fields__)
+                fields_copy = {field.name: field for field in fields(state_class)}
                 annotations_copy = copy.deepcopy(state_class.__annotations__)
                 del fields_copy[key]
                 del annotations_copy[key]
-                state_class = make_dataclass('combined_reducer', annotations_copy)
+                state_class = make_dataclass(
+                    state_type.__name__,
+                    annotations_copy,
+                    frozen=True,
+                    kw_only=True,
+                )
                 cast(Any, state_class).__dataclass_fields__ = fields_copy
 
                 state = state_class(
