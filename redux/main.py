@@ -1,15 +1,20 @@
 # ruff: noqa: D100, D101, D102, D103, D104, D105, D107
 from __future__ import annotations
 
+import dataclasses
 import inspect
 import queue
 import threading
 import weakref
 from asyncio import create_task, iscoroutine
 from collections import defaultdict
+from enum import IntEnum, StrEnum
 from inspect import signature
 from threading import Lock
+from types import NoneType
 from typing import Any, Callable, Coroutine, Generic, cast
+
+from immutable import Immutable, is_immutable
 
 from redux.autorun import Autorun
 from redux.basic_types import (
@@ -32,6 +37,7 @@ from redux.basic_types import (
     InitAction,
     ReducerType,
     SelectorOutput,
+    SnapshotAtom,
     State,
     is_complete_reducer_result,
     is_state_reducer_result,
@@ -68,6 +74,8 @@ class _SideEffectRunnerThread(threading.Thread, Generic[Event]):
 
 
 class Store(Generic[State, Action, Event]):
+    custom_serializer = None
+
     def __init__(
         self: Store[State, Action, Event],
         reducer: ReducerType[State, Action, Event],
@@ -276,3 +284,42 @@ class Store(Generic[State, Action, Event]):
             )
 
         return decorator
+
+    def set_custom_serializer(
+        self: Store,
+        serializer: Callable[[object | type], SnapshotAtom],
+    ) -> None:
+        """Set a custom serializer for the store snapshot."""
+        self.custom_serializer = serializer
+
+    @property
+    def snapshot(self: Store[State, Action, Event]) -> SnapshotAtom:
+        return self._serialize_value(self._state)
+
+    def _serialize_value(self: Store, obj: object | type) -> SnapshotAtom:
+        if self.custom_serializer:
+            return self.custom_serializer(obj)
+        if is_immutable(obj):
+            return self._serialize_dataclass_to_dict(obj)
+        if isinstance(obj, (list, tuple)):
+            return [self._serialize_value(i) for i in obj]
+        if callable(obj):
+            return self._serialize_value(obj())
+        if isinstance(obj, StrEnum):
+            return str(obj)
+        if isinstance(obj, IntEnum):
+            return int(obj)
+        if isinstance(obj, (int, float, str, bool, NoneType)):
+            return obj
+        msg = f'Unable to serialize object with type {type(obj)}.'
+        raise ValueError(msg)
+
+    def _serialize_dataclass_to_dict(
+        self: Store,
+        obj: Immutable,
+    ) -> dict[str, Any]:
+        result = {}
+        for field in dataclasses.fields(obj):
+            value = self._serialize_value(getattr(obj, field.name))
+            result[field.name] = value
+        return result

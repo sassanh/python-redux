@@ -1,5 +1,10 @@
 # Changelog
 
+## Version 0.12.1
+
+- refactor: move store serializer from test framework to code `Store` class
+- feat: add ability to set custom serializer for store snapshots
+
 ## Version 0.12.0
 
 - refactor: improve creating new state classes in `combine_reducers` upon registering/unregistering

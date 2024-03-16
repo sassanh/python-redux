@@ -1,6 +1,7 @@
 # ruff: noqa: A003, D100, D101, D102, D103, D104, D105, D107
 from __future__ import annotations
 
+from types import NoneType
 from typing import Any, Callable, Coroutine, Generic, Protocol, TypeAlias, TypeGuard
 
 from immutable import Immutable
@@ -191,3 +192,14 @@ class CombineReducerRegisterAction(CombineReducerAction):
 
 class CombineReducerUnregisterAction(CombineReducerAction):
     key: str
+
+
+SnapshotAtom = (
+    int
+    | float
+    | str
+    | bool
+    | NoneType
+    | dict[str, 'SnapshotAtom']
+    | list['SnapshotAtom']
+)
