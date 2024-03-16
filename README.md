@@ -81,7 +81,8 @@ side effects.
 This concept fills the gap in handling side effects within Redux's ecosystem, offering
 a more nuanced and integrated approach to state and side effect management.
 
-See todo sample below or check the [demo](demo.py) to see it in action.
+See todo sample below or check the [todo demo](/tests/test_todo.py) or
+[features demo](/tests/test_features.py) to see it in action.
 
 ### Autorun Decorator
 
@@ -97,7 +98,8 @@ selector's return value. This mechanism ensures that the decorated function runs
 in response to relevant state changes, enhancing efficiency and responsiveness in
 the application.
 
-See todo sample below or check the [demo](demo.py) to see it in action.
+See todo sample below or check the [todo demo](/tests/test_todo.py) or
+[features demo](/tests/test_features.py) to see it in action.
 
 ### Combining reducers - `combine_reducers`
 
@@ -241,7 +243,7 @@ store.dispatch(FinishAction())
 
 ## 🎉 Demo
 
-For a detailed example, see `demo.py` in the [GitHub repository](https://github.com/sassanh/python-redux).
+For a detailed example, see [features demo](/tests/test_features.py).
 
 ## 🤝 Contributing
 

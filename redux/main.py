@@ -1,4 +1,4 @@
-# ruff: noqa: D100, D101, D102, D103, D104, D105, D107
+"""Redux store for managing state and side effects."""
 from __future__ import annotations
 
 import dataclasses
@@ -74,13 +74,14 @@ class _SideEffectRunnerThread(threading.Thread, Generic[Event]):
 
 
 class Store(Generic[State, Action, Event]):
-    custom_serializer = None
+    """Redux store for managing state and side effects."""
 
     def __init__(
         self: Store[State, Action, Event],
         reducer: ReducerType[State, Action, Event],
         options: CreateStoreOptions | None = None,
     ) -> None:
+        """Create a new store."""
         self.store_options = options or CreateStoreOptions()
         self.reducer = reducer
         self._create_task: Callable[[Coroutine], Any] = (
@@ -175,6 +176,7 @@ class Store(Generic[State, Action, Event]):
                 cast(Callable[[], Any], event_handler)()
 
     def run(self: Store[State, Action, Event]) -> None:
+        """Run the store."""
         with self._is_running:
             while len(self._actions) > 0 or len(self._events) > 0:
                 if len(self._actions) > 0:
@@ -189,6 +191,7 @@ class Store(Generic[State, Action, Event]):
         with_state: Callable[[State | None], DispatchParameters[Action, Event]]
         | None = None,
     ) -> None:
+        """Dispatch actions and/or events."""
         if with_state is not None:
             self.dispatch(with_state(self._state))
 
@@ -217,6 +220,7 @@ class Store(Generic[State, Action, Event]):
         *,
         keep_ref: bool = True,
     ) -> Callable[[], None]:
+        """Subscribe to state changes."""
         if keep_ref:
             listener_ref = listener
         elif inspect.ismethod(listener):
@@ -234,6 +238,7 @@ class Store(Generic[State, Action, Event]):
         *,
         options: EventSubscriptionOptions | None = None,
     ) -> Callable[[], None]:
+        """Subscribe to events."""
         subscription_options = (
             EventSubscriptionOptions() if options is None else options
         )
@@ -271,6 +276,8 @@ class Store(Generic[State, Action, Event]):
         SelectorOutput,
         AutorunOriginalReturnType,
     ]:
+        """Create a new autorun, reflecting on state changes."""
+
         def decorator(
             func: Callable[[SelectorOutput], AutorunOriginalReturnType]
             | Callable[[SelectorOutput, SelectorOutput], AutorunOriginalReturnType],
@@ -285,26 +292,19 @@ class Store(Generic[State, Action, Event]):
 
         return decorator
 
-    def set_custom_serializer(
-        self: Store,
-        serializer: Callable[[object | type], SnapshotAtom],
-    ) -> None:
-        """Set a custom serializer for the store snapshot."""
-        self.custom_serializer = serializer
-
     @property
     def snapshot(self: Store[State, Action, Event]) -> SnapshotAtom:
-        return self._serialize_value(self._state)
+        """Return a snapshot of the current state of the store."""
+        return self.serialize_value(self._state)
 
-    def _serialize_value(self: Store, obj: object | type) -> SnapshotAtom:
-        if self.custom_serializer:
-            return self.custom_serializer(obj)
+    def serialize_value(self: Store, obj: object | type) -> SnapshotAtom:
+        """Serialize a value to a snapshot atom."""
         if is_immutable(obj):
             return self._serialize_dataclass_to_dict(obj)
         if isinstance(obj, (list, tuple)):
-            return [self._serialize_value(i) for i in obj]
+            return [self.serialize_value(i) for i in obj]
         if callable(obj):
-            return self._serialize_value(obj())
+            return self.serialize_value(obj())
         if isinstance(obj, StrEnum):
             return str(obj)
         if isinstance(obj, IntEnum):
@@ -320,6 +320,6 @@ class Store(Generic[State, Action, Event]):
     ) -> dict[str, Any]:
         result = {}
         for field in dataclasses.fields(obj):
-            value = self._serialize_value(getattr(obj, field.name))
+            value = self.serialize_value(getattr(obj, field.name))
             result[field.name] = value
         return result

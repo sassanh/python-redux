@@ -1,5 +1,10 @@
 # Changelog
 
+## Version 0.12.2
+
+- docs: update path of demos migrated to tests in `README.md`
+- refactor: remove `set_customer_serializer` in favor of overridable `serialize_value`
+
 ## Version 0.12.1
 
 - refactor: move store serializer from test framework to code `Store` class
