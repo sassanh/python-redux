@@ -1,5 +1,14 @@
 # Changelog
 
+## Version 0.12.3
+
+- test: write tests for different features of the api
+- refactor: rename certain names in the api to better reflect their job
+- refactor: store_snapshot now puts snapshot files in a hierarchical directory structure
+  based on the test module and test name
+- fix: sort JSON keys in `snapshot_store`'s `json_snapshot`
+- test: cover most features with tests
+
 ## Version 0.12.2
 
 - docs: update path of demos migrated to tests in `README.md`

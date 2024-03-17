@@ -64,16 +64,11 @@ class Autorun(
             Callable[[AutorunOriginalReturnType], Any]
             | weakref.ref[Callable[[AutorunOriginalReturnType], Any]]
         ] = set()
-        self._immediate_run = (
-            not iscoroutinefunction(func)
-            if options.subscribers_immediate_run is None
-            else options.subscribers_immediate_run
-        )
 
         if self._options.initial_run and store._state is not None:  # noqa: SLF001
             self._check_and_call(store._state)  # noqa: SLF001
 
-        store.subscribe(self._check_and_call)
+        store.subscribe(self._check_and_call, keep_ref=options.keep_ref)
 
     def inform_subscribers(
         self: Autorun[
@@ -142,21 +137,31 @@ class Autorun(
         except AttributeError:
             return
         func = self._func() if isinstance(self._func, weakref.ref) else self._func
-        if func is None:
-            return
-        if self._comparator is None:
-            comparator_result = cast(ComparatorOutput, selector_result)
-        else:
-            comparator_result = self._comparator(state)
-        if comparator_result != self._last_comparator_result:
-            previous_result = self._last_selector_result
-            self._last_selector_result = selector_result
-            self._last_comparator_result = comparator_result
-            self._latest_value = self.call_func(selector_result, previous_result, func)
-            if self._immediate_run:
-                self.inform_subscribers()
+        if func:
+            if self._comparator is None:
+                comparator_result = cast(ComparatorOutput, selector_result)
             else:
-                self._store._create_task(cast(Coroutine, self._latest_value))  # noqa: SLF001
+                try:
+                    comparator_result = self._comparator(state)
+                except AttributeError:
+                    return
+            if comparator_result != self._last_comparator_result:
+                previous_result = self._last_selector_result
+                self._last_selector_result = selector_result
+                self._last_comparator_result = comparator_result
+                self._latest_value = self.call_func(
+                    selector_result,
+                    previous_result,
+                    func,
+                )
+                if iscoroutinefunction(func):
+                    task = self._store._async_loop.create_task(  # noqa: SLF001
+                        cast(Coroutine, self._latest_value),
+                    )
+                    task.add_done_callback(lambda _: self.inform_subscribers())
+                    self._latest_value = cast(AutorunOriginalReturnType, task)
+                else:
+                    self.inform_subscribers()
 
     def __call__(
         self: Autorun[
@@ -168,8 +173,9 @@ class Autorun(
             AutorunOriginalReturnType,
         ],
     ) -> AutorunOriginalReturnType:
-        if self._store._state is not None:  # noqa: SLF001
-            self._check_and_call(self._store._state)  # noqa: SLF001
+        state = self._store._state  # noqa: SLF001
+        if state is not None:
+            self._check_and_call(state)
         return cast(AutorunOriginalReturnType, self._latest_value)
 
     def __repr__(
@@ -209,11 +215,11 @@ class Autorun(
         ],
         callback: Callable[[AutorunOriginalReturnType], Any],
         *,
-        immediate_run: bool | None = None,
+        initial_run: bool | None = None,
         keep_ref: bool | None = None,
     ) -> Callable[[], None]:
-        if immediate_run is None:
-            immediate_run = self._options.subscribers_immediate_run
+        if initial_run is None:
+            initial_run = self._options.subscribers_initial_run
         if keep_ref is None:
             keep_ref = self._options.subscribers_keep_ref
         if keep_ref:
@@ -224,10 +230,16 @@ class Autorun(
             callback_ref = weakref.ref(callback)
         self._subscriptions.add(callback_ref)
 
-        if immediate_run:
+        if initial_run:
             callback(self.value)
 
         def unsubscribe() -> None:
-            self._subscriptions.discard(callback_ref)
+            callback = (
+                callback_ref()
+                if isinstance(callback_ref, weakref.ref)
+                else callback_ref
+            )
+            if callback is not None:
+                self._subscriptions.discard(callback)
 
         return unsubscribe

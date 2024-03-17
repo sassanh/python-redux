@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
 
 env:
-  PYTHON_VERSION: '3.11'
+  PYTHON_VERSION: "3.11"
 
 jobs:
   dependencies:
@@ -121,7 +121,7 @@ jobs:
           key: poetry-${{ hashFiles('poetry.lock') }}
 
       - name: Test
-        run: poetry run poe test --cov-report=xml --cov-report=html
+        run: poetry run poe test
 
       - name: Prepare list of JSON files with mismatching pairs
         if: failure()

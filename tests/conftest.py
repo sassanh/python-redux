@@ -1,4 +1,5 @@
 """Pytest configuration file for the tests."""
+
 from __future__ import annotations
 
 import datetime
@@ -9,12 +10,18 @@ from typing import TYPE_CHECKING
 
 import pytest
 
-from redux.test import snapshot_store
+pytest.register_assert_rewrite('redux.test')
+
+from redux.test import store_snapshot  # noqa: E402
 
 if TYPE_CHECKING:
     from logging import Logger
 
-__all__ = ['snapshot_store']
+__all__ = ['store_snapshot']
+
+
+def pytest_addoption(parser: pytest.Parser) -> None:
+    parser.addoption('--override-store-snapshots', action='store_true')
 
 
 @pytest.fixture()

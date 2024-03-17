@@ -2,18 +2,19 @@
 from __future__ import annotations
 
 from types import NoneType
-from typing import Any, Callable, Coroutine, Generic, Protocol, TypeAlias, TypeGuard
+from typing import TYPE_CHECKING, Any, Callable, Generic, Protocol, TypeAlias, TypeGuard
 
 from immutable import Immutable
 from typing_extensions import TypeVar
 
+if TYPE_CHECKING:
+    import asyncio
 
-class BaseAction(Immutable):
-    ...
+
+class BaseAction(Immutable): ...
 
 
-class BaseEvent(Immutable):
-    ...
+class BaseEvent(Immutable): ...
 
 
 class EventSubscriptionOptions(Immutable):
@@ -51,16 +52,13 @@ action "{action}" is not allowed.""",
         )
 
 
-class InitAction(BaseAction):
-    ...
+class InitAction(BaseAction): ...
 
 
-class FinishAction(BaseAction):
-    ...
+class FinishAction(BaseAction): ...
 
 
-class FinishEvent(BaseEvent):
-    ...
+class FinishEvent(BaseEvent): ...
 
 
 def is_complete_reducer_result(
@@ -76,8 +74,7 @@ def is_state_reducer_result(
 
 
 class Scheduler(Protocol):
-    def __call__(self: Scheduler, callback: Callable, *, interval: bool) -> None:
-        ...
+    def __call__(self: Scheduler, callback: Callable, *, interval: bool) -> None: ...
 
 
 class CreateStoreOptions(Immutable):
@@ -86,14 +83,14 @@ class CreateStoreOptions(Immutable):
     scheduler: Scheduler | None = None
     action_middleware: Callable[[BaseAction], Any] | None = None
     event_middleware: Callable[[BaseEvent], Any] | None = None
-    task_creator: Callable[[Coroutine], Any] | None = None
+    async_loop: asyncio.AbstractEventLoop | None = None
 
 
 class AutorunOptions(Immutable, Generic[AutorunOriginalReturnType]):
     default_value: AutorunOriginalReturnType | None = None
     initial_run: bool = True
     keep_ref: bool = True
-    subscribers_immediate_run: bool | None = None
+    subscribers_initial_run: bool = True
     subscribers_keep_ref: bool = True
 
 
@@ -108,8 +105,7 @@ class AutorunType(Protocol, Generic[State]):
         State,
         SelectorOutput,
         AutorunOriginalReturnType,
-    ]:
-        ...
+    ]: ...
 
 
 class AutorunDecorator(
@@ -124,29 +120,25 @@ class AutorunDecorator(
         self: AutorunDecorator,
         func: Callable[[SelectorOutput], AutorunOriginalReturnType]
         | Callable[[SelectorOutput, SelectorOutput], AutorunOriginalReturnType],
-    ) -> AutorunReturnType[AutorunOriginalReturnType]:
-        ...
+    ) -> AutorunReturnType[AutorunOriginalReturnType]: ...
 
 
 class AutorunReturnType(
     Protocol,
     Generic[AutorunOriginalReturnType],
 ):
-    def __call__(self: AutorunReturnType) -> AutorunOriginalReturnType:
-        ...
+    def __call__(self: AutorunReturnType) -> AutorunOriginalReturnType: ...
 
     @property
-    def value(self: AutorunReturnType) -> AutorunOriginalReturnType:
-        ...
+    def value(self: AutorunReturnType) -> AutorunOriginalReturnType: ...
 
     def subscribe(
         self: AutorunReturnType,
         callback: Callable[[AutorunOriginalReturnType], Any],
         *,
-        immediate_run: bool | None = None,
+        initial_run: bool | None = None,
         keep_ref: bool | None = None,
-    ) -> Callable[[], None]:
-        ...
+    ) -> Callable[[], None]: ...
 
 
 class EventSubscriber(Protocol):
@@ -156,8 +148,7 @@ class EventSubscriber(Protocol):
         handler: EventHandler[Event],
         *,
         options: EventSubscriptionOptions | None = None,
-    ) -> Callable[[], None]:
-        ...
+    ) -> Callable[[], None]: ...
 
 
 DispatchParameters: TypeAlias = Action | Event | list[Action | Event]
@@ -169,8 +160,7 @@ class Dispatch(Protocol, Generic[State, Action, Event]):
         *items: Action | Event | list[Action | Event],
         with_state: Callable[[State | None], Action | Event | list[Action | Event]]
         | None = None,
-    ) -> None:
-        ...
+    ) -> None: ...
 
 
 class BaseCombineReducerState(Immutable):

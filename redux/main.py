@@ -1,4 +1,5 @@
 """Redux store for managing state and side effects."""
+
 from __future__ import annotations
 
 import dataclasses
@@ -6,9 +7,8 @@ import inspect
 import queue
 import threading
 import weakref
-from asyncio import create_task, iscoroutine
+from asyncio import AbstractEventLoop, get_event_loop, iscoroutinefunction
 from collections import defaultdict
-from enum import IntEnum, StrEnum
 from inspect import signature
 from threading import Lock
 from types import NoneType
@@ -47,12 +47,16 @@ from redux.basic_types import (
 class _SideEffectRunnerThread(threading.Thread, Generic[Event]):
     def __init__(
         self: _SideEffectRunnerThread[Event],
+        *,
         task_queue: queue.Queue[tuple[EventHandler[Event], Event] | None],
-        task_creator: Callable[[Coroutine], Any],
+        async_loop: AbstractEventLoop,
     ) -> None:
         super().__init__()
         self.task_queue = task_queue
-        self.create_task = task_creator
+        self.async_loop = async_loop
+
+    def create_task(self: _SideEffectRunnerThread[Event], coro: Coroutine) -> None:
+        self.async_loop.call_soon_threadsafe(lambda: self.async_loop.create_task(coro))
 
     def run(self: _SideEffectRunnerThread[Event]) -> None:
         while True:
@@ -67,7 +71,7 @@ class _SideEffectRunnerThread(threading.Thread, Generic[Event]):
                     result = cast(Callable[[Event], Any], event_handler)(event)
                 else:
                     result = cast(Callable[[], Any], event_handler)()
-                if iscoroutine(result):
+                if iscoroutinefunction(event_handler):
                     self.create_task(result)
             finally:
                 self.task_queue.task_done()
@@ -84,9 +88,7 @@ class Store(Generic[State, Action, Event]):
         """Create a new store."""
         self.store_options = options or CreateStoreOptions()
         self.reducer = reducer
-        self._create_task: Callable[[Coroutine], Any] = (
-            self.store_options.task_creator or create_task
-        )
+        self._async_loop = self.store_options.async_loop or get_event_loop()
 
         self._state: State | None = None
         self._listeners: set[
@@ -109,7 +111,10 @@ class Store(Generic[State, Action, Event]):
             tuple[EventHandler[Event], Event] | None
         ]()
         workers = [
-            _SideEffectRunnerThread(self._event_handlers_queue, self._create_task)
+            _SideEffectRunnerThread(
+                task_queue=self._event_handlers_queue,
+                async_loop=self._async_loop,
+            )
             for _ in range(self.store_options.threads)
         ]
         for worker in workers:
@@ -153,8 +158,8 @@ class Store(Generic[State, Action, Event]):
                 else:
                     listener = listener_
                 result = listener(self._state)
-                if iscoroutine(result):
-                    self._create_task(result)
+                if iscoroutinefunction(listener):
+                    self._async_loop.create_task(result)
 
     def _run_event_handlers(self: Store[State, Action, Event]) -> None:
         event = self._events.pop(0)
@@ -297,29 +302,27 @@ class Store(Generic[State, Action, Event]):
         """Return a snapshot of the current state of the store."""
         return self.serialize_value(self._state)
 
-    def serialize_value(self: Store, obj: object | type) -> SnapshotAtom:
+    @classmethod
+    def serialize_value(cls: type[Store], obj: object | type) -> SnapshotAtom:
         """Serialize a value to a snapshot atom."""
-        if is_immutable(obj):
-            return self._serialize_dataclass_to_dict(obj)
-        if isinstance(obj, (list, tuple)):
-            return [self.serialize_value(i) for i in obj]
-        if callable(obj):
-            return self.serialize_value(obj())
-        if isinstance(obj, StrEnum):
-            return str(obj)
-        if isinstance(obj, IntEnum):
-            return int(obj)
         if isinstance(obj, (int, float, str, bool, NoneType)):
             return obj
-        msg = f'Unable to serialize object with type {type(obj)}.'
-        raise ValueError(msg)
+        if callable(obj):
+            return Store.serialize_value(obj())
+        if isinstance(obj, (list, tuple)):
+            return [Store.serialize_value(i) for i in obj]
+        if is_immutable(obj):
+            return Store._serialize_dataclass_to_dict(obj)
+        msg = f'Unable to serialize object with type `{type(obj)}`.'
+        raise TypeError(msg)
 
+    @classmethod
     def _serialize_dataclass_to_dict(
-        self: Store,
+        cls: type[Store],
         obj: Immutable,
     ) -> dict[str, Any]:
         result = {}
         for field in dataclasses.fields(obj):
-            value = self.serialize_value(getattr(obj, field.name))
+            value = Store.serialize_value(getattr(obj, field.name))
             result[field.name] = value
         return result

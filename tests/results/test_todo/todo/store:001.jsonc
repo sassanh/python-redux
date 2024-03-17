@@ -1,0 +1,15 @@
+// store:001
+{
+  "items": [
+    {
+      "content": "Initial Item",
+      "id": "e3e70682c2094cac629f6fbed82c07cd",
+      "timestamp": 1672531200.0
+    },
+    {
+      "content": "New Item",
+      "id": "f728b4fa42485e3a0a5d2f346baa9455",
+      "timestamp": 1672531200.0
+    }
+  ]
+}

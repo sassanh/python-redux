@@ -1,14 +1,13 @@
-# ruff: noqa: D100, D101, D102, D103, D104, D107, A003, T201
+# ruff: noqa: D100, D101, D102, D103, D104, D107
 from __future__ import annotations
 
 import time
 from typing import TYPE_CHECKING, TypeAlias
 
+import pytest
 from immutable import Immutable
 
 if TYPE_CHECKING:
-    from logging import Logger
-
     from redux.test import StoreSnapshotContext
 
 from redux.basic_types import (
@@ -17,6 +16,7 @@ from redux.basic_types import (
     BaseEvent,
     CombineReducerAction,
     CompleteReducerResult,
+    EventSubscriptionOptions,
     FinishAction,
     InitAction,
     InitializationActionError,
@@ -24,20 +24,16 @@ from redux.basic_types import (
 )
 
 
-class CountAction(BaseAction):
-    ...
+class CountAction(BaseAction): ...
 
 
-class IncrementAction(CountAction):
-    ...
+class IncrementAction(CountAction): ...
 
 
-class DecrementAction(CountAction):
-    ...
+class DecrementByTwoAction(CountAction): ...
 
 
-class DoNothingAction(CountAction):
-    ...
+class DoNothingAction(CountAction): ...
 
 
 class CountStateType(Immutable):
@@ -53,7 +49,8 @@ class StateType(BaseCombineReducerState):
 ActionType: TypeAlias = InitAction | FinishAction | CountAction | CombineReducerAction
 
 
-# Reducers <
+# Reducers
+# --------
 def straight_reducer(
     state: CountStateType | None,
     action: ActionType,
@@ -64,8 +61,8 @@ def straight_reducer(
         raise InitializationActionError(action)
     if isinstance(action, IncrementAction):
         return CountStateType(count=state.count + 1)
-    if isinstance(action, DecrementAction):
-        return CountStateType(count=state.count - 1)
+    if isinstance(action, DecrementByTwoAction):
+        return CountStateType(count=state.count - 2)
     return state
 
 
@@ -79,13 +76,13 @@ def base10_reducer(
         raise InitializationActionError(action)
     if isinstance(action, IncrementAction):
         return CountStateType(count=state.count + 1)
-    if isinstance(action, DecrementAction):
-        return CountStateType(count=state.count - 1)
+    if isinstance(action, DecrementByTwoAction):
+        return CountStateType(count=state.count - 2)
     return state
 
 
 class SleepEvent(BaseEvent):
-    duration: int
+    duration: float
 
 
 class PrintEvent(BaseEvent):
@@ -102,21 +99,18 @@ def inverse_reducer(
         raise InitializationActionError(action)
     if isinstance(action, IncrementAction):
         return CountStateType(count=state.count - 1)
-    if isinstance(action, DecrementAction):
-        return CountStateType(count=state.count + 1)
+    if isinstance(action, DecrementByTwoAction):
+        return CountStateType(count=state.count + 2)
     if isinstance(action, DoNothingAction):
         return CompleteReducerResult(
             state=state,
             actions=[IncrementAction()],
-            events=[SleepEvent(duration=3)],
+            events=[SleepEvent(duration=0.1)],
         )
     return state
 
 
-# >
-
-
-def test_general(snapshot_store: StoreSnapshotContext, logger: Logger) -> None:
+def test_general(store_snapshot: StoreSnapshotContext) -> None:
     from redux import (
         CombineReducerRegisterAction,
         CombineReducerUnregisterAction,
@@ -133,39 +127,54 @@ def test_general(snapshot_store: StoreSnapshotContext, logger: Logger) -> None:
         base10=base10_reducer,
     )
 
-    # Initialization <
+    # Initialization
+    # --------------
     store = Store(
         reducer,
-        CreateStoreOptions(auto_init=True, threads=2),
+        CreateStoreOptions(threads=2, action_middleware=print, event_middleware=print),
     )
-    snapshot_store.set_store(store)
+    store_snapshot.set_store(store)
+
+    store_snapshot.take(title='initialization')
+
+    with pytest.raises(InitializationActionError):
+        store.dispatch(IncrementAction())
+
+    store.dispatch(InitAction())
+
+    # Event Subscription
+    # ------------------
+    store.subscribe(lambda _: store_snapshot.take(title='subscription'))
 
     def event_handler(event: SleepEvent) -> None:
         time.sleep(event.duration)
 
+    def event_handler_without_parameter() -> None:
+        time.sleep(0.1)
+
     store.subscribe_event(SleepEvent, event_handler)
-    # >
+    store.subscribe_event(
+        SleepEvent,
+        event_handler_without_parameter,
+        options=EventSubscriptionOptions(immediate_run=True),
+    )
 
-    # -----
+    # Autorun
+    # -------
 
-    # Subscription <
-    store.subscribe(lambda _: snapshot_store.take())
-    # >
-
-    # -----
-
-    # Autorun <
     @store.autorun(lambda state: state.base10)
     def render(base10_value: CountStateType) -> int:
-        snapshot_store.take()
+        store_snapshot.take(title='autorun')
         return base10_value.count
 
-    render.subscribe(lambda a: logger.info(a))
+    render.subscribe(lambda _: store_snapshot.take(title='autorun_subscription'))
 
-    snapshot_store.take()
+    # Dispatch
+    # --------
+    store_snapshot.take()
 
     store.dispatch(IncrementAction())
-    snapshot_store.take()
+    store_snapshot.take()
 
     store.dispatch(
         CombineReducerRegisterAction(
@@ -176,7 +185,7 @@ def test_general(snapshot_store: StoreSnapshotContext, logger: Logger) -> None:
     )
 
     store.dispatch(DoNothingAction())
-    snapshot_store.take()
+    store_snapshot.take()
 
     store.dispatch(
         CombineReducerUnregisterAction(
@@ -184,10 +193,15 @@ def test_general(snapshot_store: StoreSnapshotContext, logger: Logger) -> None:
             key='straight',
         ),
     )
-    snapshot_store.take()
+    store_snapshot.take()
 
-    store.dispatch(DecrementAction())
-    snapshot_store.take()
+    store.dispatch(DecrementByTwoAction())
+    store_snapshot.take()
 
+    store.dispatch(
+        with_state=lambda state: DecrementByTwoAction() if state else IncrementAction(),
+    )
+    store_snapshot.take()
+    # Finish
+    # ------
     store.dispatch(FinishAction())
-    # >

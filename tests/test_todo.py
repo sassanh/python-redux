@@ -1,4 +1,4 @@
-# ruff: noqa: A003, D100, D101, D102, D103, D104, D105, D107, T201
+# ruff: noqa: D100, D101, D102, D103, D104, D107
 from __future__ import annotations
 
 import time
@@ -14,7 +14,7 @@ if TYPE_CHECKING:
     from redux.test import StoreSnapshotContext
 
 
-def test_todo(snapshot_store: StoreSnapshotContext, logger: Logger) -> None:
+def test_todo(store_snapshot: StoreSnapshotContext, logger: Logger) -> None:
     from redux import BaseAction, Store
     from redux.basic_types import (
         BaseEvent,
@@ -87,7 +87,7 @@ def test_todo(snapshot_store: StoreSnapshotContext, logger: Logger) -> None:
         return state
 
     store = Store(reducer, options=CreateStoreOptions(auto_init=True))
-    snapshot_store.set_store(store)
+    store_snapshot.set_store(store)
 
     # subscription:
     dummy_render = logger.info
@@ -98,7 +98,7 @@ def test_todo(snapshot_store: StoreSnapshotContext, logger: Logger) -> None:
         lambda state: state.items[0].content if len(state.items) > 0 else None,
     )
     def reaction(_: str | None) -> None:
-        snapshot_store.take()
+        store_snapshot.take()
 
     _ = reaction
 
@@ -109,7 +109,7 @@ def test_todo(snapshot_store: StoreSnapshotContext, logger: Logger) -> None:
 
     # dispatch:
     store.dispatch(AddTodoItemAction(content='New Item', timestamp=time.time()))
-    snapshot_store.take()
+    store_snapshot.take()
 
     store.dispatch(FinishAction())
-    snapshot_store.take()
+    store_snapshot.take()
