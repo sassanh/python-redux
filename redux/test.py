@@ -19,6 +19,11 @@ if TYPE_CHECKING:
     from redux.main import Store
 
 
+def pytest_addoption(parser: pytest.Parser) -> None:
+    """Add options to the pytest command line."""
+    parser.addoption('--override-store-snapshots', action='store_true')
+
+
 class StoreSnapshotContext:
     """Context object for tests taking snapshots of the store."""
 
@@ -89,7 +94,7 @@ class StoreSnapshotContext:
                 mismatch_path.write_text(  # pragma: no cover
                     f'// MISMATCH: {filename}\n{new_snapshot}\n',
                 )
-            assert old_snapshot == new_snapshot, f'Snapshot mismatch: {title}'
+            assert old_snapshot == new_snapshot, f'Store snapshot mismatch: {title}'
 
         self.test_counter[title] += 1
 

@@ -1,5 +1,11 @@
 # Changelog
 
+## Version 0.12.4
+
+- fix: serialization class methods of `Store` use `cls` instead of `Store` for the
+  sake of extensibility via inheritance
+- refactor: `pytest_addoption` moved to `test.py` to make reusable
+
 ## Version 0.12.3
 
 - test: write tests for different features of the api

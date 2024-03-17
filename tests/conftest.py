@@ -12,16 +12,12 @@ import pytest
 
 pytest.register_assert_rewrite('redux.test')
 
-from redux.test import store_snapshot  # noqa: E402
+from redux.test import pytest_addoption, store_snapshot  # noqa: E402
 
 if TYPE_CHECKING:
     from logging import Logger
 
-__all__ = ['store_snapshot']
-
-
-def pytest_addoption(parser: pytest.Parser) -> None:
-    parser.addoption('--override-store-snapshots', action='store_true')
+__all__ = ('store_snapshot', 'pytest_addoption')
 
 
 @pytest.fixture()
