@@ -152,12 +152,17 @@ def test_general(store_snapshot: StoreSnapshotContext) -> None:
     def event_handler_without_parameter() -> None:
         time.sleep(0.1)
 
+    def never_called_event_handler() -> None:
+        pytest.fail('This should never be called')
+
     store.subscribe_event(SleepEvent, event_handler)
     store.subscribe_event(
         SleepEvent,
         event_handler_without_parameter,
         options=EventSubscriptionOptions(immediate_run=True),
     )
+    unsubscribe = store.subscribe_event(PrintEvent, never_called_event_handler)
+    unsubscribe()
 
     # Autorun
     # -------

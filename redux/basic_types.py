@@ -2,13 +2,22 @@
 from __future__ import annotations
 
 from types import NoneType
-from typing import TYPE_CHECKING, Any, Callable, Generic, Protocol, TypeAlias, TypeGuard
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    Callable,
+    Coroutine,
+    Generic,
+    Protocol,
+    TypeAlias,
+    TypeGuard,
+)
 
 from immutable import Immutable
 from typing_extensions import TypeVar
 
 if TYPE_CHECKING:
-    import asyncio
+    from asyncio import Task
 
 
 class BaseAction(Immutable): ...
@@ -77,13 +86,26 @@ class Scheduler(Protocol):
     def __call__(self: Scheduler, callback: Callable, *, interval: bool) -> None: ...
 
 
+class TaskCreatorCallback(Protocol):
+    def __call__(self: TaskCreatorCallback, task: Task) -> None: ...
+
+
+class TaskCreator(Protocol):
+    def __call__(
+        self: TaskCreator,
+        coro: Coroutine,
+        *,
+        callback: TaskCreatorCallback | None = None,
+    ) -> None: ...
+
+
 class CreateStoreOptions(Immutable):
     auto_init: bool = False
     threads: int = 5
     scheduler: Scheduler | None = None
     action_middleware: Callable[[BaseAction], Any] | None = None
     event_middleware: Callable[[BaseEvent], Any] | None = None
-    async_loop: asyncio.AbstractEventLoop | None = None
+    task_creator: TaskCreator | None = None
 
 
 class AutorunOptions(Immutable, Generic[AutorunOriginalReturnType]):

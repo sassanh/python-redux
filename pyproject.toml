@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "python-redux"
-version = "0.12.4"
+version = "0.12.5"
 description = "Redux implementation for Python"
 authors = ["Sassan Haradji <sassanh@gmail.com>"]
 license = "Apache-2.0"
@@ -11,7 +11,6 @@ packages = [{ include = "redux" }]
 python = "^3.11"
 python-immutable = "^1.0.5"
 typing-extensions = "^4.9.0"
-pytest-timeout = "^2.3.1"
 
 [tool.poetry.group.dev]
 optional = true
@@ -22,6 +21,7 @@ pyright = "^1.1.354"
 ruff = "^0.3.3"
 pytest = "^8.1.1"
 pytest-cov = "^4.1.0"
+pytest-timeout = "^2.3.1"
 
 [build-system]
 requires = ["poetry-core"]
@@ -63,7 +63,7 @@ exclude = ['typings']
 [tool.pytest.ini_options]
 log_cli = 1
 log_cli_level = 'ERROR'
-timeout = 4
+timeout = 1
 
 [tool.coverage.report]
 exclude_also = ["if TYPE_CHECKING:"]

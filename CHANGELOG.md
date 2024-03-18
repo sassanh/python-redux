@@ -1,5 +1,15 @@
 # Changelog
 
+## Version 0.12.5
+
+- refactor: add cleanup to `FinishEvent` handler to clean workers, listeners, subscriptions,
+  autoruns, etc
+- refactor: `TaskCreator` add `TaskCreatorCallback` protocols
+- refactor: `Store._create_task` now has a callback parameter to report the created
+  task
+- refactor: move serialization methods and side_effect_runner class to separate
+  files
+
 ## Version 0.12.4
 
 - fix: serialization class methods of `Store` use `cls` instead of `Store` for the

@@ -3,9 +3,9 @@ from __future__ import annotations
 
 import inspect
 import weakref
-from asyncio import iscoroutinefunction
+from asyncio import Task, iscoroutine
 from inspect import signature
-from typing import TYPE_CHECKING, Any, Callable, Coroutine, Generic, cast
+from typing import TYPE_CHECKING, Any, Callable, Generic, cast
 
 from redux.basic_types import (
     Action,
@@ -121,6 +121,20 @@ class Autorun(
             func,
         )(selector_result, previous_result)
 
+    def _task_callback(
+        self: Autorun[
+            State,
+            Action,
+            Event,
+            SelectorOutput,
+            ComparatorOutput,
+            AutorunOriginalReturnType,
+        ],
+        task: Task,
+    ) -> None:
+        task.add_done_callback(lambda _: self.inform_subscribers())
+        self._latest_value = cast(AutorunOriginalReturnType, task)
+
     def _check_and_call(
         self: Autorun[
             State,
@@ -154,12 +168,11 @@ class Autorun(
                     previous_result,
                     func,
                 )
-                if iscoroutinefunction(func):
-                    task = self._store._async_loop.create_task(  # noqa: SLF001
-                        cast(Coroutine, self._latest_value),
+                if iscoroutine(self._latest_value):
+                    self._store._create_task(  # noqa: SLF001
+                        self._latest_value,
+                        callback=self._task_callback,
                     )
-                    task.add_done_callback(lambda _: self.inform_subscribers())
-                    self._latest_value = cast(AutorunOriginalReturnType, task)
                 else:
                     self.inform_subscribers()
 
@@ -234,12 +247,6 @@ class Autorun(
             callback(self.value)
 
         def unsubscribe() -> None:
-            callback = (
-                callback_ref()
-                if isinstance(callback_ref, weakref.ref)
-                else callback_ref
-            )
-            if callback is not None:
-                self._subscriptions.discard(callback)
+            self._subscriptions.discard(callback_ref)
 
         return unsubscribe

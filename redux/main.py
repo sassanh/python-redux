@@ -2,19 +2,14 @@
 
 from __future__ import annotations
 
-import dataclasses
 import inspect
 import queue
-import threading
 import weakref
-from asyncio import AbstractEventLoop, get_event_loop, iscoroutinefunction
+from asyncio import get_event_loop, iscoroutine
 from collections import defaultdict
 from inspect import signature
 from threading import Lock
-from types import NoneType
 from typing import Any, Callable, Coroutine, Generic, cast
-
-from immutable import Immutable, is_immutable
 
 from redux.autorun import Autorun
 from redux.basic_types import (
@@ -39,45 +34,25 @@ from redux.basic_types import (
     SelectorOutput,
     SnapshotAtom,
     State,
+    TaskCreator,
+    TaskCreatorCallback,
     is_complete_reducer_result,
     is_state_reducer_result,
 )
+from redux.serialization_mixin import SerializationMixin
+from redux.side_effect_runner import SideEffectRunnerThread
 
 
-class _SideEffectRunnerThread(threading.Thread, Generic[Event]):
-    def __init__(
-        self: _SideEffectRunnerThread[Event],
-        *,
-        task_queue: queue.Queue[tuple[EventHandler[Event], Event] | None],
-        async_loop: AbstractEventLoop,
-    ) -> None:
-        super().__init__()
-        self.task_queue = task_queue
-        self.async_loop = async_loop
-
-    def create_task(self: _SideEffectRunnerThread[Event], coro: Coroutine) -> None:
-        self.async_loop.call_soon_threadsafe(lambda: self.async_loop.create_task(coro))
-
-    def run(self: _SideEffectRunnerThread[Event]) -> None:
-        while True:
-            task = self.task_queue.get()
-            if task is None:
-                self.task_queue.task_done()
-                break
-
-            try:
-                event_handler, event = task
-                if len(signature(event_handler).parameters) == 1:
-                    result = cast(Callable[[Event], Any], event_handler)(event)
-                else:
-                    result = cast(Callable[[], Any], event_handler)()
-                if iscoroutinefunction(event_handler):
-                    self.create_task(result)
-            finally:
-                self.task_queue.task_done()
+def _default_task_creator(
+    coro: Coroutine,
+    callback: TaskCreatorCallback | None = None,
+) -> None:
+    result = get_event_loop().create_task(coro)
+    if callback:
+        callback(result)
 
 
-class Store(Generic[State, Action, Event]):
+class Store(Generic[State, Action, Event], SerializationMixin):
     """Redux store for managing state and side effects."""
 
     def __init__(
@@ -88,7 +63,9 @@ class Store(Generic[State, Action, Event]):
         """Create a new store."""
         self.store_options = options or CreateStoreOptions()
         self.reducer = reducer
-        self._async_loop = self.store_options.async_loop or get_event_loop()
+        self._create_task: TaskCreator = (
+            self.store_options.task_creator or _default_task_creator
+        )
 
         self._state: State | None = None
         self._listeners: set[
@@ -110,14 +87,14 @@ class Store(Generic[State, Action, Event]):
         self._event_handlers_queue = queue.Queue[
             tuple[EventHandler[Event], Event] | None
         ]()
-        workers = [
-            _SideEffectRunnerThread(
+        self._workers = [
+            SideEffectRunnerThread(
                 task_queue=self._event_handlers_queue,
-                async_loop=self._async_loop,
+                task_creator=self._create_task,
             )
             for _ in range(self.store_options.threads)
         ]
-        for worker in workers:
+        for worker in self._workers:
             worker.start()
 
         self._is_running = Lock()
@@ -158,8 +135,8 @@ class Store(Generic[State, Action, Event]):
                 else:
                     listener = listener_
                 result = listener(self._state)
-                if iscoroutinefunction(listener):
-                    self._async_loop.create_task(result)
+                if iscoroutine(result):
+                    self._create_task(result)
 
     def _run_event_handlers(self: Store[State, Action, Event]) -> None:
         event = self._events.pop(0)
@@ -175,10 +152,13 @@ class Store(Generic[State, Action, Event]):
                 event_handler = event_handler_
             if not options.immediate_run:
                 self._event_handlers_queue.put((event_handler, event))
-            elif len(signature(event_handler).parameters) == 1:
-                cast(Callable[[Event], Any], event_handler)(event)
             else:
-                cast(Callable[[], Any], event_handler)()
+                if len(signature(event_handler).parameters) == 1:
+                    result = cast(Callable[[Event], Any], event_handler)(event)
+                else:
+                    result = cast(Callable[[], Any], event_handler)()
+                if iscoroutine(result):
+                    self._create_task(result)
 
     def run(self: Store[State, Action, Event]) -> None:
         """Run the store."""
@@ -189,6 +169,12 @@ class Store(Generic[State, Action, Event]):
 
                 if len(self._events) > 0:
                     self._run_event_handlers()
+        if not any(i.is_alive() for i in self._workers):
+            for worker in self._workers:
+                worker.join()
+            self._workers.clear()
+            self._listeners.clear()
+            self._event_handlers.clear()
 
     def dispatch(
         self: Store[State, Action, Event],
@@ -258,15 +244,15 @@ class Store(Generic[State, Action, Event]):
         self._event_handlers[cast(type[Event], event_type)].add(
             (handler_ref, subscription_options),
         )
-        return lambda: self._event_handlers[cast(type[Event], event_type)].discard(
-            (handler_ref, subscription_options),
-        )
 
-    def _handle_finish_event(
-        self: Store[State, Action, Event],
-        finish_event: Event,
-    ) -> None:
-        _ = finish_event
+        def unsubscribe() -> None:
+            self._event_handlers[cast(type[Event], event_type)].discard(
+                (handler_ref, subscription_options),
+            )
+
+        return unsubscribe
+
+    def _handle_finish_event(self: Store[State, Action, Event]) -> None:
         for _ in range(self.store_options.threads):
             self._event_handlers_queue.put(None)
 
@@ -301,28 +287,3 @@ class Store(Generic[State, Action, Event]):
     def snapshot(self: Store[State, Action, Event]) -> SnapshotAtom:
         """Return a snapshot of the current state of the store."""
         return self.serialize_value(self._state)
-
-    @classmethod
-    def serialize_value(cls: type[Store], obj: object | type) -> SnapshotAtom:
-        """Serialize a value to a snapshot atom."""
-        if isinstance(obj, (int, float, str, bool, NoneType)):
-            return obj
-        if callable(obj):
-            return cls.serialize_value(obj())
-        if isinstance(obj, (list, tuple)):
-            return [cls.serialize_value(i) for i in obj]
-        if is_immutable(obj):
-            return cls._serialize_dataclass_to_dict(obj)
-        msg = f'Unable to serialize object with type `{type(obj)}`.'
-        raise TypeError(msg)
-
-    @classmethod
-    def _serialize_dataclass_to_dict(
-        cls: type[Store],
-        obj: Immutable,
-    ) -> dict[str, Any]:
-        result = {}
-        for field in dataclasses.fields(obj):
-            value = cls.serialize_value(getattr(obj, field.name))
-            result[field.name] = value
-        return result

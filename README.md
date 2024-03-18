@@ -1,5 +1,9 @@
-# 🚀 Python Redux
+# 🎛️ Python Redux
 
+[![image](https://img.shields.io/pypi/v/python-redux.svg)](https://pypi.python.org/pypi/python-redux)
+[![image](https://img.shields.io/pypi/l/python-redux.svg)](https://github.com/sassanh/python-redux/LICENSE)
+[![image](https://img.shields.io/pypi/pyversions/python-redux.svg)](https://pypi.python.org/pypi/python-redux)
+[![Actions status](https://github.com/sassanh/python-redux/workflows/CI/CD/badge.svg)](https://github.com/sassanh/python-redux/actions)
 [![codecov](https://codecov.io/gh/sassanh/python-redux/graph/badge.svg?token=4F3EWZRLCL)](https://codecov.io/gh/sassanh/python-redux)
 
 ## 🌟 Overview

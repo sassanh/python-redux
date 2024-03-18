@@ -2,8 +2,9 @@
 from __future__ import annotations
 
 import asyncio
+import threading
 from dataclasses import replace
-from typing import Generator
+from typing import Callable, Coroutine, Generator
 
 import pytest
 from immutable import Immutable
@@ -12,6 +13,7 @@ from redux.basic_types import (
     BaseAction,
     CompleteReducerResult,
     CreateStoreOptions,
+    EventSubscriptionOptions,
     FinishAction,
     FinishEvent,
     InitAction,
@@ -50,32 +52,83 @@ def reducer(
     return state
 
 
+class LoopThread(threading.Thread):
+    def __init__(self: LoopThread) -> None:
+        super().__init__()
+        self.loop = asyncio.new_event_loop()
+
+    def run(self: LoopThread) -> None:
+        self.loop.run_forever()
+
+    def stop(self: LoopThread) -> None:
+        self.loop.call_soon_threadsafe(self.loop.stop)
+
+
 @pytest.fixture()
-def loop() -> asyncio.AbstractEventLoop:
-    return asyncio.get_event_loop()
+def loop() -> LoopThread:
+    loop_thread = LoopThread()
+    loop_thread.start()
+    return loop_thread
 
 
 Action = IncrementAction | SetMirroredValueAction | InitAction | FinishAction
+StoreType = Store[StateType, Action, FinishEvent]
 
 
 @pytest.fixture()
 def store(
-    loop: asyncio.AbstractEventLoop,
-) -> Generator[Store[StateType, Action, FinishEvent], None, None]:
+    loop: LoopThread,
+) -> Generator[StoreType, None, None]:
+    def _create_task_with_callback(
+        coro: Coroutine,
+        callback: Callable[[asyncio.Task], None] | None = None,
+    ) -> None:
+        def create_task_with_callback() -> None:
+            task = loop.loop.create_task(coro)
+            if callback:
+                callback(task)
+
+        loop.loop.call_soon_threadsafe(create_task_with_callback)
+
     store = Store(
         reducer,
-        options=CreateStoreOptions(auto_init=True, async_loop=loop),
+        options=CreateStoreOptions(
+            auto_init=True,
+            task_creator=_create_task_with_callback,
+        ),
     )
     yield store
-    for _i in range(INCREMENTS):
+    for i in range(INCREMENTS):
+        _ = i
         store.dispatch(IncrementAction())
-    store.dispatch(FinishAction())
-    loop.run_forever()
+
+
+def test_create_task(
+    store: StoreType,
+    loop: LoopThread,
+) -> None:
+    async def task(value: int) -> int:
+        await asyncio.sleep(0.5)
+        return value
+
+    def done(task: asyncio.Task) -> None:
+        assert task.result() == 1
+        store.dispatch(FinishAction())
+
+    def callback(task: asyncio.Task) -> None:
+        task.add_done_callback(done)
+
+    store._create_task(task(1), callback=callback)  # noqa: SLF001
+
+    def finish() -> None:
+        loop.stop()
+
+    store.subscribe_event(FinishEvent, finish)
 
 
 def test_autorun(
-    store: Store[StateType, Action, FinishEvent],
-    loop: asyncio.AbstractEventLoop,
+    store: StoreType,
+    loop: LoopThread,
 ) -> None:
     @store.autorun(lambda state: state.value)
     async def _(value: int) -> int:
@@ -90,27 +143,51 @@ def test_autorun(
     async def _(mirrored_value: int) -> None:
         if mirrored_value < INCREMENTS:
             return
-        loop.call_soon_threadsafe(loop.stop)
+        store.dispatch(FinishAction())
+
+    async def finish() -> None:
+        loop.stop()
+
+    store.subscribe_event(FinishEvent, finish)
+    store.subscribe_event(FinishEvent, finish)
 
 
 def test_subscription(
-    store: Store[StateType, Action, FinishEvent],
-    loop: asyncio.AbstractEventLoop,
+    store: StoreType,
+    loop: LoopThread,
 ) -> None:
     async def render(state: StateType) -> None:
-        await asyncio.sleep(0.1)
         if state.value == INCREMENTS:
-            loop.call_soon_threadsafe(loop.stop)
+            unsubscribe()
+            store.dispatch(FinishAction())
+            loop.stop()
 
-    store.subscribe(render)
+    unsubscribe = store.subscribe(render)
 
 
 def test_event_subscription(
-    store: Store[StateType, Action, FinishEvent],
-    loop: asyncio.AbstractEventLoop,
+    store: StoreType,
+    loop: LoopThread,
 ) -> None:
     async def finish() -> None:
         await asyncio.sleep(0.1)
-        loop.call_soon_threadsafe(loop.stop)
+        loop.stop()
 
     store.subscribe_event(FinishEvent, finish)
+    store.dispatch(FinishAction())
+
+
+def test_immediate_event_subscription(
+    store: StoreType,
+    loop: LoopThread,
+) -> None:
+    async def finish() -> None:
+        await asyncio.sleep(0.1)
+        loop.stop()
+
+    store.subscribe_event(
+        FinishEvent,
+        finish,
+        options=EventSubscriptionOptions(immediate_run=True),
+    )
+    store.dispatch(FinishAction())
