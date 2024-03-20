@@ -6,7 +6,6 @@ import datetime
 import random
 import time
 import uuid
-from typing import TYPE_CHECKING
 
 import pytest
 
@@ -14,17 +13,7 @@ pytest.register_assert_rewrite('redux.test')
 
 from redux.test import pytest_addoption, store_snapshot  # noqa: E402
 
-if TYPE_CHECKING:
-    from logging import Logger
-
 __all__ = ('store_snapshot', 'pytest_addoption')
-
-
-@pytest.fixture()
-def logger() -> Logger:
-    import logging
-
-    return logging.getLogger('test')
 
 
 @pytest.fixture(autouse=True)

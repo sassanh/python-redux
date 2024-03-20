@@ -11,7 +11,6 @@ from typing import TYPE_CHECKING, Any, Generator, cast
 import pytest
 
 if TYPE_CHECKING:
-    from logging import Logger
     from pathlib import Path
 
     from _pytest.fixtures import SubRequest
@@ -32,7 +31,6 @@ class StoreSnapshotContext:
         *,
         test_id: str,
         path: Path,
-        logger: Logger,
         override: bool,
     ) -> None:
         """Create a new store snapshot context."""
@@ -47,7 +45,6 @@ class StoreSnapshotContext:
             ):
                 file.unlink()
         self.results_dir.mkdir(parents=True, exist_ok=True)
-        self.logger = logger
 
     def set_store(self: StoreSnapshotContext, store: Store) -> None:
         """Set the store to take snapshots of."""
@@ -94,7 +91,7 @@ class StoreSnapshotContext:
                 mismatch_path.write_text(  # pragma: no cover
                     f'// MISMATCH: {filename}\n{new_snapshot}\n',
                 )
-            assert old_snapshot == new_snapshot, f'Store snapshot mismatch: {title}'
+            assert new_snapshot == old_snapshot, f'Store snapshot mismatch: {title}'
 
         self.test_counter[title] += 1
 
@@ -109,10 +106,7 @@ class StoreSnapshotContext:
 
 
 @pytest.fixture()
-def store_snapshot(
-    request: SubRequest,
-    logger: Logger,
-) -> Generator[StoreSnapshotContext, None, None]:
+def store_snapshot(request: SubRequest) -> Generator[StoreSnapshotContext, None, None]:
     """Take a snapshot of the current state of the store."""
     override = (
         request.config.getoption(
@@ -127,7 +121,6 @@ def store_snapshot(
     context = StoreSnapshotContext(
         test_id=request.node.nodeid,
         path=request.node.path,
-        logger=logger,
         override=override,
     )
     yield context

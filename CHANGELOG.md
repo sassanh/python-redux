@@ -1,5 +1,9 @@
 # Changelog
 
+## Version 0.12.6
+
+- refactor: drop logging fixture and use standard pytest logger in tests
+
 ## Version 0.12.5
 
 - refactor: add cleanup to `FinishEvent` handler to clean workers, listeners, subscriptions,

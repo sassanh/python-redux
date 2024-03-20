@@ -1,6 +1,7 @@
 # ruff: noqa: D100, D101, D102, D103, D104, D107
 from __future__ import annotations
 
+import logging
 import time
 import uuid
 from dataclasses import replace
@@ -9,12 +10,10 @@ from typing import TYPE_CHECKING, Sequence
 from immutable import Immutable
 
 if TYPE_CHECKING:
-    from logging import Logger
-
     from redux.test import StoreSnapshotContext
 
 
-def test_todo(store_snapshot: StoreSnapshotContext, logger: Logger) -> None:
+def test_todo(store_snapshot: StoreSnapshotContext) -> None:
     from redux import BaseAction, Store
     from redux.basic_types import (
         BaseEvent,
@@ -90,7 +89,7 @@ def test_todo(store_snapshot: StoreSnapshotContext, logger: Logger) -> None:
     store_snapshot.set_store(store)
 
     # subscription:
-    dummy_render = logger.info
+    dummy_render = logging.getLogger().info
     store.subscribe(dummy_render)
 
     # autorun:
@@ -104,7 +103,7 @@ def test_todo(store_snapshot: StoreSnapshotContext, logger: Logger) -> None:
 
     # event listener, note that this will run async in a separate thread, so it can
     # include async operations like API calls, etc:
-    dummy_api_call = logger.info
+    dummy_api_call = logging.getLogger().info
     store.subscribe_event(CallApi, lambda event: dummy_api_call(event.parameters))
 
     # dispatch:
