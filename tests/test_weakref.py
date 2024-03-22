@@ -1,6 +1,7 @@
 # ruff: noqa: D100, D101, D102, D103, D104, D107
 from __future__ import annotations
 
+import gc
 import weakref
 from dataclasses import replace
 from typing import TYPE_CHECKING, Generator
@@ -115,6 +116,7 @@ def test_autorun(
 
     ref = weakref.ref(render_without_keep_ref)
     del render_without_keep_ref
+    gc.collect()
     assert ref() is None
 
     store.dispatch(IncrementAction())

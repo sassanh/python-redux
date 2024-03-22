@@ -51,7 +51,7 @@ class Autorun(
         elif inspect.ismethod(func):
             self._func = weakref.WeakMethod(func)
         else:
-            self._func = weakref.ref(func)
+            self._func = weakref.ref(func, lambda _: self.unsubscribe())
         self._options = options
 
         self._last_selector_result: SelectorOutput | None = None
@@ -68,7 +68,7 @@ class Autorun(
         if self._options.initial_run and store._state is not None:  # noqa: SLF001
             self._check_and_call(store._state)  # noqa: SLF001
 
-        store.subscribe(self._check_and_call, keep_ref=options.keep_ref)
+        self.unsubscribe = store.subscribe(self._check_and_call)
 
     def inform_subscribers(
         self: Autorun[
@@ -175,6 +175,8 @@ class Autorun(
                     )
                 else:
                     self.inform_subscribers()
+        else:
+            self.unsubscribe()
 
     def __call__(
         self: Autorun[

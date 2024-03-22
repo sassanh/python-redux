@@ -1,5 +1,9 @@
 # Changelog
 
+## Version 0.12.7
+
+- fix: automatically unsubscribe autoruns when the weakref is dead
+
 ## Version 0.12.6
 
 - refactor: drop logging fixture and use standard pytest logger in tests
