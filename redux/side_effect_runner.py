@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import threading
+import weakref
 from asyncio import iscoroutine
 from inspect import signature
 from typing import TYPE_CHECKING, Any, Callable, Generic, cast
@@ -36,7 +37,13 @@ class SideEffectRunnerThread(threading.Thread, Generic[Event]):
                 break
 
             try:
-                event_handler, event = task
+                event_handler_, event = task
+                if isinstance(event_handler_, weakref.ref):
+                    event_handler = event_handler_()
+                    if event_handler is None:
+                        continue
+                else:
+                    event_handler = event_handler_
                 if len(signature(event_handler).parameters) == 1:
                     result = cast(Callable[[Event], Any], event_handler)(event)
                 else:

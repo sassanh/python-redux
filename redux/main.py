@@ -141,18 +141,18 @@ class Store(Generic[State, Action, Event], SerializationMixin):
     def _run_event_handlers(self: Store[State, Action, Event]) -> None:
         event = self._events.pop(0)
         for event_handler_, options in self._event_handlers[type(event)].copy():
-            if isinstance(event_handler_, weakref.ref):
-                event_handler = event_handler_()
-                if event_handler is None:
-                    self._event_handlers[type(event)].discard(
-                        (event_handler_, options),
-                    )
-                    continue
-            else:
-                event_handler = event_handler_
             if not options.immediate_run:
-                self._event_handlers_queue.put((event_handler, event))
+                self._event_handlers_queue.put((event_handler_, event))
             else:
+                if isinstance(event_handler_, weakref.ref):
+                    event_handler = event_handler_()
+                    if event_handler is None:
+                        self._event_handlers[type(event)].discard(
+                            (event_handler_, options),
+                        )
+                        continue
+                else:
+                    event_handler = event_handler_
                 if len(signature(event_handler).parameters) == 1:
                     result = cast(Callable[[Event], Any], event_handler)(event)
                 else:

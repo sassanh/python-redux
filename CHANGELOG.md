@@ -3,6 +3,7 @@
 ## Version 0.12.7
 
 - fix: automatically unsubscribe autoruns when the weakref is dead
+- fix: use weakref of event handlers in `event_handlers_queue`
 
 ## Version 0.12.6
 
