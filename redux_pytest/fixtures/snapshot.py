@@ -59,8 +59,8 @@ class StoreSnapshot:
     def get_filename(self: StoreSnapshot, title: str | None) -> str:
         """Get the filename for the snapshot."""
         if title:
-            return f"""store:{title}-{self.test_counter[title]:03d}"""
-        return f"""store:{self.test_counter[title]:03d}"""
+            return f"""store-{title}-{self.test_counter[title]:03d}"""
+        return f"""store-{self.test_counter[title]:03d}"""
 
     def take(self: StoreSnapshot, *, title: str | None = None) -> None:
         """Take a snapshot of the current window."""

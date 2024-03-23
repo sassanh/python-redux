@@ -1,5 +1,9 @@
 # Changelog
 
+## Version 0.13.1
+
+- chore: changed the format of snapshot filenames from store:... to store-...
+
 ## Version 0.13.0
 
 - chore(test): move fixtures and testing utilities to `redux-pytest` package
