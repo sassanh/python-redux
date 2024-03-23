@@ -1,16 +1,15 @@
 [tool.poetry]
 name = "python-redux"
-version = "0.12.7"
+version = "0.13.0"
 description = "Redux implementation for Python"
 authors = ["Sassan Haradji <sassanh@gmail.com>"]
 license = "Apache-2.0"
 readme = "README.md"
-packages = [{ include = "redux" }]
+packages = [{ include = "redux" }, { include = "redux_pytest" }]
 
 [tool.poetry.dependencies]
 python = "^3.11"
 python-immutable = "^1.0.5"
-typing-extensions = "^4.9.0"
 
 [tool.poetry.group.dev]
 optional = true
@@ -22,6 +21,8 @@ ruff = "^0.3.3"
 pytest = "^8.1.1"
 pytest-cov = "^4.1.0"
 pytest-timeout = "^2.3.1"
+pytest-mock = "^3.14.0"
+tenacity = "^8.2.3"
 
 [build-system]
 requires = ["poetry-core"]
@@ -34,7 +35,7 @@ todo_demo = "todo_demo:main"
 [tool.poe.tasks]
 lint = "ruff check . --unsafe-fixes"
 typecheck = "pyright -p pyproject.toml ."
-test = "pytest --cov=redux --cov-report=term-missing --cov-report=html --cov-report=xml"
+test = "pytest --cov --cov-report=term-missing --cov-report=html --cov-report=xml"
 sanity = ["typecheck", "lint", "test"]
 
 [tool.ruff]
@@ -69,4 +70,8 @@ timeout = 1
 exclude_also = ["if TYPE_CHECKING:"]
 
 [tool.coverage.run]
-omit = ['redux/test.py']
+source = ['redux', 'redux_pytest']
+omit = ['redux_pytest/plugin.py']
+
+[tool.poetry.plugins.pytest11]
+redux = "redux_pytest.plugin"

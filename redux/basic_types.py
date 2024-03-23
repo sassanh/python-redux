@@ -1,6 +1,7 @@
 # ruff: noqa: A003, D100, D101, D102, D103, D104, D105, D107
 from __future__ import annotations
 
+from dataclasses import field
 from types import NoneType
 from typing import (
     TYPE_CHECKING,
@@ -9,6 +10,7 @@ from typing import (
     Coroutine,
     Generic,
     Protocol,
+    Sequence,
     TypeAlias,
     TypeGuard,
 )
@@ -24,11 +26,6 @@ class BaseAction(Immutable): ...
 
 
 class BaseEvent(Immutable): ...
-
-
-class EventSubscriptionOptions(Immutable):
-    immediate_run: bool = False
-    keep_ref: bool = True
 
 
 # Type variables
@@ -99,13 +96,22 @@ class TaskCreator(Protocol):
     ) -> None: ...
 
 
-class CreateStoreOptions(Immutable):
+class ActionMiddleware(Protocol, Generic[Action]):
+    def __call__(self: ActionMiddleware, action: Action) -> Action: ...
+
+
+class EventMiddleware(Protocol, Generic[Event]):
+    def __call__(self: EventMiddleware, event: Event) -> Event: ...
+
+
+class CreateStoreOptions(Immutable, Generic[Action, Event]):
     auto_init: bool = False
     threads: int = 5
     scheduler: Scheduler | None = None
-    action_middleware: Callable[[BaseAction], Any] | None = None
-    event_middleware: Callable[[BaseEvent], Any] | None = None
+    action_middlewares: Sequence[ActionMiddleware[Action]] = field(default_factory=list)
+    event_middlewares: Sequence[EventMiddleware[Event]] = field(default_factory=list)
     task_creator: TaskCreator | None = None
+    on_finish: Callable[[], Any] | None = None
 
 
 class AutorunOptions(Immutable, Generic[AutorunOriginalReturnType]):
@@ -169,7 +175,7 @@ class EventSubscriber(Protocol):
         event_type: type[Event],
         handler: EventHandler[Event],
         *,
-        options: EventSubscriptionOptions | None = None,
+        keep_ref: bool = True,
     ) -> Callable[[], None]: ...
 
 

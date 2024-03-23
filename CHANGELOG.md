@@ -1,5 +1,17 @@
 # Changelog
 
+## Version 0.13.0
+
+- chore(test): move fixtures and testing utilities to `redux-pytest` package
+- feat(test): add `wait_for`, `store_monitor`, `event_loop` and `needs_finish` fixtures
+- test: add tests for scheduler and fixtures
+- refactor: `SideEffectRunnerThread` now runs async side effects in its own event-loop
+- refactor: removed `immediate_run` from event subscriptions
+- refactor: removed `EventSubscriptionOptions` as the only option left was `keep_ref`,
+  it's now a parameter of `subscribe_event`
+- feat: new `on_finish` callback for the store, it runs when all worker threads are
+  joined and resources are freed
+
 ## Version 0.12.7
 
 - fix: automatically unsubscribe autoruns when the weakref is dead

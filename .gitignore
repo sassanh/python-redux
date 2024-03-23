@@ -45,7 +45,7 @@ nosetests.xml
 coverage.xml
 *.cover
 .hypothesis/
-tests/**/results/*mismatch.json
+tests/**/results/**/*.mismatch.json
 
 # Translations
 *.mo

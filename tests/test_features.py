@@ -1,4 +1,4 @@
-# ruff: noqa: D100, D101, D102, D103, D104, D107
+# ruff: noqa: D100, D101, D102, D103, D104, D107, T201
 from __future__ import annotations
 
 import time
@@ -7,8 +7,12 @@ from typing import TYPE_CHECKING, TypeAlias
 import pytest
 from immutable import Immutable
 
+from redux import CombineReducerRegisterAction, CombineReducerUnregisterAction, Store
+from redux.combine_reducers import combine_reducers
+from redux.main import CreateStoreOptions
+
 if TYPE_CHECKING:
-    from redux.test import StoreSnapshotContext
+    from redux_pytest.fixtures import StoreMonitor, StoreSnapshot
 
 from redux.basic_types import (
     BaseAction,
@@ -16,11 +20,11 @@ from redux.basic_types import (
     BaseEvent,
     CombineReducerAction,
     CompleteReducerResult,
-    EventSubscriptionOptions,
     FinishAction,
     InitAction,
     InitializationActionError,
     ReducerResult,
+    ReducerType,
 )
 
 
@@ -47,6 +51,14 @@ class StateType(BaseCombineReducerState):
 
 
 ActionType: TypeAlias = InitAction | FinishAction | CountAction | CombineReducerAction
+
+
+class SleepEvent(BaseEvent):
+    duration: float
+
+
+class PrintEvent(BaseEvent):
+    message: str
 
 
 # Reducers
@@ -81,14 +93,6 @@ def base10_reducer(
     return state
 
 
-class SleepEvent(BaseEvent):
-    duration: float
-
-
-class PrintEvent(BaseEvent):
-    message: str
-
-
 def inverse_reducer(
     state: CountStateType | None,
     action: ActionType,
@@ -110,16 +114,15 @@ def inverse_reducer(
     return state
 
 
-def test_general(store_snapshot: StoreSnapshotContext) -> None:
-    from redux import (
-        CombineReducerRegisterAction,
-        CombineReducerUnregisterAction,
-        Store,
-    )
-    from redux.combine_reducers import combine_reducers
-    from redux.main import CreateStoreOptions
+Reducer: TypeAlias = tuple[
+    ReducerType[StateType, ActionType, SleepEvent | PrintEvent],
+    str,
+]
 
-    reducer, reducer_id = combine_reducers(
+
+@pytest.fixture()
+def reducer() -> Reducer:
+    return combine_reducers(
         state_type=StateType,
         action_type=ActionType,  # pyright: ignore [reportArgumentType]
         event_type=SleepEvent | PrintEvent,  # pyright: ignore [reportArgumentType]
@@ -127,20 +130,34 @@ def test_general(store_snapshot: StoreSnapshotContext) -> None:
         base10=base10_reducer,
     )
 
-    # Initialization
-    # --------------
-    store = Store(
-        reducer,
-        CreateStoreOptions(threads=2, action_middleware=print, event_middleware=print),
-    )
-    store_snapshot.set_store(store)
 
+@pytest.fixture()
+def store(reducer: Reducer) -> Store:
+    return Store(
+        reducer[0],
+        CreateStoreOptions(
+            threads=2,
+            action_middlewares=[lambda action: print(action) or action],
+            event_middlewares=[lambda event: print(event) or event],
+        ),
+    )
+
+
+def test_general(
+    store: Store,
+    reducer: Reducer,
+    store_snapshot: StoreSnapshot,
+    store_monitor: StoreMonitor,
+) -> None:
+    _, reducer_id = reducer
     store_snapshot.take(title='initialization')
 
     with pytest.raises(InitializationActionError):
         store.dispatch(IncrementAction())
 
+    store_monitor.dispatched_actions.reset_mock()
     store.dispatch(InitAction())
+    store_monitor.dispatched_actions.assert_called_once_with(InitAction())
 
     # Event Subscription
     # ------------------
@@ -159,7 +176,6 @@ def test_general(store_snapshot: StoreSnapshotContext) -> None:
     store.subscribe_event(
         SleepEvent,
         event_handler_without_parameter,
-        options=EventSubscriptionOptions(immediate_run=True),
     )
     unsubscribe = store.subscribe_event(PrintEvent, never_called_event_handler)
     unsubscribe()

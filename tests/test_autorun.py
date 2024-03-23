@@ -20,7 +20,7 @@ from redux.basic_types import (
 from redux.main import Store
 
 if TYPE_CHECKING:
-    from redux.test import StoreSnapshotContext
+    from redux_pytest.fixtures import StoreSnapshot
 
 
 class StateType(Immutable):
@@ -61,38 +61,27 @@ StoreType = Store[StateType, Action, FinishEvent]
 def store() -> Generator[StoreType, None, None]:
     store = Store(reducer, options=CreateStoreOptions(auto_init=True))
     yield store
+
     store.dispatch(IncrementAction())
     store.dispatch(IncrementByTwoAction())
     store.dispatch(IncrementAction())
     store.dispatch(FinishAction())
 
 
-def test_general(store_snapshot: StoreSnapshotContext, store: StoreType) -> None:
-    store_snapshot.set_store(store)
-
+def test_general(store_snapshot: StoreSnapshot, store: StoreType) -> None:
     @store.autorun(lambda state: state.value)
     def _(value: int) -> int:
         store_snapshot.take()
         return value
 
 
-def test_ignore_attribute_error_in_selector(
-    store_snapshot: StoreSnapshotContext,
-    store: StoreType,
-) -> None:
-    store_snapshot.set_store(store)
-
+def test_ignore_attribute_error_in_selector(store: StoreType) -> None:
     @store.autorun(lambda state: state.non_existing)  # pyright: ignore[reportAttributeAccessIssue]
     def _(_: int) -> int:
         pytest.fail('This should never be called')
 
 
-def test_ignore_attribute_error_in_comparator(
-    store_snapshot: StoreSnapshotContext,
-    store: StoreType,
-) -> None:
-    store_snapshot.set_store(store)
-
+def test_ignore_attribute_error_in_comparator(store: StoreType) -> None:
     @store.autorun(
         lambda state: state.value,
         lambda state: state.non_existing,  # pyright: ignore[reportAttributeAccessIssue]
@@ -101,9 +90,7 @@ def test_ignore_attribute_error_in_comparator(
         pytest.fail('This should never be called')
 
 
-def test_with_old_value(store_snapshot: StoreSnapshotContext, store: StoreType) -> None:
-    store_snapshot.set_store(store)
-
+def test_with_old_value(store_snapshot: StoreSnapshot, store: StoreType) -> None:
     @store.autorun(lambda state: state.value)
     def _(value: int, old_value: int | None) -> int:
         store_snapshot.take()
@@ -111,11 +98,9 @@ def test_with_old_value(store_snapshot: StoreSnapshotContext, store: StoreType) 
 
 
 def test_with_comparator(
-    store_snapshot: StoreSnapshotContext,
+    store_snapshot: StoreSnapshot,
     store: StoreType,
 ) -> None:
-    store_snapshot.set_store(store)
-
     @store.autorun(
         lambda state: state.value,
         lambda state: state.value % 2,
@@ -126,11 +111,9 @@ def test_with_comparator(
 
 
 def test_with_comparator_and_old_value(
-    store_snapshot: StoreSnapshotContext,
+    store_snapshot: StoreSnapshot,
     store: StoreType,
 ) -> None:
-    store_snapshot.set_store(store)
-
     @store.autorun(
         lambda state: state.value,
         lambda state: state.value % 2,
@@ -140,9 +123,7 @@ def test_with_comparator_and_old_value(
         return value - (old_value or 0)
 
 
-def test_value_property(store_snapshot: StoreSnapshotContext, store: StoreType) -> None:
-    store_snapshot.set_store(store)
-
+def test_value_property(store_snapshot: StoreSnapshot, store: StoreType) -> None:
     @store.autorun(lambda state: state.value)
     def render(value: int) -> int:
         store_snapshot.take()
@@ -157,9 +138,7 @@ def test_value_property(store_snapshot: StoreSnapshotContext, store: StoreType) 
     render.subscribe(check)
 
 
-def test_callability(store_snapshot: StoreSnapshotContext, store: StoreType) -> None:
-    store_snapshot.set_store(store)
-
+def test_callability(store_snapshot: StoreSnapshot, store: StoreType) -> None:
     @store.autorun(lambda state: state.value)
     def render(value: int) -> int:
         store_snapshot.take()
@@ -171,9 +150,7 @@ def test_callability(store_snapshot: StoreSnapshotContext, store: StoreType) -> 
     store.subscribe(check)
 
 
-def test_subscription(store_snapshot: StoreSnapshotContext, store: StoreType) -> None:
-    store_snapshot.set_store(store)
-
+def test_subscription(store_snapshot: StoreSnapshot, store: StoreType) -> None:
     @store.autorun(lambda state: state.value)
     def render(value: int) -> int:
         return value
@@ -184,9 +161,7 @@ def test_subscription(store_snapshot: StoreSnapshotContext, store: StoreType) ->
     render.subscribe(reaction, initial_run=True)
 
 
-def test_unsubscription(store_snapshot: StoreSnapshotContext, store: StoreType) -> None:
-    store_snapshot.set_store(store)
-
+def test_unsubscription(store: StoreType) -> None:
     @store.autorun(lambda state: state.value)
     def render(value: int) -> int:
         return value
@@ -198,9 +173,7 @@ def test_unsubscription(store_snapshot: StoreSnapshotContext, store: StoreType) 
     unsubscribe()
 
 
-def test_repr(store_snapshot: StoreSnapshotContext, store: StoreType) -> None:
-    store_snapshot.set_store(store)
-
+def test_repr(store: StoreType) -> None:
     @store.autorun(lambda state: state.value)
     def render(value: int) -> int:
         return value

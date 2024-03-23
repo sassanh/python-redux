@@ -150,33 +150,31 @@ class Autorun(
             selector_result = self._selector(state)
         except AttributeError:
             return
-        func = self._func() if isinstance(self._func, weakref.ref) else self._func
-        if func:
-            if self._comparator is None:
-                comparator_result = cast(ComparatorOutput, selector_result)
-            else:
-                try:
-                    comparator_result = self._comparator(state)
-                except AttributeError:
-                    return
-            if comparator_result != self._last_comparator_result:
-                previous_result = self._last_selector_result
-                self._last_selector_result = selector_result
-                self._last_comparator_result = comparator_result
+        if self._comparator is None:
+            comparator_result = cast(ComparatorOutput, selector_result)
+        else:
+            try:
+                comparator_result = self._comparator(state)
+            except AttributeError:
+                return
+        if comparator_result != self._last_comparator_result:
+            previous_result = self._last_selector_result
+            self._last_selector_result = selector_result
+            self._last_comparator_result = comparator_result
+            func = self._func() if isinstance(self._func, weakref.ref) else self._func
+            if func:
                 self._latest_value = self.call_func(
                     selector_result,
                     previous_result,
                     func,
                 )
-                if iscoroutine(self._latest_value):
-                    self._store._create_task(  # noqa: SLF001
-                        self._latest_value,
-                        callback=self._task_callback,
-                    )
+                create_task = self._store._create_task  # noqa: SLF001
+                if iscoroutine(self._latest_value) and create_task:
+                    create_task(self._latest_value, callback=self._task_callback)
                 else:
                     self.inform_subscribers()
-        else:
-            self.unsubscribe()
+            else:
+                self.unsubscribe()
 
     def __call__(
         self: Autorun[

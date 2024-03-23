@@ -2,18 +2,18 @@
 
 from __future__ import annotations
 
+import asyncio
 import inspect
 import queue
 import weakref
-from asyncio import get_event_loop, iscoroutine
 from collections import defaultdict
-from inspect import signature
 from threading import Lock
-from typing import Any, Callable, Coroutine, Generic, cast
+from typing import Any, Callable, Generic, cast
 
 from redux.autorun import Autorun
 from redux.basic_types import (
     Action,
+    ActionMiddleware,
     AutorunDecorator,
     AutorunOptions,
     AutorunOriginalReturnType,
@@ -26,7 +26,7 @@ from redux.basic_types import (
     Event,
     Event2,
     EventHandler,
-    EventSubscriptionOptions,
+    EventMiddleware,
     FinishAction,
     FinishEvent,
     InitAction,
@@ -34,22 +34,11 @@ from redux.basic_types import (
     SelectorOutput,
     SnapshotAtom,
     State,
-    TaskCreator,
-    TaskCreatorCallback,
     is_complete_reducer_result,
     is_state_reducer_result,
 )
 from redux.serialization_mixin import SerializationMixin
 from redux.side_effect_runner import SideEffectRunnerThread
-
-
-def _default_task_creator(
-    coro: Coroutine,
-    callback: TaskCreatorCallback | None = None,
-) -> None:
-    result = get_event_loop().create_task(coro)
-    if callback:
-        callback(result)
 
 
 class Store(Generic[State, Action, Event], SerializationMixin):
@@ -58,14 +47,15 @@ class Store(Generic[State, Action, Event], SerializationMixin):
     def __init__(
         self: Store[State, Action, Event],
         reducer: ReducerType[State, Action, Event],
-        options: CreateStoreOptions | None = None,
+        options: CreateStoreOptions[Action, Event] | None = None,
     ) -> None:
         """Create a new store."""
         self.store_options = options or CreateStoreOptions()
         self.reducer = reducer
-        self._create_task: TaskCreator = (
-            self.store_options.task_creator or _default_task_creator
-        )
+        self._create_task = self.store_options.task_creator
+
+        self._action_middlewares = list(self.store_options.action_middlewares)
+        self._event_middlewares = list(self.store_options.event_middlewares)
 
         self._state: State | None = None
         self._listeners: set[
@@ -73,12 +63,7 @@ class Store(Generic[State, Action, Event], SerializationMixin):
         ] = set()
         self._event_handlers: defaultdict[
             type[Event],
-            set[
-                tuple[
-                    EventHandler | weakref.ref[EventHandler],
-                    EventSubscriptionOptions,
-                ]
-            ],
+            set[EventHandler | weakref.ref[EventHandler]],
         ] = defaultdict(set)
 
         self._actions: list[Action] = []
@@ -88,10 +73,7 @@ class Store(Generic[State, Action, Event], SerializationMixin):
             tuple[EventHandler[Event], Event] | None
         ]()
         self._workers = [
-            SideEffectRunnerThread(
-                task_queue=self._event_handlers_queue,
-                task_creator=self._create_task,
-            )
+            SideEffectRunnerThread(task_queue=self._event_handlers_queue)
             for _ in range(self.store_options.threads)
         ]
         for worker in self._workers:
@@ -135,30 +117,13 @@ class Store(Generic[State, Action, Event], SerializationMixin):
                 else:
                     listener = listener_
                 result = listener(self._state)
-                if iscoroutine(result):
+                if asyncio.iscoroutine(result) and self._create_task:
                     self._create_task(result)
 
     def _run_event_handlers(self: Store[State, Action, Event]) -> None:
         event = self._events.pop(0)
-        for event_handler_, options in self._event_handlers[type(event)].copy():
-            if not options.immediate_run:
-                self._event_handlers_queue.put((event_handler_, event))
-            else:
-                if isinstance(event_handler_, weakref.ref):
-                    event_handler = event_handler_()
-                    if event_handler is None:
-                        self._event_handlers[type(event)].discard(
-                            (event_handler_, options),
-                        )
-                        continue
-                else:
-                    event_handler = event_handler_
-                if len(signature(event_handler).parameters) == 1:
-                    result = cast(Callable[[Event], Any], event_handler)(event)
-                else:
-                    result = cast(Callable[[], Any], event_handler)()
-                if iscoroutine(result):
-                    self._create_task(result)
+        for event_handler_ in self._event_handlers[type(event)].copy():
+            self._event_handlers_queue.put((event_handler_, event))
 
     def run(self: Store[State, Action, Event]) -> None:
         """Run the store."""
@@ -169,12 +134,18 @@ class Store(Generic[State, Action, Event], SerializationMixin):
 
                 if len(self._events) > 0:
                     self._run_event_handlers()
-        if not any(i.is_alive() for i in self._workers):
-            for worker in self._workers:
-                worker.join()
-            self._workers.clear()
-            self._listeners.clear()
-            self._event_handlers.clear()
+        if not any(worker.is_alive() for worker in self._workers):
+            self.clean_up()
+
+    def clean_up(self: Store[State, Action, Event]) -> None:
+        """Clean up the store."""
+        for worker in self._workers:
+            worker.join()
+        self._workers.clear()
+        self._listeners.clear()
+        self._event_handlers.clear()
+        if self.store_options.on_finish:
+            self.store_options.on_finish()
 
     def dispatch(
         self: Store[State, Action, Event],
@@ -194,13 +165,15 @@ class Store(Generic[State, Action, Event], SerializationMixin):
 
         for item in items:
             if isinstance(item, BaseAction):
-                if self.store_options.action_middleware:
-                    self.store_options.action_middleware(item)
-                self._actions.append(item)
+                action = cast(Action, item)
+                for action_middleware in self._action_middlewares:
+                    action = action_middleware(action)
+                self._actions.append(action)
             if isinstance(item, BaseEvent):
-                if self.store_options.event_middleware:
-                    self.store_options.event_middleware(item)
-                self._events.append(item)
+                event = cast(Event, item)
+                for event_middleware in self._event_middlewares:
+                    event = event_middleware(event)
+                self._events.append(event)
 
         if self.store_options.scheduler is None and not self._is_running.locked():
             self.run()
@@ -227,28 +200,20 @@ class Store(Generic[State, Action, Event], SerializationMixin):
         event_type: type[Event2],
         handler: EventHandler[Event2],
         *,
-        options: EventSubscriptionOptions | None = None,
+        keep_ref: bool = True,
     ) -> Callable[[], None]:
         """Subscribe to events."""
-        subscription_options = (
-            EventSubscriptionOptions() if options is None else options
-        )
-
-        if subscription_options.keep_ref:
+        if keep_ref:
             handler_ref = handler
         elif inspect.ismethod(handler):
             handler_ref = weakref.WeakMethod(handler)
         else:
             handler_ref = weakref.ref(handler)
 
-        self._event_handlers[cast(type[Event], event_type)].add(
-            (handler_ref, subscription_options),
-        )
+        self._event_handlers[cast(type[Event], event_type)].add(handler_ref)
 
         def unsubscribe() -> None:
-            self._event_handlers[cast(type[Event], event_type)].discard(
-                (handler_ref, subscription_options),
-            )
+            self._event_handlers[cast(type[Event], event_type)].discard(handler_ref)
 
         return unsubscribe
 
@@ -287,3 +252,31 @@ class Store(Generic[State, Action, Event], SerializationMixin):
     def snapshot(self: Store[State, Action, Event]) -> SnapshotAtom:
         """Return a snapshot of the current state of the store."""
         return self.serialize_value(self._state)
+
+    def register_action_middleware(
+        self: Store[State, Action, Event],
+        action_middleware: ActionMiddleware,
+    ) -> None:
+        """Register an action dispatch middleware."""
+        self._action_middlewares.append(action_middleware)
+
+    def register_event_middleware(
+        self: Store[State, Action, Event],
+        event_middleware: EventMiddleware,
+    ) -> None:
+        """Register an action dispatch middleware."""
+        self._event_middlewares.append(event_middleware)
+
+    def unregister_action_middleware(
+        self: Store[State, Action, Event],
+        action_middleware: ActionMiddleware,
+    ) -> None:
+        """Unregister an action dispatch middleware."""
+        self._action_middlewares.remove(action_middleware)
+
+    def unregister_event_middleware(
+        self: Store[State, Action, Event],
+        event_middleware: EventMiddleware,
+    ) -> None:
+        """Unregister an action dispatch middleware."""
+        self._event_middlewares.remove(event_middleware)

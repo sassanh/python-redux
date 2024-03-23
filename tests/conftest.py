@@ -9,11 +9,23 @@ import uuid
 
 import pytest
 
-pytest.register_assert_rewrite('redux.test')
+from redux_pytest.fixtures import (
+    event_loop,
+    needs_finish,
+    store,
+    store_monitor,
+    store_snapshot,
+    wait_for,
+)
 
-from redux.test import pytest_addoption, store_snapshot  # noqa: E402
-
-__all__ = ('store_snapshot', 'pytest_addoption')
+__all__ = [
+    'event_loop',
+    'needs_finish',
+    'store',
+    'store_monitor',
+    'store_snapshot',
+    'wait_for',
+]
 
 
 @pytest.fixture(autouse=True)

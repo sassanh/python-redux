@@ -7,45 +7,53 @@ import uuid
 from dataclasses import replace
 from typing import TYPE_CHECKING, Sequence
 
+import pytest
 from immutable import Immutable
 
+from redux import (
+    BaseAction,
+    BaseEvent,
+    CompleteReducerResult,
+    CreateStoreOptions,
+    FinishAction,
+    InitAction,
+    InitializationActionError,
+    ReducerResult,
+    Store,
+)
+
 if TYPE_CHECKING:
-    from redux.test import StoreSnapshotContext
+    from redux_pytest.fixtures import StoreSnapshot
 
 
-def test_todo(store_snapshot: StoreSnapshotContext) -> None:
-    from redux import BaseAction, Store
-    from redux.basic_types import (
-        BaseEvent,
-        CompleteReducerResult,
-        CreateStoreOptions,
-        FinishAction,
-        InitAction,
-        InitializationActionError,
-        ReducerResult,
-    )
+# state:
+class ToDoItem(Immutable):
+    id: str
+    content: str
+    timestamp: float
 
-    # state:
-    class ToDoItem(Immutable):
-        id: str
-        content: str
-        timestamp: float
 
-    class ToDoState(Immutable):
-        items: Sequence[ToDoItem]
+class ToDoState(Immutable):
+    items: Sequence[ToDoItem]
 
-    # actions:
-    class AddTodoItemAction(BaseAction):
-        content: str
-        timestamp: float
 
-    class RemoveTodoItemAction(BaseAction):
-        id: str
+# actions:
+class AddTodoItemAction(BaseAction):
+    content: str
+    timestamp: float
 
-    # events:
-    class CallApi(BaseEvent):
-        parameters: object
 
+class RemoveTodoItemAction(BaseAction):
+    id: str
+
+
+# events:
+class CallApi(BaseEvent):
+    parameters: object
+
+
+@pytest.fixture()
+def store() -> Store:
     # reducer:
     def reducer(
         state: ToDoState | None,
@@ -85,9 +93,10 @@ def test_todo(store_snapshot: StoreSnapshotContext) -> None:
             )
         return state
 
-    store = Store(reducer, options=CreateStoreOptions(auto_init=True))
-    store_snapshot.set_store(store)
+    return Store(reducer, options=CreateStoreOptions(auto_init=True))
 
+
+def test_todo(store_snapshot: StoreSnapshot, store: Store) -> None:
     # subscription:
     dummy_render = logging.getLogger().info
     store.subscribe(dummy_render)
@@ -111,4 +120,3 @@ def test_todo(store_snapshot: StoreSnapshotContext) -> None:
     store_snapshot.take()
 
     store.dispatch(FinishAction())
-    store_snapshot.take()
