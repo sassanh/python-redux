@@ -39,7 +39,7 @@ class StoreSnapshot:
         self.results_dir = path.parent / 'results' / file / test_id.split('::')[-1][5:]
         if self.results_dir.exists():
             for file in self.results_dir.glob(
-                'store:*' if override else 'store:*.mismatch.json',
+                'store-*' if override else 'store-*.mismatch.json',
             ):
                 file.unlink()  # pragma: no cover
         self.results_dir.mkdir(parents=True, exist_ok=True)

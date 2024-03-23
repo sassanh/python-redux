@@ -1,5 +1,10 @@
 # Changelog
 
+## Version 0.13.2
+
+- fix: initial snapshot cleanup which used to mistakenly remove files with store:...
+  filenames now removes files with store-... filenames
+
 ## Version 0.13.1
 
 - chore: changed the format of snapshot filenames from store:... to store-...
