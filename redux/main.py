@@ -50,6 +50,7 @@ class Store(Generic[State, Action, Event], SerializationMixin):
         options: CreateStoreOptions[Action, Event] | None = None,
     ) -> None:
         """Create a new store."""
+        self.finished = False
         self.store_options = options or CreateStoreOptions()
         self.reducer = reducer
         self._create_task = self.store_options.task_creator
@@ -95,35 +96,37 @@ class Store(Generic[State, Action, Event], SerializationMixin):
         if self.store_options.scheduler:
             self.store_options.scheduler(self.run, interval=True)
 
+    def _call_listeners(self: Store[State, Action, Event], state: State) -> None:
+        for listener_ in self._listeners.copy():
+            if isinstance(listener_, weakref.ref):
+                listener = listener_()
+                if listener is None:
+                    self._listeners.discard(listener_)
+                    continue
+            else:
+                listener = listener_
+            result = listener(state)
+            if asyncio.iscoroutine(result) and self._create_task:
+                self._create_task(result)
+
     def _run_actions(self: Store[State, Action, Event]) -> None:
         action = self._actions.pop(0)
         result = self.reducer(self._state, action)
         if is_complete_reducer_result(result):
             self._state = result.state
+            self._call_listeners(self._state)
             self.dispatch([*(result.actions or []), *(result.events or [])])
         elif is_state_reducer_result(result):
             self._state = result
+            self._call_listeners(self._state)
 
         if isinstance(action, FinishAction):
             self.dispatch(cast(Event, FinishEvent()))
 
-        if len(self._actions) == 0 and self._state:
-            for listener_ in self._listeners.copy():
-                if isinstance(listener_, weakref.ref):
-                    listener = listener_()
-                    if listener is None:
-                        self._listeners.discard(listener_)
-                        continue
-                else:
-                    listener = listener_
-                result = listener(self._state)
-                if asyncio.iscoroutine(result) and self._create_task:
-                    self._create_task(result)
-
     def _run_event_handlers(self: Store[State, Action, Event]) -> None:
         event = self._events.pop(0)
         for event_handler_ in self._event_handlers[type(event)].copy():
-            self._event_handlers_queue.put((event_handler_, event))
+            self._event_handlers_queue.put_nowait((event_handler_, event))
 
     def run(self: Store[State, Action, Event]) -> None:
         """Run the store."""
@@ -134,7 +137,12 @@ class Store(Generic[State, Action, Event], SerializationMixin):
 
                 if len(self._events) > 0:
                     self._run_event_handlers()
-        if not any(worker.is_alive() for worker in self._workers):
+        if (
+            self.finished
+            and self._actions == []
+            and self._events == []
+            and not any(worker.is_alive() for worker in self._workers)
+        ):
             self.clean_up()
 
     def clean_up(self: Store[State, Action, Event]) -> None:
@@ -219,7 +227,8 @@ class Store(Generic[State, Action, Event], SerializationMixin):
 
     def _handle_finish_event(self: Store[State, Action, Event]) -> None:
         for _ in range(self.store_options.threads):
-            self._event_handlers_queue.put(None)
+            self._event_handlers_queue.put_nowait(None)
+        self.finished = True
 
     def autorun(
         self: Store[State, Action, Event],

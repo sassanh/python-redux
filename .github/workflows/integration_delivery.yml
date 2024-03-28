@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
 
 env:
-  PYTHON_VERSION: "3.11"
+  PYTHON_VERSION: '3.11'
 
 jobs:
   dependencies:
@@ -267,7 +267,7 @@ jobs:
           path: artifacts
 
       - name: Release
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         with:
           files: artifacts/*
           tag_name: v${{ needs.build.outputs.version }}

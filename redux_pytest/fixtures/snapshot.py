@@ -51,7 +51,12 @@ class StoreSnapshot:
     def json_snapshot(self: StoreSnapshot) -> str:
         """Return the snapshot of the current state of the store."""
         return (
-            json.dumps(self.store.snapshot, indent=2, sort_keys=True)
+            json.dumps(
+                self.store.snapshot,
+                indent=2,
+                sort_keys=True,
+                ensure_ascii=False,
+            )
             if self.store._state  # noqa: SLF001
             else ''
         )

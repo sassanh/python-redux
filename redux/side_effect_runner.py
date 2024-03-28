@@ -6,7 +6,7 @@ import asyncio
 import contextlib
 import threading
 import weakref
-from asyncio import Task, iscoroutine
+from asyncio import Handle, iscoroutine
 from inspect import signature
 from typing import TYPE_CHECKING, Any, Callable, Generic, cast
 
@@ -27,16 +27,14 @@ class SideEffectRunnerThread(threading.Thread, Generic[Event]):
         """Initialize the side effect runner thread."""
         super().__init__()
         self.task_queue = task_queue
-        self._tasks: set[Task] = set()
+        self.loop = asyncio.get_event_loop()
+        self._handles: set[Handle] = set()
+        self.create_task = lambda coro: self._handles.add(
+            self.loop.call_soon_threadsafe(self.loop.create_task, coro),
+        )
 
     def run(self: SideEffectRunnerThread[Event]) -> None:
         """Run the side effect runner thread."""
-        self.loop = asyncio.new_event_loop()
-        self.create_task = lambda coro: self._tasks.add(self.loop.create_task(coro))
-        self.loop.run_until_complete(self.work())
-
-    async def work(self: SideEffectRunnerThread[Event]) -> None:
-        """Run the side effects."""
         while True:
             task = self.task_queue.get()
             if task is None:
@@ -61,17 +59,3 @@ class SideEffectRunnerThread(threading.Thread, Generic[Event]):
                     self.create_task(result)
             finally:
                 self.task_queue.task_done()
-        await self.clean_up()
-
-    async def clean_up(self: SideEffectRunnerThread[Event]) -> None:
-        """Clean up the side effect runner thread."""
-        while True:
-            tasks = [
-                task
-                for task in asyncio.all_tasks(self.loop)
-                if task is not asyncio.current_task(self.loop)
-            ]
-            if not tasks:
-                break
-            for task in tasks:
-                await task

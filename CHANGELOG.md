@@ -1,5 +1,15 @@
 # Changelog
 
+## Version 0.14.0
+
+- refactor: `Store` no longer aggregates changes, it now calls listeners with every
+  change
+- refactor: `SideEffectRunnerThread` now runs async side effects in the event loop
+  of the thread in which it was instantiated in (it used to create its own event
+  loop)
+- refactor(test): `event_loop` fixture now sets the global event loop on setup and
+  restores it on teardown
+
 ## Version 0.13.2
 
 - fix: initial snapshot cleanup which used to mistakenly remove files with store:...

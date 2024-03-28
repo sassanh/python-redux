@@ -1,10 +1,10 @@
-// store-subscription-005
+// store-subscription-007
 {
   "_id": "e3e70682c2094cac629f6fbed82c07cd",
   "base10": {
-    "count": 10
+    "count": 8
   },
   "inverse": {
-    "count": 1
+    "count": 3
   }
 }

@@ -2,9 +2,8 @@
 from __future__ import annotations
 
 import asyncio
-import threading
 from dataclasses import replace
-from typing import Callable, Coroutine, Generator
+from typing import TYPE_CHECKING, Callable, Coroutine, Generator
 
 import pytest
 from immutable import Immutable
@@ -19,6 +18,9 @@ from redux.basic_types import (
     InitializationActionError,
 )
 from redux.main import Store
+
+if TYPE_CHECKING:
+    from redux_pytest.fixtures.event_loop import LoopThread
 
 INCREMENTS = 2
 
@@ -49,26 +51,6 @@ def reducer(
     if isinstance(action, SetMirroredValueAction):
         return replace(state, mirrored_value=action.value)
     return state
-
-
-class LoopThread(threading.Thread):
-    def __init__(self: LoopThread) -> None:
-        super().__init__()
-        self.loop = asyncio.new_event_loop()
-        asyncio.set_event_loop(self.loop)
-
-    def run(self: LoopThread) -> None:
-        self.loop.run_forever()
-
-    def stop(self: LoopThread) -> None:
-        self.loop.call_soon_threadsafe(self.loop.stop)
-
-
-@pytest.fixture()
-def loop() -> LoopThread:
-    loop_thread = LoopThread()
-    loop_thread.start()
-    return loop_thread
 
 
 Action = IncrementAction | SetMirroredValueAction | InitAction | FinishAction
@@ -118,13 +100,8 @@ def test_autorun(
     async def _(mirrored_value: int) -> None:
         if mirrored_value < INCREMENTS:
             return
-        store.dispatch(FinishAction())
-
-    async def finish() -> None:
         event_loop.stop()
-
-    store.subscribe_event(FinishEvent, finish)
-    store.subscribe_event(FinishEvent, finish)
+        store.dispatch(FinishAction())
 
 
 def test_subscription(
@@ -152,8 +129,7 @@ def test_event_subscription(
     store.dispatch(FinishAction())
 
 
-def test_event_subscription_with_default_task_creator(event_loop: LoopThread) -> None:
-    asyncio.set_event_loop(event_loop.loop)
+def test_event_subscription_with_no_task_creator(event_loop: LoopThread) -> None:
     store = Store(
         reducer,
         options=CreateStoreOptions(auto_init=True),

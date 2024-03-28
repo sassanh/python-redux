@@ -171,8 +171,7 @@ class Autorun(
                 create_task = self._store._create_task  # noqa: SLF001
                 if iscoroutine(self._latest_value) and create_task:
                     create_task(self._latest_value, callback=self._task_callback)
-                else:
-                    self.inform_subscribers()
+                self.inform_subscribers()
             else:
                 self.unsubscribe()
 
