@@ -7,7 +7,7 @@ import inspect
 import queue
 import weakref
 from collections import defaultdict
-from threading import Lock
+from threading import Lock, Thread
 from typing import Any, Callable, Generic, cast
 
 from redux.autorun import Autorun
@@ -50,7 +50,6 @@ class Store(Generic[State, Action, Event], SerializationMixin):
         options: CreateStoreOptions[Action, Event] | None = None,
     ) -> None:
         """Create a new store."""
-        self.finished = False
         self.store_options = options or CreateStoreOptions()
         self.reducer = reducer
         self._create_task = self.store_options.task_creator
@@ -125,8 +124,8 @@ class Store(Generic[State, Action, Event], SerializationMixin):
 
     def _run_event_handlers(self: Store[State, Action, Event]) -> None:
         event = self._events.pop(0)
-        for event_handler_ in self._event_handlers[type(event)].copy():
-            self._event_handlers_queue.put_nowait((event_handler_, event))
+        for event_handler in self._event_handlers[type(event)].copy():
+            self._event_handlers_queue.put_nowait((event_handler, event))
 
     def run(self: Store[State, Action, Event]) -> None:
         """Run the store."""
@@ -137,13 +136,6 @@ class Store(Generic[State, Action, Event], SerializationMixin):
 
                 if len(self._events) > 0:
                     self._run_event_handlers()
-        if (
-            self.finished
-            and self._actions == []
-            and self._events == []
-            and not any(worker.is_alive() for worker in self._workers)
-        ):
-            self.clean_up()
 
     def clean_up(self: Store[State, Action, Event]) -> None:
         """Clean up the store."""
@@ -152,8 +144,6 @@ class Store(Generic[State, Action, Event], SerializationMixin):
         self._workers.clear()
         self._listeners.clear()
         self._event_handlers.clear()
-        if self.store_options.on_finish:
-            self.store_options.on_finish()
 
     def dispatch(
         self: Store[State, Action, Event],
@@ -225,10 +215,30 @@ class Store(Generic[State, Action, Event], SerializationMixin):
 
         return unsubscribe
 
+    def wait_for_store_to_finish(self: Store[State, Action, Event]) -> None:
+        """Wait for the store to finish."""
+        import time
+
+        while True:
+            if (
+                self._actions == []
+                and self._events == []
+                and self._event_handlers_queue.qsize() == 0
+            ):
+                time.sleep(self.store_options.grace_time_in_seconds)
+                self._event_handlers_queue.join()
+                for _ in range(self.store_options.threads):
+                    self._event_handlers_queue.put_nowait(None)
+                self._event_handlers_queue.join()
+                self.clean_up()
+                if self.store_options.on_finish:
+                    self.store_options.on_finish()
+                break
+            time.sleep(0.1)
+
     def _handle_finish_event(self: Store[State, Action, Event]) -> None:
-        for _ in range(self.store_options.threads):
-            self._event_handlers_queue.put_nowait(None)
-        self.finished = True
+        thread = Thread(target=self.wait_for_store_to_finish)
+        thread.start()
 
     def autorun(
         self: Store[State, Action, Event],

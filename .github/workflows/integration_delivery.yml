@@ -16,7 +16,7 @@ jobs:
       - uses: actions/checkout@v4
         name: Checkout
 
-      - name: Save Cached Poetry
+      - name: Load Cached Poetry
         id: cached-poetry
         uses: actions/cache@v4
         with:
@@ -112,36 +112,23 @@ jobs:
           architecture: x64
 
       - name: Load Cached Poetry
-        id: cached-poetry
         uses: actions/cache/restore@v4
+        id: cached-poetry
         with:
           path: |
             ~/.cache
             ~/.local
           key: poetry-${{ hashFiles('poetry.lock') }}
 
-      - name: Test
+      - name: Run Tests
         run: poetry run poe test
 
-      - name: Prepare list of JSON files with mismatching pairs
-        if: failure()
-        run: |
-          mkdir -p artifacts
-          for file in $(find tests/ -name "*.mismatch.json"); do
-            base=${file%.mismatch.json}.json
-            if [[ -f "$base" ]]; then
-              echo "$file" >> artifacts/files_to_upload.txt
-              echo "$base" >> artifacts/files_to_upload.txt
-            fi
-          done
-
-      - name: Collect Mismatching Store Snapshots
-        if: failure()
+      - name: Collect Store Snapshots
         uses: actions/upload-artifact@v4
+        if: always()
         with:
-          name: mismatching-snapshots
-          path: |
-            @artifacts/files_to_upload.txt
+          name: snapshots
+          path: tests/**/results/**/*.jsonc
 
       - name: Collect HTML Coverage Report
         uses: actions/upload-artifact@v4
@@ -163,8 +150,8 @@ jobs:
       - dependencies
     runs-on: ubuntu-latest
     outputs:
-      version: ${{ steps.extract_version.outputs.version }}
-      name: ${{ steps.extract_version.outputs.name }}
+      version: ${{ steps.extract_version.outputs.VERSION }}
+      name: ${{ steps.extract_version.outputs.NAME }}
     steps:
       - uses: actions/checkout@v4
         name: Checkout
@@ -184,14 +171,41 @@ jobs:
             ~/.local
           key: poetry-${{ hashFiles('poetry.lock') }}
 
-      - name: Build
-        run: poetry build
-
       - name: Extract Version
         id: extract_version
         run: |
-          echo "version=$(poetry version --short)" >> "$GITHUB_OUTPUT"
-          echo "name=$(poetry version | cut -d' ' -f1)" >> "$GITHUB_OUTPUT"
+          echo "VERSION=$(poetry version --short)" >> "$GITHUB_OUTPUT"
+          echo "NAME=$(poetry version | cut -d' ' -f1)" >> "$GITHUB_OUTPUT"
+          echo "VERSION=$(poetry version --short)"
+          echo "NAME=$(poetry version | cut -d' ' -f1)"
+
+      - name: Extract Version from CHANGELOG.md
+        id: extract_changelog_version
+        run: |
+          VERSION_CHANGELOG=$(sed -n '3 s/## Version //p' CHANGELOG.md) 
+          echo "VERSION_CHANGELOG=$VERSION_CHANGELOG"
+          if [ "${{ steps.extract_version.outputs.VERSION }}" != "$VERSION_CHANGELOG" ]; then
+            echo "Error: Version extracted from CHANGELOG.md does not match the version in pyproject.toml"
+            exit 1 
+          else
+            echo "Versions are consistent."
+          fi
+
+      - name: Extract Version from Tag
+        if: startsWith(github.ref, 'refs/tags/v')
+        id: extract_tag_version
+        run: |
+          VERSION_TAG=$(sed 's/^v//' <<< ${{ github.ref_name }})
+          echo "VERSION_TAG=$VERSION_TAG"
+          if [ "${{ steps.extract_version.outputs.VERSION }}" != "$VERSION_TAG" ]; then
+            echo "Error: Version extracted from tag does not match the version in pyproject.toml"
+            exit 1 
+          else
+            echo "Versions are consistent."
+          fi
+
+      - name: Build
+        run: poetry build
 
       - name: Upload wheel
         uses: actions/upload-artifact@v4
@@ -240,6 +254,7 @@ jobs:
           verbose: true
 
   release:
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
     name: Release
     needs:
       - type-check
@@ -247,12 +262,12 @@ jobs:
       - test
       - build
       - pypi-publish
+    runs-on: ubuntu-latest
     environment:
       name: release
-    runs-on: ubuntu-latest
+      url: https://pypi.org/p/${{ needs.build.outputs.name }}
     permissions:
       contents: write
-    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
     steps:
       - name: Procure Wheel
         uses: actions/download-artifact@v4

@@ -1,4 +1,4 @@
-# ruff: noqa: D100, D101, D102, D103, D104, D107, T201
+# ruff: noqa: D100, D101, D102, D103, D104, D107
 from __future__ import annotations
 
 import asyncio
@@ -11,11 +11,14 @@ from immutable import Immutable
 
 from redux.basic_types import (
     BaseAction,
+    BaseEvent,
+    CompleteReducerResult,
     CreateStoreOptions,
     FinishAction,
     FinishEvent,
     InitAction,
     InitializationActionError,
+    ReducerResult,
 )
 from redux.main import Store
 
@@ -30,14 +33,27 @@ class StateType(Immutable):
 class IncrementAction(BaseAction): ...
 
 
-def reducer(state: StateType | None, action: IncrementAction | InitAction) -> StateType:
+class WaitEvent(BaseEvent): ...
+
+
+Action = IncrementAction | InitAction | FinishAction
+Event = WaitEvent
+
+
+def reducer(
+    state: StateType | None,
+    action: Action,
+) -> ReducerResult[StateType, Action, Event]:
     if state is None:
         if isinstance(action, InitAction):
             return StateType(value=0)
         raise InitializationActionError(action)
 
     if isinstance(action, IncrementAction):
-        return replace(state, value=state.value + 1)
+        return CompleteReducerResult(
+            state=replace(state, value=state.value + 1),
+            events=[WaitEvent()],
+        )
     return state
 
 
@@ -108,10 +124,16 @@ def test_scheduler(mocker: MockerFixture) -> None:
             scheduler=scheduler.set,
             task_creator=_create_task_with_callback,
             on_finish=scheduler.schedule_stop,
+            grace_time_in_seconds=0.2,
         ),
     )
 
     render = mocker.stub()
+
+    store.subscribe_event(
+        FinishEvent,
+        lambda _: time.sleep(0.1) or store.dispatch(IncrementAction()),
+    )
 
     store.subscribe(render)
     import time
@@ -127,5 +149,3 @@ def test_scheduler(mocker: MockerFixture) -> None:
     render.assert_has_calls(
         [call(StateType(value=i)) for i in range(11)] + [call(StateType(value=10))],
     )
-
-    print(3)

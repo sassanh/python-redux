@@ -1,5 +1,10 @@
 # Changelog
 
+## Version 0.14.1
+
+- feat: introduce `grace_time_in_seconds` parameter to `Store` to allow a grace
+  period for the store to finish its work before calling `cleanup` and `on_finish`
+
 ## Version 0.14.0
 
 - refactor: `Store` no longer aggregates changes, it now calls listeners with every

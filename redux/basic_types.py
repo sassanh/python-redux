@@ -42,8 +42,8 @@ EventHandler = Callable[[Event], Any] | Callable[[], Any]
 
 class CompleteReducerResult(Immutable, Generic[State, Action, Event]):
     state: State
-    actions: list[Action] | None = None
-    events: list[Event] | None = None
+    actions: Sequence[Action] | None = None
+    events: Sequence[Event] | None = None
 
 
 ReducerResult = CompleteReducerResult[State, Action, Event] | State
@@ -112,6 +112,7 @@ class CreateStoreOptions(Immutable, Generic[Action, Event]):
     event_middlewares: Sequence[EventMiddleware[Event]] = field(default_factory=list)
     task_creator: TaskCreator | None = None
     on_finish: Callable[[], Any] | None = None
+    grace_time_in_seconds: float = 1
 
 
 class AutorunOptions(Immutable, Generic[AutorunOriginalReturnType]):
