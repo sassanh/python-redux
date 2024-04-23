@@ -169,6 +169,8 @@ class AutorunReturnType(
         keep_ref: bool | None = None,
     ) -> Callable[[], None]: ...
 
+    def unsubscribe(self: AutorunReturnType) -> None: ...
+
 
 class EventSubscriber(Protocol):
     def __call__(

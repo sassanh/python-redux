@@ -1,5 +1,9 @@
 # Changelog
 
+## Version 0.14.3
+
+- fix: add `unsubscribe` method to `AutorunReturnType` protocol
+
 ## Version 0.14.2
 
 - refactor: middleware functions can now return `None` to cancel an action or event
