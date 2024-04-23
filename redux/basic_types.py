@@ -97,11 +97,11 @@ class TaskCreator(Protocol):
 
 
 class ActionMiddleware(Protocol, Generic[Action]):
-    def __call__(self: ActionMiddleware, action: Action) -> Action: ...
+    def __call__(self: ActionMiddleware, action: Action) -> Action | None: ...
 
 
 class EventMiddleware(Protocol, Generic[Event]):
-    def __call__(self: EventMiddleware, event: Event) -> Event: ...
+    def __call__(self: EventMiddleware, event: Event) -> Event | None: ...
 
 
 class CreateStoreOptions(Immutable, Generic[Action, Event]):

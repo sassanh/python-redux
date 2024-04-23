@@ -45,7 +45,7 @@ class Store(Generic[State, Action, Event], SerializationMixin):
     """Redux store for managing state and side effects."""
 
     def __init__(
-        self: Store[State, Action, Event],
+        self: Store,
         reducer: ReducerType[State, Action, Event],
         options: CreateStoreOptions[Action, Event] | None = None,
     ) -> None:
@@ -109,7 +109,12 @@ class Store(Generic[State, Action, Event], SerializationMixin):
                 self._create_task(result)
 
     def _run_actions(self: Store[State, Action, Event]) -> None:
-        action = self._actions.pop(0)
+        while True:
+            if len(self._actions) == 0:
+                return
+            action = self._actions.pop(0)
+            if action is not None:
+                break
         result = self.reducer(self._state, action)
         if is_complete_reducer_result(result):
             self._state = result.state
@@ -123,7 +128,12 @@ class Store(Generic[State, Action, Event], SerializationMixin):
             self.dispatch(cast(Event, FinishEvent()))
 
     def _run_event_handlers(self: Store[State, Action, Event]) -> None:
-        event = self._events.pop(0)
+        while True:
+            if len(self._events) == 0:
+                return
+            event = self._events.pop(0)
+            if event is not None:
+                break
         for event_handler in self._event_handlers[type(event)].copy():
             self._event_handlers_queue.put_nowait((event_handler, event))
 
@@ -139,6 +149,10 @@ class Store(Generic[State, Action, Event], SerializationMixin):
 
     def clean_up(self: Store[State, Action, Event]) -> None:
         """Clean up the store."""
+        self._event_handlers_queue.join()
+        for _ in range(self.store_options.threads):
+            self._event_handlers_queue.put_nowait(None)
+        self._event_handlers_queue.join()
         for worker in self._workers:
             worker.join()
         self._workers.clear()
@@ -165,13 +179,21 @@ class Store(Generic[State, Action, Event], SerializationMixin):
             if isinstance(item, BaseAction):
                 action = cast(Action, item)
                 for action_middleware in self._action_middlewares:
-                    action = action_middleware(action)
-                self._actions.append(action)
+                    action_ = action_middleware(action)
+                    if action_ is None:
+                        break
+                    action = action_
+                else:
+                    self._actions.append(action)
             if isinstance(item, BaseEvent):
                 event = cast(Event, item)
                 for event_middleware in self._event_middlewares:
-                    event = event_middleware(event)
-                self._events.append(event)
+                    event_ = event_middleware(event)
+                    if event_ is None:
+                        break
+                    event = event_
+                else:
+                    self._events.append(event)
 
         if self.store_options.scheduler is None and not self._is_running.locked():
             self.run()
@@ -226,10 +248,6 @@ class Store(Generic[State, Action, Event], SerializationMixin):
                 and self._event_handlers_queue.qsize() == 0
             ):
                 time.sleep(self.store_options.grace_time_in_seconds)
-                self._event_handlers_queue.join()
-                for _ in range(self.store_options.threads):
-                    self._event_handlers_queue.put_nowait(None)
-                self._event_handlers_queue.join()
                 self.clean_up()
                 if self.store_options.on_finish:
                     self.store_options.on_finish()
@@ -237,8 +255,7 @@ class Store(Generic[State, Action, Event], SerializationMixin):
             time.sleep(0.1)
 
     def _handle_finish_event(self: Store[State, Action, Event]) -> None:
-        thread = Thread(target=self.wait_for_store_to_finish)
-        thread.start()
+        Thread(target=self.wait_for_store_to_finish).start()
 
     def autorun(
         self: Store[State, Action, Event],

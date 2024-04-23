@@ -20,7 +20,7 @@ class SideEffectRunnerThread(threading.Thread, Generic[Event]):
     """Thread for running side effects."""
 
     def __init__(
-        self: SideEffectRunnerThread[Event],
+        self: SideEffectRunnerThread,
         *,
         task_queue: queue.Queue[tuple[EventHandler[Event], Event] | None],
     ) -> None:

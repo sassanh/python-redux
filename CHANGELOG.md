@@ -1,5 +1,9 @@
 # Changelog
 
+## Version 0.14.2
+
+- refactor: middleware functions can now return `None` to cancel an action or event
+
 ## Version 0.14.1
 
 - feat: introduce `grace_time_in_seconds` parameter to `Store` to allow a grace
