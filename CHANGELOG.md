@@ -1,5 +1,9 @@
 # Changelog
 
+## Version 0.14.4
+
+- refactor(test): add the counter id of the failed snapshot to the error message
+
 ## Version 0.14.3
 
 - fix: add `unsubscribe` method to `AutorunReturnType` protocol

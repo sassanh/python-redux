@@ -92,12 +92,7 @@ class StoreSnapshot:
                 mismatch_path.write_text(  # pragma: no cover
                     f'// MISMATCH: {filename}\n{new_snapshot}\n',
                 )
-            if title:
-                assert (
-                    new_snapshot == old_snapshot
-                ), f'Store snapshot mismatch for {title}'
-            else:
-                assert new_snapshot == old_snapshot, 'Store snapshot mismatch'
+            assert new_snapshot == old_snapshot, f'Store snapshot mismatch - {filename}'
 
         self.test_counter[title] += 1
 
