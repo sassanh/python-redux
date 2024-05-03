@@ -1,5 +1,9 @@
 # Changelog
 
+## Version 0.14.5
+
+- test(middleware): add middleware tests
+
 ## Version 0.14.4
 
 - refactor(test): add the counter id of the failed snapshot to the error message

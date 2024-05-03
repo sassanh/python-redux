@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "python-redux"
-version = "0.14.4"
+version = "0.14.5"
 description = "Redux implementation for Python"
 authors = ["Sassan Haradji <sassanh@gmail.com>"]
 license = "Apache-2.0"
@@ -50,7 +50,7 @@ inline-quotes = "single"
 multiline-quotes = "double"
 
 [tool.ruff.lint.per-file-ignores]
-"tests/*" = ["S101", "PLR0915"]
+"tests/*" = ["S101", "PLR0915", "PLR2004"]
 
 [tool.ruff.format]
 quote-style = 'single'

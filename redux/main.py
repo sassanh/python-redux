@@ -109,33 +109,27 @@ class Store(Generic[State, Action, Event], SerializationMixin):
                 self._create_task(result)
 
     def _run_actions(self: Store[State, Action, Event]) -> None:
-        while True:
-            if len(self._actions) == 0:
-                return
+        while len(self._actions) > 0:
             action = self._actions.pop(0)
             if action is not None:
-                break
-        result = self.reducer(self._state, action)
-        if is_complete_reducer_result(result):
-            self._state = result.state
-            self._call_listeners(self._state)
-            self.dispatch([*(result.actions or []), *(result.events or [])])
-        elif is_state_reducer_result(result):
-            self._state = result
-            self._call_listeners(self._state)
+                result = self.reducer(self._state, action)
+                if is_complete_reducer_result(result):
+                    self._state = result.state
+                    self._call_listeners(self._state)
+                    self.dispatch([*(result.actions or []), *(result.events or [])])
+                elif is_state_reducer_result(result):
+                    self._state = result
+                    self._call_listeners(self._state)
 
-        if isinstance(action, FinishAction):
-            self.dispatch(cast(Event, FinishEvent()))
+                if isinstance(action, FinishAction):
+                    self.dispatch(cast(Event, FinishEvent()))
 
     def _run_event_handlers(self: Store[State, Action, Event]) -> None:
-        while True:
-            if len(self._events) == 0:
-                return
+        while len(self._events) > 0:
             event = self._events.pop(0)
             if event is not None:
-                break
-        for event_handler in self._event_handlers[type(event)].copy():
-            self._event_handlers_queue.put_nowait((event_handler, event))
+                for event_handler in self._event_handlers[type(event)].copy():
+                    self._event_handlers_queue.put_nowait((event_handler, event))
 
     def run(self: Store[State, Action, Event]) -> None:
         """Run the store."""
