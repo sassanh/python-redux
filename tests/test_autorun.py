@@ -4,11 +4,13 @@ from __future__ import annotations
 import re
 from dataclasses import replace
 from typing import TYPE_CHECKING, Generator
+from unittest.mock import call
 
 import pytest
 from immutable import Immutable
 
 from redux.basic_types import (
+    AutorunOptions,
     BaseAction,
     CompleteReducerResult,
     CreateStoreOptions,
@@ -20,6 +22,8 @@ from redux.basic_types import (
 from redux.main import Store
 
 if TYPE_CHECKING:
+    from pytest_mock import MockerFixture
+
     from redux_pytest.fixtures import StoreSnapshot
 
 
@@ -30,10 +34,15 @@ class StateType(Immutable):
 class IncrementAction(BaseAction): ...
 
 
+class DecrementAction(BaseAction): ...
+
+
 class IncrementByTwoAction(BaseAction): ...
 
 
-Action = IncrementAction | IncrementByTwoAction | InitAction | FinishAction
+Action = (
+    IncrementAction | DecrementAction | IncrementByTwoAction | InitAction | FinishAction
+)
 
 
 def reducer(
@@ -47,6 +56,9 @@ def reducer(
 
     if isinstance(action, IncrementAction):
         return replace(state, value=state.value + 1)
+
+    if isinstance(action, DecrementAction):
+        return replace(state, value=state.value - 1)
 
     if isinstance(action, IncrementByTwoAction):
         return replace(state, value=state.value + 2)
@@ -189,3 +201,112 @@ def test_repr(store: StoreType) -> None:
         r'.*\(func: <function test_repr\.<locals>\.render at .*>, last_value: 1\)$',
         repr(render),
     )
+
+
+def test_auto_call_without_reactive(store: StoreType) -> None:
+    with pytest.raises(
+        ValueError,
+        match='^`reactive` must be `True` if `auto_call` is `True`$',
+    ):
+
+        @store.autorun(
+            lambda state: state.value,
+            options=AutorunOptions(reactive=False, auto_call=True),
+        )
+        def _(_: int) -> int:
+            pytest.fail('This should never be called')
+
+
+call_sequence = [
+    # 0
+    [
+        (IncrementAction()),
+    ],
+    # 1
+    [
+        (IncrementAction()),
+        (DecrementAction()),
+        (IncrementByTwoAction()),
+        (DecrementAction()),
+        (IncrementAction()),
+    ],
+    # 3
+    [
+        (DecrementAction()),
+        (DecrementAction()),
+    ],
+    # 1
+]
+
+
+def test_no_auto_call_with_initial_call_and_reactive_set(
+    store: StoreType,
+    mocker: MockerFixture,
+) -> None:
+    def render(_: int) -> None: ...
+
+    render = mocker.create_autospec(render)
+
+    render_autorun = store.autorun(
+        lambda state: state.value,
+        options=AutorunOptions(reactive=True, auto_call=False, initial_call=True),
+    )(render)
+
+    for actions in call_sequence:
+        for action in actions:
+            store.dispatch(action)
+        render_autorun()
+
+    assert render.mock_calls == [call(0), call(1), call(3), call(1)]
+
+
+def test_no_auto_call_and_no_initial_call_with_reactive_set(
+    store: StoreType,
+    mocker: MockerFixture,
+) -> None:
+    def render(_: int) -> None: ...
+
+    render = mocker.create_autospec(render)
+
+    render_autorun = store.autorun(
+        lambda state: state.value,
+        options=AutorunOptions(reactive=True, auto_call=False, initial_call=False),
+    )(render)
+
+    for actions in call_sequence:
+        for action in actions:
+            store.dispatch(action)
+        render_autorun()
+
+    assert render.mock_calls == [call(1), call(3), call(1)]
+
+
+def test_with_auto_call_and_initial_call_and_reactive_set(
+    store: StoreType,
+    mocker: MockerFixture,
+) -> None:
+    def render(_: int) -> None: ...
+
+    render = mocker.create_autospec(render)
+
+    render_autorun = store.autorun(
+        lambda state: state.value,
+        options=AutorunOptions(reactive=True, auto_call=True, initial_call=True),
+    )(render)
+
+    for actions in call_sequence:
+        for action in actions:
+            store.dispatch(action)
+        render_autorun()
+
+    assert render.mock_calls == [
+        call(0),
+        call(1),
+        call(2),
+        call(1),
+        call(3),
+        call(2),
+        call(3),
+        call(2),
+        call(1),
+    ]

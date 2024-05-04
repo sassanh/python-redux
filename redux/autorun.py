@@ -1,6 +1,7 @@
 # ruff: noqa: D100, D101, D102, D103, D104, D105, D107
 from __future__ import annotations
 
+import functools
 import inspect
 import weakref
 from asyncio import Task, iscoroutine
@@ -43,9 +44,13 @@ class Autorun(
         | Callable[[SelectorOutput, SelectorOutput], AutorunOriginalReturnType],
         options: AutorunOptions[AutorunOriginalReturnType],
     ) -> None:
+        if not options.reactive and options.auto_call:
+            msg = '`reactive` must be `True` if `auto_call` is `True`'
+            raise ValueError(msg)
         self._store = store
         self._selector = selector
         self._comparator = comparator
+        self._should_be_called = False
         if options.keep_ref:
             self._func = func
         elif inspect.ismethod(func):
@@ -65,9 +70,12 @@ class Autorun(
             | weakref.ref[Callable[[AutorunOriginalReturnType], Any]]
         ] = set()
 
-        self._check_and_call(store._state, call=self._options.initial_run)  # noqa: SLF001
+        self._check_and_call(store._state, call=self._options.initial_call)  # noqa: SLF001
 
-        self.unsubscribe = store.subscribe(self._check_and_call)
+        if self._options.reactive:
+            self.unsubscribe = store.subscribe(
+                functools.partial(self._check_and_call, call=self._options.auto_call),
+            )
 
     def inform_subscribers(
         self: Autorun[
@@ -158,7 +166,8 @@ class Autorun(
                 comparator_result = self._comparator(state)
             except AttributeError:
                 return
-        if comparator_result != self._last_comparator_result:
+        if self._should_be_called or comparator_result != self._last_comparator_result:
+            self._should_be_called = False
             previous_result = self._last_selector_result
             self._last_selector_result = selector_result
             self._last_comparator_result = comparator_result
@@ -174,6 +183,8 @@ class Autorun(
                     if iscoroutine(self._latest_value) and create_task:
                         create_task(self._latest_value, callback=self._task_callback)
                     self.inform_subscribers()
+                else:
+                    self._should_be_called = True
             else:
                 self.unsubscribe()
 
@@ -189,7 +200,7 @@ class Autorun(
     ) -> AutorunOriginalReturnType:
         state = self._store._state  # noqa: SLF001
         if state is not None:
-            self._check_and_call(state)
+            self._check_and_call(state, call=True)
         return cast(AutorunOriginalReturnType, self._latest_value)
 
     def __repr__(

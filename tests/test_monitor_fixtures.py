@@ -118,8 +118,8 @@ def test_closed_snapshot_store(
         assert store_snapshot._is_closed  # noqa: SLF001
         with pytest.raises(
             RuntimeError,
-            match='Snapshot context is closed, make sure you are not calling `take` '
-            'after `FinishEvent` is dispatched.',
+            match='^Snapshot context is closed, make sure you are not calling `take` '
+            'after `FinishEvent` is dispatched.$',
         ):
             store_snapshot.take()
 

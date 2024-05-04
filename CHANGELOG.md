@@ -5,6 +5,10 @@
 - refactor(autorun)!: setting `initial_run` option of autorun to `False` used to
   make the autorun simply not call the function on initialization, now it makes
   sure the function is not called until the selector's value actually changes
+- feat(autorun): add `auto_call` and `reactive` options to autorun to control whether
+  the autorun should call the function automatically when the comparator's value
+  changes and whether it shouldn't automatically call it but yet register a change
+  so that when it is manually called the next time, it will call the function.
 
 ## Version 0.14.5
 

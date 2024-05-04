@@ -46,7 +46,7 @@ class InvalidType: ...
 def test_invalid() -> None:
     with pytest.raises(
         TypeError,
-        match=f'Unable to serialize object with type `{InvalidType}`',
+        match=f'^Unable to serialize object with type `{InvalidType}`$',
     ):
         Store.serialize_value(InvalidType())
 

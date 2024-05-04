@@ -117,7 +117,7 @@ def test_autorun(
 
     @store.autorun(
         lambda state: state.value,
-        options=AutorunOptions(keep_ref=False, initial_run=False),
+        options=AutorunOptions(keep_ref=False, initial_call=False),
     )
     def render_without_keep_ref(_: int) -> int:
         pytest.fail('This should never be called')
@@ -155,7 +155,7 @@ def test_autorun_method(
     instance_without_keep_ref = AutorunClass(store_snapshot)
     store.autorun(
         lambda state: state.value,
-        options=AutorunOptions(keep_ref=False, initial_run=False),
+        options=AutorunOptions(keep_ref=False, initial_call=False),
     )(
         instance_without_keep_ref.method_without_keep_ref,
     )
