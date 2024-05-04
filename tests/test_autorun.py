@@ -102,13 +102,6 @@ def test_ignore_attribute_error_in_comparator(store: StoreType) -> None:
         pytest.fail('This should never be called')
 
 
-def test_with_old_value(store_snapshot: StoreSnapshot, store: StoreType) -> None:
-    @store.autorun(lambda state: state.value)
-    def _(value: int, old_value: int | None) -> int:
-        store_snapshot.take()
-        return value - (old_value or 0)
-
-
 def test_with_comparator(
     store_snapshot: StoreSnapshot,
     store: StoreType,
@@ -120,19 +113,6 @@ def test_with_comparator(
     def _(value: int) -> int:
         store_snapshot.take()
         return value
-
-
-def test_with_comparator_and_old_value(
-    store_snapshot: StoreSnapshot,
-    store: StoreType,
-) -> None:
-    @store.autorun(
-        lambda state: state.value,
-        lambda state: state.value % 2,
-    )
-    def _(value: int, old_value: int | None) -> int:
-        store_snapshot.take()
-        return value - (old_value or 0)
 
 
 def test_value_property(store_snapshot: StoreSnapshot, store: StoreType) -> None:
@@ -310,3 +290,31 @@ def test_with_auto_call_and_initial_call_and_reactive_set(
         call(2),
         call(1),
     ]
+
+
+def test_view_mode_autorun(
+    store: StoreType,
+) -> None:
+    @store.autorun(
+        lambda state: state.value,
+        options=AutorunOptions(
+            reactive=False,
+            auto_call=False,
+            initial_call=False,
+            default_value=0,
+        ),
+    )
+    def render(_: int, *, some_other_value: int) -> int:
+        return some_other_value
+
+    assert render(some_other_value=12345) == 12345
+
+
+def test_view(
+    store: StoreType,
+) -> None:
+    @store.view(lambda state: state.value)
+    def render(_: int, *, some_other_value: int) -> int:
+        return some_other_value
+
+    assert render(some_other_value=12345) == 12345

@@ -7,8 +7,10 @@ from typing import (
     TYPE_CHECKING,
     Any,
     Callable,
+    Concatenate,
     Coroutine,
     Generic,
+    ParamSpec,
     Protocol,
     Sequence,
     TypeAlias,
@@ -36,8 +38,11 @@ Event2 = TypeVar('Event2', bound=BaseEvent, infer_variance=True)
 SelectorOutput = TypeVar('SelectorOutput', infer_variance=True)
 ComparatorOutput = TypeVar('ComparatorOutput', infer_variance=True)
 AutorunOriginalReturnType = TypeVar('AutorunOriginalReturnType', infer_variance=True)
+ViewOriginalReturnType = TypeVar('ViewOriginalReturnType', infer_variance=True)
 Comparator = Callable[[State], ComparatorOutput]
 EventHandler = Callable[[Event], Any] | Callable[[], Any]
+AutorunArgs = ParamSpec('AutorunArgs')
+ViewArgs = ParamSpec('ViewArgs')
 
 
 class CompleteReducerResult(Immutable, Generic[State, Action, Event]):
@@ -125,40 +130,22 @@ class AutorunOptions(Immutable, Generic[AutorunOriginalReturnType]):
     subscribers_keep_ref: bool = True
 
 
-class AutorunType(Protocol, Generic[State]):
-    def __call__(
-        self: AutorunType,
-        selector: Callable[[State], SelectorOutput],
-        comparator: Callable[[State], Any] | None = None,
-        *,
-        options: AutorunOptions[AutorunOriginalReturnType] | None = None,
-    ) -> AutorunDecorator[
-        State,
-        SelectorOutput,
-        AutorunOriginalReturnType,
-    ]: ...
-
-
-class AutorunDecorator(
-    Protocol,
-    Generic[
-        State,
-        SelectorOutput,
-        AutorunOriginalReturnType,
-    ],
-):
-    def __call__(
-        self: AutorunDecorator,
-        func: Callable[[SelectorOutput], AutorunOriginalReturnType]
-        | Callable[[SelectorOutput, SelectorOutput], AutorunOriginalReturnType],
-    ) -> AutorunReturnType[AutorunOriginalReturnType]: ...
+class ViewOptions(Immutable, Generic[ViewOriginalReturnType]):
+    default_value: ViewOriginalReturnType | None = None
+    keep_ref: bool = True
+    subscribers_initial_run: bool = True
+    subscribers_keep_ref: bool = True
 
 
 class AutorunReturnType(
     Protocol,
-    Generic[AutorunOriginalReturnType],
+    Generic[AutorunOriginalReturnType, AutorunArgs],
 ):
-    def __call__(self: AutorunReturnType) -> AutorunOriginalReturnType: ...
+    def __call__(
+        self: AutorunReturnType,
+        *args: AutorunArgs.args,
+        **kwargs: AutorunArgs.kwargs,
+    ) -> AutorunOriginalReturnType: ...
 
     @property
     def value(self: AutorunReturnType) -> AutorunOriginalReturnType: ...
@@ -172,6 +159,52 @@ class AutorunReturnType(
     ) -> Callable[[], None]: ...
 
     def unsubscribe(self: AutorunReturnType) -> None: ...
+
+
+AutorunDecorator = Callable[
+    [
+        Callable[
+            Concatenate[SelectorOutput, AutorunArgs],
+            AutorunOriginalReturnType,
+        ],
+    ],
+    AutorunReturnType[AutorunOriginalReturnType, AutorunArgs],
+]
+
+
+ViewDecorator = Callable[
+    [
+        Callable[
+            Concatenate[SelectorOutput, ViewArgs],
+            ViewOriginalReturnType,
+        ],
+    ],
+    Callable[ViewArgs, ViewOriginalReturnType],
+]
+
+
+class ViewReturnType(
+    Protocol,
+    Generic[ViewOriginalReturnType, ViewArgs],
+):
+    def __call__(
+        self: ViewReturnType,
+        *args: ViewArgs.args,
+        **kwargs: ViewArgs.kwargs,
+    ) -> ViewOriginalReturnType: ...
+
+    @property
+    def value(self: ViewReturnType) -> ViewOriginalReturnType: ...
+
+    def subscribe(
+        self: ViewReturnType,
+        callback: Callable[[ViewOriginalReturnType], Any],
+        *,
+        initial_run: bool | None = None,
+        keep_ref: bool | None = None,
+    ) -> Callable[[], None]: ...
+
+    def unsubscribe(self: ViewReturnType) -> None: ...
 
 
 class EventSubscriber(Protocol):

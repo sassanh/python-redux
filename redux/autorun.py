@@ -1,15 +1,14 @@
 # ruff: noqa: D100, D101, D102, D103, D104, D105, D107
 from __future__ import annotations
 
-import functools
 import inspect
 import weakref
 from asyncio import Task, iscoroutine
-from inspect import signature
-from typing import TYPE_CHECKING, Any, Callable, Generic, cast
+from typing import TYPE_CHECKING, Any, Callable, Concatenate, Generic, cast
 
 from redux.basic_types import (
     Action,
+    AutorunArgs,
     AutorunOptions,
     AutorunOriginalReturnType,
     ComparatorOutput,
@@ -19,8 +18,6 @@ from redux.basic_types import (
 )
 
 if TYPE_CHECKING:
-    from types import MethodType
-
     from redux.main import Store
 
 
@@ -32,6 +29,7 @@ class Autorun(
         SelectorOutput,
         ComparatorOutput,
         AutorunOriginalReturnType,
+        AutorunArgs,
     ],
 ):
     def __init__(  # noqa: PLR0913
@@ -40,8 +38,10 @@ class Autorun(
         store: Store[State, Action, Event],
         selector: Callable[[State], SelectorOutput],
         comparator: Callable[[State], Any] | None,
-        func: Callable[[SelectorOutput], AutorunOriginalReturnType]
-        | Callable[[SelectorOutput, SelectorOutput], AutorunOriginalReturnType],
+        func: Callable[
+            Concatenate[SelectorOutput, AutorunArgs],
+            AutorunOriginalReturnType,
+        ],
         options: AutorunOptions[AutorunOriginalReturnType],
     ) -> None:
         if not options.reactive and options.auto_call:
@@ -54,9 +54,9 @@ class Autorun(
         if options.keep_ref:
             self._func = func
         elif inspect.ismethod(func):
-            self._func = weakref.WeakMethod(func)
+            self._func = weakref.WeakMethod(func, self.unsubscribe)
         else:
-            self._func = weakref.ref(func, lambda _: self.unsubscribe())
+            self._func = weakref.ref(func, self.unsubscribe)
         self._options = options
 
         self._last_selector_result: SelectorOutput | None = None
@@ -70,12 +70,19 @@ class Autorun(
             | weakref.ref[Callable[[AutorunOriginalReturnType], Any]]
         ] = set()
 
-        self._check_and_call(store._state, call=self._options.initial_call)  # noqa: SLF001
+        self._check_and_call(store._state, self._options.initial_call)  # noqa: SLF001
 
         if self._options.reactive:
-            self.unsubscribe = store.subscribe(
-                functools.partial(self._check_and_call, call=self._options.auto_call),
+            self._unsubscribe = store.subscribe(
+                lambda state: self._check_and_call(state, self._options.auto_call),
             )
+        else:
+            self._unsubscribe = None
+
+    def unsubscribe(self: Autorun, _: weakref.ref | None = None) -> None:
+        if self._unsubscribe:
+            self._unsubscribe()
+            self._unsubscribe = None
 
     def inform_subscribers(
         self: Autorun[
@@ -85,6 +92,7 @@ class Autorun(
             SelectorOutput,
             ComparatorOutput,
             AutorunOriginalReturnType,
+            AutorunArgs,
         ],
     ) -> None:
         for subscriber_ in self._subscriptions.copy():
@@ -97,37 +105,6 @@ class Autorun(
                 subscriber = subscriber_
             subscriber(self._latest_value)
 
-    def call_func(
-        self: Autorun[
-            State,
-            Action,
-            Event,
-            SelectorOutput,
-            ComparatorOutput,
-            AutorunOriginalReturnType,
-        ],
-        selector_result: SelectorOutput,
-        previous_result: SelectorOutput | None,
-        func: Callable[
-            [SelectorOutput, SelectorOutput],
-            AutorunOriginalReturnType,
-        ]
-        | Callable[[SelectorOutput], AutorunOriginalReturnType]
-        | MethodType,
-    ) -> AutorunOriginalReturnType:
-        if len(signature(func).parameters) == 1:
-            return cast(
-                Callable[[SelectorOutput], AutorunOriginalReturnType],
-                func,
-            )(selector_result)
-        return cast(
-            Callable[
-                [SelectorOutput, SelectorOutput | None],
-                AutorunOriginalReturnType,
-            ],
-            func,
-        )(selector_result, previous_result)
-
     def _task_callback(
         self: Autorun[
             State,
@@ -136,6 +113,7 @@ class Autorun(
             SelectorOutput,
             ComparatorOutput,
             AutorunOriginalReturnType,
+            AutorunArgs,
         ],
         task: Task,
     ) -> None:
@@ -150,10 +128,12 @@ class Autorun(
             SelectorOutput,
             ComparatorOutput,
             AutorunOriginalReturnType,
+            AutorunArgs,
         ],
         state: State,
-        *,
-        call: bool = True,
+        _call: bool,  # noqa: FBT001
+        *args: AutorunArgs.args,
+        **kwargs: AutorunArgs.kwargs,
     ) -> None:
         try:
             selector_result = self._selector(state)
@@ -167,26 +147,19 @@ class Autorun(
             except AttributeError:
                 return
         if self._should_be_called or comparator_result != self._last_comparator_result:
-            self._should_be_called = False
-            previous_result = self._last_selector_result
             self._last_selector_result = selector_result
             self._last_comparator_result = comparator_result
-            func = self._func() if isinstance(self._func, weakref.ref) else self._func
-            if func:
-                if call:
-                    self._latest_value = self.call_func(
-                        selector_result,
-                        previous_result,
-                        func,
-                    )
+            self._should_be_called = not _call
+            if _call:
+                func = (
+                    self._func() if isinstance(self._func, weakref.ref) else self._func
+                )
+                if func:
+                    self._latest_value = func(selector_result, *args, **kwargs)
                     create_task = self._store._create_task  # noqa: SLF001
                     if iscoroutine(self._latest_value) and create_task:
                         create_task(self._latest_value, callback=self._task_callback)
                     self.inform_subscribers()
-                else:
-                    self._should_be_called = True
-            else:
-                self.unsubscribe()
 
     def __call__(
         self: Autorun[
@@ -196,11 +169,14 @@ class Autorun(
             SelectorOutput,
             ComparatorOutput,
             AutorunOriginalReturnType,
+            AutorunArgs,
         ],
+        *args: AutorunArgs.args,
+        **kwargs: AutorunArgs.kwargs,
     ) -> AutorunOriginalReturnType:
         state = self._store._state  # noqa: SLF001
         if state is not None:
-            self._check_and_call(state, call=True)
+            self._check_and_call(state, True, *args, **kwargs)  # noqa: FBT003
         return cast(AutorunOriginalReturnType, self._latest_value)
 
     def __repr__(
@@ -211,6 +187,7 @@ class Autorun(
             SelectorOutput,
             ComparatorOutput,
             AutorunOriginalReturnType,
+            AutorunArgs,
         ],
     ) -> str:
         return f"""{super().__repr__()}(func: {self._func}, last_value: {
@@ -225,6 +202,7 @@ class Autorun(
             SelectorOutput,
             ComparatorOutput,
             AutorunOriginalReturnType,
+            AutorunArgs,
         ],
     ) -> AutorunOriginalReturnType:
         return cast(AutorunOriginalReturnType, self._latest_value)
@@ -237,6 +215,7 @@ class Autorun(
             SelectorOutput,
             ComparatorOutput,
             AutorunOriginalReturnType,
+            AutorunArgs,
         ],
         callback: Callable[[AutorunOriginalReturnType], Any],
         *,

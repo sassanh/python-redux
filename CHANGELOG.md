@@ -1,5 +1,11 @@
 # Changelog
 
+## Version 0.15.1
+
+- feat(core): add `view` method to `Store` to allow computing a derived value from
+  the state only when it is accessed and caching the result until the relevant parts
+  of the state change
+
 ## Version 0.15.0
 
 - refactor(autorun)!: setting `initial_run` option of autorun to `False` used to
