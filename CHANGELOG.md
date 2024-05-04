@@ -5,6 +5,7 @@
 - feat(core): add `view` method to `Store` to allow computing a derived value from
   the state only when it is accessed and caching the result until the relevant parts
   of the state change
+- feat(test): add performance tests to check it doesn't timeout in edge cases
 
 ## Version 0.15.0
 
