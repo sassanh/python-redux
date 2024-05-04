@@ -1,5 +1,11 @@
 # Changelog
 
+## Version 0.15.0
+
+- refactor(autorun)!: setting `initial_run` option of autorun to `False` used to
+  make the autorun simply not call the function on initialization, now it makes
+  sure the function is not called until the selector's value actually changes
+
 ## Version 0.14.5
 
 - test(middleware): add middleware tests

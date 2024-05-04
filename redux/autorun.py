@@ -65,8 +65,7 @@ class Autorun(
             | weakref.ref[Callable[[AutorunOriginalReturnType], Any]]
         ] = set()
 
-        if self._options.initial_run and store._state is not None:  # noqa: SLF001
-            self._check_and_call(store._state)  # noqa: SLF001
+        self._check_and_call(store._state, call=self._options.initial_run)  # noqa: SLF001
 
         self.unsubscribe = store.subscribe(self._check_and_call)
 
@@ -145,6 +144,8 @@ class Autorun(
             AutorunOriginalReturnType,
         ],
         state: State,
+        *,
+        call: bool = True,
     ) -> None:
         try:
             selector_result = self._selector(state)
@@ -163,15 +164,16 @@ class Autorun(
             self._last_comparator_result = comparator_result
             func = self._func() if isinstance(self._func, weakref.ref) else self._func
             if func:
-                self._latest_value = self.call_func(
-                    selector_result,
-                    previous_result,
-                    func,
-                )
-                create_task = self._store._create_task  # noqa: SLF001
-                if iscoroutine(self._latest_value) and create_task:
-                    create_task(self._latest_value, callback=self._task_callback)
-                self.inform_subscribers()
+                if call:
+                    self._latest_value = self.call_func(
+                        selector_result,
+                        previous_result,
+                        func,
+                    )
+                    create_task = self._store._create_task  # noqa: SLF001
+                    if iscoroutine(self._latest_value) and create_task:
+                        create_task(self._latest_value, callback=self._task_callback)
+                    self.inform_subscribers()
             else:
                 self.unsubscribe()
 
