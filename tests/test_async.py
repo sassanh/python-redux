@@ -3,12 +3,13 @@ from __future__ import annotations
 
 import asyncio
 from dataclasses import replace
-from typing import TYPE_CHECKING, Callable, Coroutine, Generator
+from typing import TYPE_CHECKING, Callable, Coroutine
 
 import pytest
 from immutable import Immutable
 
 from redux.basic_types import (
+    AutorunOptions,
     BaseAction,
     CompleteReducerResult,
     CreateStoreOptions,
@@ -16,6 +17,7 @@ from redux.basic_types import (
     FinishEvent,
     InitAction,
     InitializationActionError,
+    ViewOptions,
 )
 from redux.main import Store
 
@@ -58,7 +60,7 @@ StoreType = Store[StateType, Action, FinishEvent]
 
 
 @pytest.fixture()
-def store(event_loop: LoopThread) -> Generator[StoreType, None, None]:
+def store(event_loop: LoopThread) -> StoreType:
     def _create_task_with_callback(
         coro: Coroutine,
         callback: Callable[[asyncio.Task], None] | None = None,
@@ -70,16 +72,17 @@ def store(event_loop: LoopThread) -> Generator[StoreType, None, None]:
 
         event_loop.loop.call_soon_threadsafe(create_task_with_callback)
 
-    store = Store(
+    return Store(
         reducer,
         options=CreateStoreOptions(
             auto_init=True,
             task_creator=_create_task_with_callback,
         ),
     )
-    yield store
-    for i in range(INCREMENTS):
-        _ = i
+
+
+def dispatch_actions(store: StoreType) -> None:
+    for _ in range(INCREMENTS):
         store.dispatch(IncrementAction())
 
 
@@ -103,6 +106,101 @@ def test_autorun(
         event_loop.stop()
         store.dispatch(FinishAction())
 
+    dispatch_actions(store)
+
+
+def test_autorun_default_value(
+    store: StoreType,
+    event_loop: LoopThread,
+) -> None:
+    @store.autorun(lambda state: state.value, options=AutorunOptions(default_value=5))
+    async def _(value: int) -> int:
+        store.dispatch(SetMirroredValueAction(value=value))
+        return value
+
+    @store.autorun(
+        lambda state: state.mirrored_value,
+        lambda state: state.mirrored_value >= INCREMENTS,
+    )
+    async def _(mirrored_value: int) -> None:
+        if mirrored_value < INCREMENTS:
+            return
+        event_loop.stop()
+        store.dispatch(FinishAction())
+
+    dispatch_actions(store)
+
+
+def test_view(
+    store: StoreType,
+    event_loop: LoopThread,
+) -> None:
+    calls = []
+
+    @store.view(lambda state: state.value)
+    async def doubled(value: int) -> int:
+        calls.append(value)
+        return value * 2
+
+    @store.autorun(lambda state: state.value)
+    async def _(value: int) -> None:
+        assert await doubled() == value * 2
+        for _ in range(10):
+            await doubled()
+        if value < INCREMENTS:
+            store.dispatch(IncrementAction())
+        else:
+            event_loop.stop()
+            store.dispatch(FinishAction())
+            assert calls == list(range(INCREMENTS + 1))
+
+
+def test_view_with_args(
+    store: StoreType,
+    event_loop: LoopThread,
+) -> None:
+    calls = []
+
+    @store.view(lambda state: state.value)
+    async def multiplied(value: int, factor: int) -> int:
+        calls.append(value)
+        return value * factor
+
+    @store.autorun(lambda state: state.value)
+    async def _(value: int) -> None:
+        assert await multiplied(factor=2) == value * 2
+        assert await multiplied(factor=3) == value * 3
+        if value < INCREMENTS:
+            store.dispatch(IncrementAction())
+        else:
+            event_loop.stop()
+            store.dispatch(FinishAction())
+            assert calls == [j for i in list(range(INCREMENTS + 1)) for j in [i] * 2]
+
+
+def test_view_with_default_value(
+    store: StoreType,
+    event_loop: LoopThread,
+) -> None:
+    calls = []
+
+    @store.view(lambda state: state.value, options=ViewOptions(default_value=5))
+    async def doubled(value: int) -> int:
+        calls.append(value)
+        return value * 2
+
+    @store.autorun(lambda state: state.value)
+    async def _(value: int) -> None:
+        assert await doubled() == value * 2
+        if value < INCREMENTS:
+            store.dispatch(IncrementAction())
+        else:
+            event_loop.stop()
+            store.dispatch(FinishAction())
+            assert calls == list(range(INCREMENTS + 1))
+
+    store.dispatch(InitAction())
+
 
 def test_subscription(
     store: StoreType,
@@ -116,6 +214,8 @@ def test_subscription(
 
     unsubscribe = store.subscribe(render)
 
+    dispatch_actions(store)
+
 
 def test_event_subscription(
     store: StoreType,
@@ -127,6 +227,8 @@ def test_event_subscription(
 
     store.subscribe_event(FinishEvent, finish)
     store.dispatch(FinishAction())
+
+    dispatch_actions(store)
 
 
 def test_event_subscription_with_no_task_creator(event_loop: LoopThread) -> None:

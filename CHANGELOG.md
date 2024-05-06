@@ -1,5 +1,14 @@
 # Changelog
 
+## Version 0.15.2
+
+- refactor(autorun): improve type-hints so that its final return value has the correct
+  type, regardless `default_value` is provided or not
+- refactor(view): improve type-hints so that its final return value has the correct
+  type, regardless `default_value` is provided or not
+- refactor(combine_reducers): use `make_immutable` instead of `make_dataclass`
+- test(view): write tests for `store.view`
+
 ## Version 0.15.1
 
 - feat(core): add `view` method to `Store` to allow computing a derived value from

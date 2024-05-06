@@ -292,7 +292,7 @@ def test_with_auto_call_and_initial_call_and_reactive_set(
     ]
 
 
-def test_view_mode_autorun(
+def test_view_mode_with_arguments_autorun(
     store: StoreType,
 ) -> None:
     @store.autorun(
@@ -304,16 +304,6 @@ def test_view_mode_autorun(
             default_value=0,
         ),
     )
-    def render(_: int, *, some_other_value: int) -> int:
-        return some_other_value
-
-    assert render(some_other_value=12345) == 12345
-
-
-def test_view(
-    store: StoreType,
-) -> None:
-    @store.view(lambda state: state.value)
     def render(_: int, *, some_other_value: int) -> int:
         return some_other_value
 

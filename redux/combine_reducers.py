@@ -5,8 +5,10 @@ import copy
 import functools
 import operator
 import uuid
-from dataclasses import asdict, fields, make_dataclass
+from dataclasses import asdict, fields
 from typing import TYPE_CHECKING, Any, TypeVar, cast
+
+from immutable import make_immutable
 
 from .basic_types import (
     Action,
@@ -46,12 +48,7 @@ def combine_reducers(
 
     state_class = cast(
         type[state_type],
-        make_dataclass(
-            state_type.__name__,
-            ('_id', *reducers.keys()),
-            frozen=True,
-            kw_only=True,
-        ),
+        make_immutable(state_type.__name__, (('_id', str), *reducers.keys())),
     )
 
     def combined_reducer(
@@ -66,11 +63,9 @@ def combine_reducers(
                 key = action.key
                 reducer = action.reducer
                 reducers[key] = reducer
-                state_class = make_dataclass(
+                state_class = make_immutable(
                     state_type.__name__,
-                    ('_id', *reducers.keys()),
-                    frozen=True,
-                    kw_only=True,
+                    (('_id', str), *reducers.keys()),
                 )
                 reducer_result = reducer(
                     None,
@@ -111,12 +106,7 @@ def combine_reducers(
                 annotations_copy = copy.deepcopy(state_class.__annotations__)
                 del fields_copy[key]
                 del annotations_copy[key]
-                state_class = make_dataclass(
-                    state_type.__name__,
-                    annotations_copy,
-                    frozen=True,
-                    kw_only=True,
-                )
+                state_class = make_immutable(state_type.__name__, annotations_copy)
                 cast(Any, state_class).__dataclass_fields__ = fields_copy
 
                 state = state_class(

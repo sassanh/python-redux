@@ -1,9 +1,10 @@
 # ruff: noqa: D100, D101, D102, D103, D104, D105, D107
 from __future__ import annotations
 
+import functools
 import inspect
 import weakref
-from asyncio import Task, iscoroutine
+from asyncio import Future, Task, iscoroutine, iscoroutinefunction
 from typing import TYPE_CHECKING, Any, Callable, Concatenate, Generic, cast
 
 from redux.basic_types import (
@@ -64,17 +65,24 @@ class Autorun(
             ComparatorOutput,
             object(),
         )
-        self._latest_value: AutorunOriginalReturnType = options.default_value
+        if iscoroutinefunction(func):
+            self._latest_value = Future()
+            self._latest_value.set_result(options.default_value)
+        else:
+            self._latest_value: AutorunOriginalReturnType = options.default_value
         self._subscriptions: set[
             Callable[[AutorunOriginalReturnType], Any]
             | weakref.ref[Callable[[AutorunOriginalReturnType], Any]]
         ] = set()
 
-        self._check_and_call(store._state, self._options.initial_call)  # noqa: SLF001
+        if self._check(store._state) and self._options.initial_call:  # noqa: SLF001
+            self._call()
 
         if self._options.reactive:
             self._unsubscribe = store.subscribe(
-                lambda state: self._check_and_call(state, self._options.auto_call),
+                lambda state: self._call()
+                if self._check(state) and self._options.auto_call
+                else None,
             )
         else:
             self._unsubscribe = None
@@ -116,11 +124,17 @@ class Autorun(
             AutorunArgs,
         ],
         task: Task,
+        *,
+        future: Future | None,
     ) -> None:
-        task.add_done_callback(lambda _: self.inform_subscribers())
-        self._latest_value = cast(AutorunOriginalReturnType, task)
+        task.add_done_callback(
+            lambda result: (
+                future.set_result(result.result()) if future else None,
+                self.inform_subscribers(),
+            ),
+        )
 
-    def _check_and_call(
+    def _check(
         self: Autorun[
             State,
             Action,
@@ -130,36 +144,63 @@ class Autorun(
             AutorunOriginalReturnType,
             AutorunArgs,
         ],
-        state: State,
-        _call: bool,  # noqa: FBT001
-        *args: AutorunArgs.args,
-        **kwargs: AutorunArgs.kwargs,
-    ) -> None:
+        state: State | None,
+    ) -> bool:
+        if state is None:
+            return False
         try:
             selector_result = self._selector(state)
         except AttributeError:
-            return
+            return False
         if self._comparator is None:
             comparator_result = cast(ComparatorOutput, selector_result)
         else:
             try:
                 comparator_result = self._comparator(state)
             except AttributeError:
-                return
-        if self._should_be_called or comparator_result != self._last_comparator_result:
-            self._last_selector_result = selector_result
-            self._last_comparator_result = comparator_result
-            self._should_be_called = not _call
-            if _call:
-                func = (
-                    self._func() if isinstance(self._func, weakref.ref) else self._func
+                return False
+        self._should_be_called = (
+            self._should_be_called or comparator_result != self._last_comparator_result
+        )
+        self._last_selector_result = selector_result
+        self._last_comparator_result = comparator_result
+        return self._should_be_called
+
+    def _call(
+        self: Autorun[
+            State,
+            Action,
+            Event,
+            SelectorOutput,
+            ComparatorOutput,
+            AutorunOriginalReturnType,
+            AutorunArgs,
+        ],
+        *args: AutorunArgs.args,
+        **kwargs: AutorunArgs.kwargs,
+    ) -> None:
+        self._should_be_called = False
+        func = self._func() if isinstance(self._func, weakref.ref) else self._func
+        if func:
+            value: AutorunOriginalReturnType = func(
+                self._last_selector_result,
+                *args,
+                **kwargs,
+            )
+            create_task = self._store._create_task  # noqa: SLF001
+            if iscoroutine(value) and create_task:
+                future = Future()
+                self._latest_value = cast(AutorunOriginalReturnType, future)
+                create_task(
+                    value,
+                    callback=functools.partial(
+                        self._task_callback,
+                        future=future,
+                    ),
                 )
-                if func:
-                    self._latest_value = func(selector_result, *args, **kwargs)
-                    create_task = self._store._create_task  # noqa: SLF001
-                    if iscoroutine(self._latest_value) and create_task:
-                        create_task(self._latest_value, callback=self._task_callback)
-                    self.inform_subscribers()
+            else:
+                self._latest_value = value
+            self.inform_subscribers()
 
     def __call__(
         self: Autorun[
@@ -175,8 +216,8 @@ class Autorun(
         **kwargs: AutorunArgs.kwargs,
     ) -> AutorunOriginalReturnType:
         state = self._store._state  # noqa: SLF001
-        if state is not None:
-            self._check_and_call(state, True, *args, **kwargs)  # noqa: FBT003
+        if self._check(state) or self._should_be_called or args or kwargs:
+            self._call(*args, **kwargs)
         return cast(AutorunOriginalReturnType, self._latest_value)
 
     def __repr__(

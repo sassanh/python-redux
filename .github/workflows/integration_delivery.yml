@@ -23,7 +23,7 @@ jobs:
           path: |
             ~/.cache
             ~/.local
-          key: poetry-${{ hashFiles('poetry.lock') }}
+          key: poetry-${{ hashFiles('poetry.lock') }}-${{ env.PYTHON_VERSION}}
 
       - uses: actions/setup-python@v5
         name: Setup Python
@@ -61,7 +61,7 @@ jobs:
           path: |
             ~/.cache
             ~/.local
-          key: poetry-${{ hashFiles('poetry.lock') }}
+          key: poetry-${{ hashFiles('poetry.lock') }}-${{ env.PYTHON_VERSION}}
 
       - name: Type Check
         run: poetry run poe typecheck
@@ -75,8 +75,8 @@ jobs:
       - uses: actions/checkout@v4
         name: Checkout
 
-      - uses: actions/setup-python@v5
-        name: Setup Python
+      - name: Setup Python
+        uses: actions/setup-python@v5
         with:
           python-version: ${{ env.PYTHON_VERSION }}
           architecture: x64
@@ -88,7 +88,7 @@ jobs:
           path: |
             ~/.cache
             ~/.local
-          key: poetry-${{ hashFiles('poetry.lock') }}
+          key: poetry-${{ hashFiles('poetry.lock') }}-${{ env.PYTHON_VERSION}}
 
       - name: Lint
         run: poetry run poe lint
@@ -105,8 +105,8 @@ jobs:
       - uses: actions/checkout@v4
         name: Checkout
 
-      - uses: actions/setup-python@v5
-        name: Setup Python
+      - name: Setup Python
+        uses: actions/setup-python@v5
         with:
           python-version: ${{ env.PYTHON_VERSION }}
           architecture: x64
@@ -118,7 +118,7 @@ jobs:
           path: |
             ~/.cache
             ~/.local
-          key: poetry-${{ hashFiles('poetry.lock') }}
+          key: poetry-${{ hashFiles('poetry.lock') }}-${{ env.PYTHON_VERSION}}
 
       - name: Run Tests
         run: poetry run poe test
@@ -141,7 +141,7 @@ jobs:
         with:
           file: ./coverage.xml
           flags: integration
-          fail_ci_if_error: true
+          fail_ci_if_error: false
           token: ${{ secrets.CODECOV_TOKEN }}
 
   build:
@@ -150,8 +150,8 @@ jobs:
       - dependencies
     runs-on: ubuntu-latest
     outputs:
-      version: ${{ steps.extract_version.outputs.VERSION }}
-      name: ${{ steps.extract_version.outputs.NAME }}
+      version: ${{ steps.extract-version.outputs.VERSION }}
+      name: ${{ steps.extract-version.outputs.NAME }}
     steps:
       - uses: actions/checkout@v4
         name: Checkout
@@ -169,22 +169,21 @@ jobs:
           path: |
             ~/.cache
             ~/.local
-          key: poetry-${{ hashFiles('poetry.lock') }}
+          key: poetry-${{ hashFiles('poetry.lock') }}-${{ env.PYTHON_VERSION}}
 
       - name: Extract Version
-        id: extract_version
+        id: extract-version
         run: |
           echo "VERSION=$(poetry version --short)" >> "$GITHUB_OUTPUT"
-          echo "NAME=$(poetry version | cut -d' ' -f1)" >> "$GITHUB_OUTPUT"
           echo "VERSION=$(poetry version --short)"
+          echo "NAME=$(poetry version | cut -d' ' -f1)" >> "$GITHUB_OUTPUT"
           echo "NAME=$(poetry version | cut -d' ' -f1)"
 
       - name: Extract Version from CHANGELOG.md
-        id: extract_changelog_version
         run: |
           VERSION_CHANGELOG=$(sed -n '3 s/## Version //p' CHANGELOG.md) 
           echo "VERSION_CHANGELOG=$VERSION_CHANGELOG"
-          if [ "${{ steps.extract_version.outputs.VERSION }}" != "$VERSION_CHANGELOG" ]; then
+          if [ "${{ steps.extract-version.outputs.VERSION }}" != "$VERSION_CHANGELOG" ]; then
             echo "Error: Version extracted from CHANGELOG.md does not match the version in pyproject.toml"
             exit 1 
           else
@@ -193,11 +192,10 @@ jobs:
 
       - name: Extract Version from Tag
         if: startsWith(github.ref, 'refs/tags/v')
-        id: extract_tag_version
         run: |
           VERSION_TAG=$(sed 's/^v//' <<< ${{ github.ref_name }})
           echo "VERSION_TAG=$VERSION_TAG"
-          if [ "${{ steps.extract_version.outputs.VERSION }}" != "$VERSION_TAG" ]; then
+          if [ "${{ steps.extract-version.outputs.VERSION }}" != "$VERSION_TAG" ]; then
             echo "Error: Version extracted from tag does not match the version in pyproject.toml"
             exit 1 
           else
@@ -232,7 +230,7 @@ jobs:
       - build
     runs-on: ubuntu-latest
     environment:
-      name: release
+      name: pypi
       url: https://pypi.org/p/${{ needs.build.outputs.name }}
     permissions:
       id-token: write
@@ -265,7 +263,9 @@ jobs:
     runs-on: ubuntu-latest
     environment:
       name: release
-      url: https://pypi.org/p/${{ needs.build.outputs.name }}
+      url:
+        https://github.com/${{ github.repository }}/releases/tag/v${{
+        needs.build.outputs.version }}
     permissions:
       contents: write
     steps:

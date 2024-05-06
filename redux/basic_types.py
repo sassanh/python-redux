@@ -6,15 +6,18 @@ from types import NoneType
 from typing import (
     TYPE_CHECKING,
     Any,
+    Awaitable,
     Callable,
     Concatenate,
     Coroutine,
     Generic,
+    Never,
     ParamSpec,
     Protocol,
     Sequence,
     TypeAlias,
     TypeGuard,
+    overload,
 )
 
 from immutable import Immutable
@@ -22,6 +25,11 @@ from typing_extensions import TypeVar
 
 if TYPE_CHECKING:
     from asyncio import Task
+
+
+T = TypeVar('T')
+
+AwaitableOrNot = Awaitable[T] | T
 
 
 class BaseAction(Immutable): ...
@@ -120,6 +128,9 @@ class CreateStoreOptions(Immutable, Generic[Action, Event]):
     grace_time_in_seconds: float = 1
 
 
+# Autorun
+
+
 class AutorunOptions(Immutable, Generic[AutorunOriginalReturnType]):
     default_value: AutorunOriginalReturnType | None = None
     initial_call: bool = True
@@ -130,11 +141,8 @@ class AutorunOptions(Immutable, Generic[AutorunOriginalReturnType]):
     subscribers_keep_ref: bool = True
 
 
-class ViewOptions(Immutable, Generic[ViewOriginalReturnType]):
-    default_value: ViewOriginalReturnType | None = None
-    keep_ref: bool = True
-    subscribers_initial_run: bool = True
-    subscribers_keep_ref: bool = True
+AutorunOptionsWithDefault = AutorunOptions[AutorunOriginalReturnType]
+AutorunOptionsWithoutDefault = AutorunOptions[Never]
 
 
 class AutorunReturnType(
@@ -161,26 +169,51 @@ class AutorunReturnType(
     def unsubscribe(self: AutorunReturnType) -> None: ...
 
 
-AutorunDecorator = Callable[
-    [
-        Callable[
+class AutorunDecorator(
+    Protocol,
+    Generic[SelectorOutput, AutorunOriginalReturnType],
+):
+    @overload
+    def __call__(
+        self: AutorunDecorator,
+        func: Callable[
             Concatenate[SelectorOutput, AutorunArgs],
             AutorunOriginalReturnType,
         ],
-    ],
-    AutorunReturnType[AutorunOriginalReturnType, AutorunArgs],
-]
+    ) -> AutorunReturnType[AutorunOriginalReturnType, AutorunArgs]: ...
 
-
-ViewDecorator = Callable[
-    [
-        Callable[
-            Concatenate[SelectorOutput, ViewArgs],
-            ViewOriginalReturnType,
+    @overload
+    def __call__(
+        self: AutorunDecorator,
+        func: Callable[
+            Concatenate[SelectorOutput, AutorunArgs],
+            Awaitable[AutorunOriginalReturnType],
         ],
-    ],
-    Callable[ViewArgs, ViewOriginalReturnType],
-]
+    ) -> AutorunReturnType[Awaitable[AutorunOriginalReturnType], AutorunArgs]: ...
+
+
+class UnknownAutorunDecorator(Protocol, Generic[SelectorOutput]):
+    def __call__(
+        self: UnknownAutorunDecorator,
+        func: Callable[
+            Concatenate[SelectorOutput, AutorunArgs],
+            AutorunOriginalReturnType,
+        ],
+    ) -> AutorunReturnType[AutorunOriginalReturnType, AutorunArgs]: ...
+
+
+# View
+
+
+class ViewOptions(Immutable, Generic[ViewOriginalReturnType]):
+    default_value: ViewOriginalReturnType | None = None
+    keep_ref: bool = True
+    subscribers_initial_run: bool = True
+    subscribers_keep_ref: bool = True
+
+
+ViewOptionsWithDefault = ViewOptions[ViewOriginalReturnType]
+ViewOptionsWithoutDefault = ViewOptions[Never]
 
 
 class ViewReturnType(
@@ -205,6 +238,39 @@ class ViewReturnType(
     ) -> Callable[[], None]: ...
 
     def unsubscribe(self: ViewReturnType) -> None: ...
+
+
+class ViewDecorator(
+    Protocol,
+    Generic[SelectorOutput, ViewOriginalReturnType],
+):
+    @overload
+    def __call__(
+        self: ViewDecorator,
+        func: Callable[
+            Concatenate[SelectorOutput, ViewArgs],
+            ViewOriginalReturnType,
+        ],
+    ) -> ViewReturnType[ViewOriginalReturnType, ViewArgs]: ...
+
+    @overload
+    def __call__(
+        self: ViewDecorator,
+        func: Callable[
+            Concatenate[SelectorOutput, ViewArgs],
+            Awaitable[ViewOriginalReturnType],
+        ],
+    ) -> ViewReturnType[Awaitable[ViewOriginalReturnType], ViewArgs]: ...
+
+
+class UnknownViewDecorator(Protocol, Generic[SelectorOutput]):
+    def __call__(
+        self: UnknownViewDecorator,
+        func: Callable[
+            Concatenate[SelectorOutput, ViewArgs],
+            ViewOriginalReturnType,
+        ],
+    ) -> ViewReturnType[ViewOriginalReturnType, ViewArgs]: ...
 
 
 class EventSubscriber(Protocol):

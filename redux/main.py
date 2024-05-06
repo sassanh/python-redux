@@ -8,7 +8,15 @@ import queue
 import weakref
 from collections import defaultdict
 from threading import Lock, Thread
-from typing import Any, Callable, Concatenate, Generic, cast
+from typing import (
+    Any,
+    Awaitable,
+    Callable,
+    Concatenate,
+    Generic,
+    cast,
+    overload,
+)
 
 from redux.autorun import Autorun
 from redux.basic_types import (
@@ -17,8 +25,11 @@ from redux.basic_types import (
     AutorunArgs,
     AutorunDecorator,
     AutorunOptions,
+    AutorunOptionsWithDefault,
+    AutorunOptionsWithoutDefault,
     AutorunOriginalReturnType,
     AutorunReturnType,
+    AwaitableOrNot,
     BaseAction,
     BaseEvent,
     ComparatorOutput,
@@ -35,9 +46,13 @@ from redux.basic_types import (
     SelectorOutput,
     SnapshotAtom,
     State,
+    UnknownAutorunDecorator,
+    UnknownViewDecorator,
     ViewArgs,
     ViewDecorator,
     ViewOptions,
+    ViewOptionsWithDefault,
+    ViewOptionsWithoutDefault,
     ViewOriginalReturnType,
     ViewReturnType,
     is_complete_reducer_result,
@@ -257,25 +272,54 @@ class Store(Generic[State, Action, Event], SerializationMixin):
     def _handle_finish_event(self: Store[State, Action, Event]) -> None:
         Thread(target=self.wait_for_store_to_finish).start()
 
+    @overload
+    def autorun(
+        self: Store[State, Action, Event],
+        selector: Callable[[State], SelectorOutput],
+        comparator: Callable[[State], ComparatorOutput] | None = None,
+        *,
+        options: AutorunOptionsWithoutDefault | None = None,
+    ) -> UnknownAutorunDecorator[SelectorOutput]: ...
+    @overload
+    def autorun(
+        self: Store[State, Action, Event],
+        selector: Callable[[State], SelectorOutput],
+        comparator: Callable[[State], ComparatorOutput] | None = None,
+        *,
+        options: AutorunOptionsWithDefault[AutorunOriginalReturnType],
+    ) -> AutorunDecorator[SelectorOutput, AutorunOriginalReturnType]: ...
     def autorun(
         self: Store[State, Action, Event],
         selector: Callable[[State], SelectorOutput],
         comparator: Callable[[State], ComparatorOutput] | None = None,
         *,
         options: AutorunOptions[AutorunOriginalReturnType] | None = None,
-    ) -> AutorunDecorator[
-        SelectorOutput,
-        AutorunArgs,
-        AutorunOriginalReturnType,
-    ]:
+    ) -> (
+        AutorunDecorator[SelectorOutput, AutorunOriginalReturnType]
+        | UnknownAutorunDecorator[SelectorOutput]
+    ):
         """Create a new autorun, reflecting on state changes."""
 
+        @overload
         def decorator(
             func: Callable[
                 Concatenate[SelectorOutput, AutorunArgs],
                 AutorunOriginalReturnType,
             ],
-        ) -> AutorunReturnType[AutorunOriginalReturnType, AutorunArgs]:
+        ) -> AutorunReturnType[AutorunOriginalReturnType, AutorunArgs]: ...
+        @overload
+        def decorator(
+            func: Callable[
+                Concatenate[SelectorOutput, AutorunArgs],
+                Awaitable[AutorunOriginalReturnType],
+            ],
+        ) -> AutorunReturnType[Awaitable[AutorunOriginalReturnType], AutorunArgs]: ...
+        def decorator(
+            func: Callable[
+                Concatenate[SelectorOutput, AutorunArgs],
+                AwaitableOrNot[AutorunOriginalReturnType],
+            ],
+        ) -> AutorunReturnType[AwaitableOrNot[AutorunOriginalReturnType], AutorunArgs]:
             return Autorun(
                 store=self,
                 selector=selector,
@@ -286,20 +330,52 @@ class Store(Generic[State, Action, Event], SerializationMixin):
 
         return decorator
 
+    @overload
+    def view(
+        self: Store[State, Action, Event],
+        selector: Callable[[State], SelectorOutput],
+        *,
+        options: ViewOptionsWithoutDefault | None = None,
+    ) -> UnknownViewDecorator[SelectorOutput]: ...
+    @overload
+    def view(
+        self: Store[State, Action, Event],
+        selector: Callable[[State], SelectorOutput],
+        *,
+        options: ViewOptionsWithDefault[ViewOriginalReturnType],
+    ) -> ViewDecorator[SelectorOutput, ViewOriginalReturnType]: ...
     def view(
         self: Store[State, Action, Event],
         selector: Callable[[State], SelectorOutput],
         *,
         options: ViewOptions[ViewOriginalReturnType] | None = None,
-    ) -> ViewDecorator[SelectorOutput, ViewArgs, ViewOriginalReturnType]:
+    ) -> (
+        ViewDecorator[SelectorOutput, ViewOriginalReturnType]
+        | UnknownViewDecorator[SelectorOutput]
+    ):
         """Create a new view, throttling calls for unchanged selector results."""
 
+        @overload
         def decorator(
             func: Callable[
                 Concatenate[SelectorOutput, ViewArgs],
                 ViewOriginalReturnType,
             ],
-        ) -> ViewReturnType[ViewOriginalReturnType, ViewArgs]:
+        ) -> ViewReturnType[ViewOriginalReturnType, ViewArgs]: ...
+        @overload
+        def decorator(
+            func: Callable[
+                Concatenate[SelectorOutput, ViewArgs],
+                Awaitable[ViewOriginalReturnType],
+            ],
+        ) -> ViewReturnType[Awaitable[ViewOriginalReturnType], ViewArgs]: ...
+
+        def decorator(
+            func: Callable[
+                Concatenate[SelectorOutput, ViewArgs],
+                AwaitableOrNot[ViewOriginalReturnType],
+            ],
+        ) -> ViewReturnType[AwaitableOrNot[ViewOriginalReturnType], ViewArgs]:
             _options = options or ViewOptions()
             return Autorun(
                 store=self,
