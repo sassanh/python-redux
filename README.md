@@ -1,15 +1,145 @@
 # 🎛️ Python Redux
 
-[![image](https://img.shields.io/pypi/v/python-redux.svg)](https://pypi.python.org/pypi/python-redux)
-[![image](https://img.shields.io/pypi/l/python-redux.svg)](https://github.com/sassanh/python-redux/LICENSE)
-[![image](https://img.shields.io/pypi/pyversions/python-redux.svg)](https://pypi.python.org/pypi/python-redux)
-[![Actions status](https://github.com/sassanh/python-redux/workflows/CI/CD/badge.svg)](https://github.com/sassanh/python-redux/actions)
-[![codecov](https://codecov.io/gh/sassanh/python-redux/graph/badge.svg?token=4F3EWZRLCL)](https://codecov.io/gh/sassanh/python-redux)
-
 ## 🌟 Overview
 
 Python Redux is a Redux implementation for Python, bringing Redux's state management
 architecture to Python applications.
+
+### 🔎 Sample Usage
+
+Minimal todo application store implemented using python-redux:
+
+```python
+import uuid
+from dataclasses import replace
+from typing import Sequence
+
+from immutable import Immutable
+
+from redux import (
+    BaseAction,
+    BaseEvent,
+    CompleteReducerResult,
+    FinishAction,
+    ReducerResult,
+)
+from redux.main import Store
+
+
+# state:
+class ToDoItem(Immutable):
+    id: str
+    content: str
+    is_done: bool = False
+
+
+class ToDoState(Immutable):
+    items: Sequence[ToDoItem]
+
+
+# actions:
+class AddTodoItemAction(BaseAction):
+    content: str
+
+
+class MarkTodoItemDone(BaseAction):
+    id: str
+
+
+class RemoveTodoItemAction(BaseAction):
+    id: str
+
+
+# events:
+class CallApi(BaseEvent):
+    parameters: object
+
+
+# reducer:
+def reducer(
+    state: ToDoState | None,
+    action: BaseAction,
+) -> ReducerResult[ToDoState, BaseAction, BaseEvent]:
+    if state is None:
+        return ToDoState(
+            items=[
+                ToDoItem(
+                    id=uuid.uuid4().hex,
+                    content='Initial Item',
+                ),
+            ],
+        )
+    if isinstance(action, AddTodoItemAction):
+        return replace(
+            state,
+            items=[
+                *state.items,
+                ToDoItem(
+                    id=uuid.uuid4().hex,
+                    content=action.content,
+                ),
+            ],
+        )
+    if isinstance(action, RemoveTodoItemAction):
+        return replace(
+            state,
+            actions=[item for item in state.items if item.id != action.id],
+        )
+    if isinstance(action, MarkTodoItemDone):
+        return CompleteReducerResult(
+            state=replace(
+                state,
+                items=[
+                    replace(item, is_done=True) if item.id == action.id else item
+                    for item in state.items
+                ],
+            ),
+            events=[CallApi(parameters={})],
+        )
+    return state
+
+
+store = Store(reducer)
+
+
+# subscription:
+dummy_render = print
+store.subscribe(dummy_render)
+
+
+# autorun:
+@store.autorun(
+    lambda state: state.items[0].content if len(state.items) > 0 else None,
+)
+def reaction(content: str | None) -> None:
+    print(content)
+
+
+@store.view(lambda state: state.items[0])
+def first_item(first_item: ToDoItem) -> ToDoItem:
+    return first_item
+
+
+@store.view(lambda state: [item for item in state.items if item.is_done])
+def done_items(done_items: list[ToDoItem]) -> list[ToDoItem]:
+    return done_items
+
+
+# event listener, note that this will run async in a separate thread, so it can include
+# io operations like network calls, etc:
+dummy_api_call = print
+store.subscribe_event(
+    CallApi,
+    lambda event: dummy_api_call(event.parameters, done_items()),
+)
+
+# dispatch:
+store.dispatch(AddTodoItemAction(content='New Item'))
+
+store.dispatch(MarkTodoItemDone(id=first_item().id))
+
+store.dispatch(FinishAction())
+```
 
 ## ⚙️ Features
 
@@ -18,19 +148,17 @@ architecture to Python applications.
 
   - Each action is a subclass of `BaseAction`.
   - Its type is checked by utilizing `isinstance` (no need for `type` property).
-  - Its payload are its direct properties (no need for `payload` property).
+  - Its payload are its direct properties (no need for a separate `payload` object).
   - Its creator is its auto-generated constructor.
-
-  ➡️ [Sample usage](#-usage)
 
 - Use type annotations for all its API.
 - Immutable state management for predictable state updates using [python-immutable](https://github.com/sassanh/python-immutable).
 - Offers a streamlined, native [API](#handling-side-effects-with-events) for handling
   side-effects asynchronously, eliminating the necessity for more intricate utilities
   such as redux-thunk or redux-saga.
-- Incorporates the [autorun decorator](#autorun-decorator), inspired
-  by the mobx framework, to better integrate with elements of the software following
-  procedural patterns.
+- Incorporates the [autorun decorator](#autorun-decorator) and
+  the [view decorator](#view-decorator), inspired by the mobx framework, to better
+  integrate with elements of the software following procedural patterns.
 - Supports middlewares.
 
 ## 📦 Installation
@@ -105,6 +233,15 @@ the application.
 See todo sample below or check the [todo demo](/tests/test_todo.py) or
 [features demo](/tests/test_features.py) to see it in action.
 
+### View Decorator
+
+Inspired by MobX's [computed](https://mobx.js.org/computeds.html), python-redux introduces
+the view decorator. It takes a selector and each time the decorated function is called,
+it only runs the function body if the returned value of the selector is changed,
+otherwise it simply returns the previous value. So unlike `computed` of MobX, it
+doesn't extract the requirements of the function itself, you need to provide them
+in the return value of the selector function.
+
 ### Combining reducers - `combine_reducers`
 
 You can compose high level reducers by combining smaller reducers using `combine_reducers`
@@ -148,102 +285,6 @@ store.dispatch(
 Without this id, all the combined reducers in the store tree would register `third`
 reducer and unregister `second` reducer, but thanks to this `reducer_id`, these
 actions will only target the desired combined reducer.
-
-### 🔎 Sample Usage
-
-Minimal todo application store implemented using python-redux:
-
-```python
-# state:
-class ToDoItem(Immutable):
-    id: str
-    content: str
-    timestamp: float
-
-
-class ToDoState(Immutable):
-    items: Sequence[ToDoItem]
-
-
-# actions:
-class AddTodoItemAction(BaseAction):
-    content: str
-    timestamp: float
-
-
-class RemoveTodoItemAction(BaseAction):
-    id: str
-
-
-# events:
-class CallApi(BaseEvent):
-    parameters: object
-
-
-# reducer:
-def reducer(
-    state: ToDoState | None,
-    action: BaseAction,
-) -> ReducerResult[ToDoState, BaseAction, BaseEvent]:
-    if state is None:
-        return ToDoState(
-            items=[
-                ToDoItem(
-                    id=uuid.uuid4().hex,
-                    content='Initial Item',
-                    timestamp=time.time(),
-                ),
-            ],
-        )
-    if isinstance(action, AddTodoItemAction):
-        return replace(
-            state,
-            items=[
-                *state.items,
-                ToDoItem(
-                    id=uuid.uuid4().hex,
-                    content=action.content,
-                    timestamp=action.timestamp,
-                ),
-            ],
-        )
-    if isinstance(action, RemoveTodoItemAction):
-        return CompleteReducerResult(
-            state=replace(
-                state,
-                actions=[item for item in state.items if item.id != action.id],
-            ),
-            events=[CallApi(parameters={})],
-        )
-    return state
-
-
-store = create_store(reducer)
-
-
-# subscription:
-dummy_render = print
-store.subscribe(dummy_render)
-
-
-# autorun:
-@store.autorun(
-  lambda state: state.items[0].content if len(state.items) > 0 else None,
-)
-def reaction(content: str | None) -> None:
-    print(content)
-
-
-# event listener, note that this will run async in a separate thread, so it can include
-# io operations like network calls, etc:
-dummy_api_call = print
-store.subscribe_event(CallApi, lambda event: dummy_api_call(event.parameters))
-
-# dispatch:
-store.dispatch(AddTodoItemAction(content='New Item', timestamp=time.time()))
-
-store.dispatch(FinishAction())
-```
 
 ## 🎉 Demo
 

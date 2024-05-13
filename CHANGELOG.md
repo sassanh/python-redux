@@ -1,5 +1,9 @@
 # Changelog
 
+## Version 0.15.3
+
+- docs: add an introduction of `view` to `README.md`
+
 ## Version 0.15.2
 
 - refactor(autorun): improve type-hints so that its final return value has the correct
