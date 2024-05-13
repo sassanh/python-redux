@@ -1,5 +1,9 @@
 # Changelog
 
+## Version 0.15.4
+
+- build(pypi): add metadata
+
 ## Version 0.15.3
 
 - docs: add an introduction of `view` to `README.md`

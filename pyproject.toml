@@ -1,10 +1,13 @@
 [tool.poetry]
 name = "python-redux"
-version = "0.15.3"
+version = "0.15.4"
 description = "Redux implementation for Python"
 authors = ["Sassan Haradji <sassanh@gmail.com>"]
 license = "Apache-2.0"
 readme = "README.md"
+homepage = 'https://github.com/sassanh/python-redux/'
+repository = 'https://github.com/sassanh/python-redux/'
+keywords = ['store', 'redux', 'reactive', 'autorun']
 packages = [{ include = "redux" }, { include = "redux_pytest" }]
 
 [tool.poetry.dependencies]
