@@ -1,5 +1,14 @@
 # Changelog
 
+## Version 0.15.5
+
+- feat(test-snapshot): while still taking snapshots of the whole state of the
+  store, one can narrow this down by providing a selector to the `snapshot` method
+  (used to be a property)
+- feat(test-snapshot): new `monitor` method to let a test automatically take snapshots
+  of the store whenever it is changed. Takes an optional selector to narrow down
+  the snapshot.
+
 ## Version 0.15.4
 
 - build(pypi): add metadata

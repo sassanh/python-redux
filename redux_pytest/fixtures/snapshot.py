@@ -6,21 +6,20 @@ from __future__ import annotations
 import json
 import os
 from collections import defaultdict
-from typing import TYPE_CHECKING, Any, cast
+from pathlib import Path
+from typing import TYPE_CHECKING, Any, Callable, Generic, cast
 
 import pytest
 
-from redux.basic_types import FinishEvent
+from redux.basic_types import FinishEvent, State
 
 if TYPE_CHECKING:
-    from pathlib import Path
-
     from _pytest.fixtures import SubRequest
 
     from redux.main import Store
 
 
-class StoreSnapshot:
+class StoreSnapshot(Generic[State]):
     """Context object for tests taking snapshots of the store."""
 
     def __init__(
@@ -32,11 +31,14 @@ class StoreSnapshot:
         store: Store,
     ) -> None:
         """Create a new store snapshot context."""
+        self._is_failed = False
         self._is_closed = False
         self.override = override
         self.test_counter: dict[str | None, int] = defaultdict(int)
         file = path.with_suffix('').name
-        self.results_dir = path.parent / 'results' / file / test_id.split('::')[-1][5:]
+        self.results_dir = Path(
+            path.parent / 'results' / file / test_id.split('::')[-1][5:],
+        )
         if self.results_dir.exists():
             for file in self.results_dir.glob(
                 'store-*.jsonc' if override else 'store-*.mismatch.jsonc',
@@ -47,12 +49,15 @@ class StoreSnapshot:
         self.store = store
         store.subscribe_event(FinishEvent, self.close)
 
-    @property
-    def json_snapshot(self: StoreSnapshot) -> str:
+    def json_snapshot(
+        self: StoreSnapshot[State],
+        *,
+        selector: Callable[[State], Any] = lambda state: state,
+    ) -> str:
         """Return the snapshot of the current state of the store."""
         return (
             json.dumps(
-                self.store.snapshot,
+                self.store.serialize_value(selector(self.store._state)),  # noqa: SLF001
                 indent=2,
                 sort_keys=True,
                 ensure_ascii=False,
@@ -61,13 +66,18 @@ class StoreSnapshot:
             else ''
         )
 
-    def get_filename(self: StoreSnapshot, title: str | None) -> str:
+    def get_filename(self: StoreSnapshot[State], title: str | None) -> str:
         """Get the filename for the snapshot."""
         if title:
             return f"""store-{title}-{self.test_counter[title]:03d}"""
         return f"""store-{self.test_counter[title]:03d}"""
 
-    def take(self: StoreSnapshot, *, title: str | None = None) -> None:
+    def take(
+        self: StoreSnapshot[State],
+        *,
+        title: str | None = None,
+        selector: Callable[[State], Any] = lambda state: state,
+    ) -> None:
         """Take a snapshot of the current window."""
         if self._is_closed:
             msg = (
@@ -81,7 +91,7 @@ class StoreSnapshot:
         json_path = path.with_suffix('.jsonc')
         mismatch_path = path.with_suffix('.mismatch.jsonc')
 
-        new_snapshot = self.json_snapshot
+        new_snapshot = self.json_snapshot(selector=selector)
         if self.override:
             json_path.write_text(f'// {filename}\n{new_snapshot}\n')  # pragma: no cover
         else:
@@ -89,6 +99,7 @@ class StoreSnapshot:
             if json_path.exists():
                 old_snapshot = json_path.read_text().split('\n', 1)[1][:-1]
             if old_snapshot != new_snapshot:
+                self._is_failed = True
                 mismatch_path.write_text(  # pragma: no cover
                     f'// MISMATCH: {filename}\n{new_snapshot}\n',
                 )
@@ -96,14 +107,23 @@ class StoreSnapshot:
 
         self.test_counter[title] += 1
 
-    def close(self: StoreSnapshot) -> None:
+    def monitor(self: StoreSnapshot[State], selector: Callable[[State], Any]) -> None:
+        """Monitor the state of the store and take snapshots."""
+
+        @self.store.autorun(selector=selector)
+        def _(state: State) -> None:
+            self.take(selector=lambda _: state)
+
+    def close(self: StoreSnapshot[State]) -> None:
         """Close the snapshot context."""
+        self._is_closed = True
+        if self._is_failed:
+            return
         for title in self.test_counter:
             filename = self.get_filename(title)
             json_path = (self.results_dir / filename).with_suffix('.jsonc')
 
             assert not json_path.exists(), f'Snapshot {filename} not taken'
-        self._is_closed = True
 
 
 @pytest.fixture()
