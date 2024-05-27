@@ -1,5 +1,11 @@
 # Changelog
 
+## Version 0.15.7
+
+- refactor(test-snapshot): make it aligned with `pyfakefs` by using `try`/`except`
+  instead of checking `Path().exists()` as `pyfakefs` doesn't seem to respect `skip_names`
+  for `Path().exists()`
+
 ## Version 0.15.5
 
 - feat(test-snapshot): while still taking snapshots of the whole state of the

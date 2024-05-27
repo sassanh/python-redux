@@ -86,8 +86,10 @@ class StoreSnapshot(Generic[State]):
             )
             raise RuntimeError(msg)
 
+        from pathlib import Path
+
         filename = self.get_filename(title)
-        path = self.results_dir / filename
+        path = Path(self.results_dir / filename)
         json_path = path.with_suffix('.jsonc')
         mismatch_path = path.with_suffix('.mismatch.jsonc')
 
@@ -95,9 +97,10 @@ class StoreSnapshot(Generic[State]):
         if self.override:
             json_path.write_text(f'// {filename}\n{new_snapshot}\n')  # pragma: no cover
         else:
-            old_snapshot = None
-            if json_path.exists():
+            try:
                 old_snapshot = json_path.read_text().split('\n', 1)[1][:-1]
+            except Exception:  # noqa: BLE001
+                old_snapshot = None
             if old_snapshot != new_snapshot:
                 self._is_failed = True
                 mismatch_path.write_text(  # pragma: no cover
