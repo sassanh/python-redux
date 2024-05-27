@@ -2,11 +2,13 @@
 
 import pytest
 
-pytest.register_assert_rewrite('redux_pytest.fixtures.event_loop')
-pytest.register_assert_rewrite('redux_pytest.fixtures.monitor')
-pytest.register_assert_rewrite('redux_pytest.fixtures.snapshot')
-pytest.register_assert_rewrite('redux_pytest.fixtures.store')
-pytest.register_assert_rewrite('redux_pytest.fixtures.wait_for')
+pytest.register_assert_rewrite(
+    'redux_pytest.fixtures.event_loop',
+    'redux_pytest.fixtures.monitor',
+    'redux_pytest.fixtures.snapshot',
+    'redux_pytest.fixtures.store',
+    'redux_pytest.fixtures.wait_for',
+)
 
 from .event_loop import LoopThread, event_loop  # noqa: E402
 from .monitor import StoreMonitor, store_monitor  # noqa: E402
