@@ -1,5 +1,10 @@
 # Changelog
 
+## Version 0.15.8
+
+- feat(test-snapshot): the `selector` function can signal the `monitor` it should
+  ignore a particular snapshot of the state by returning `None`
+
 ## Version 0.15.7
 
 - refactor(test-snapshot): make it aligned with `pyfakefs` by using `try`/`except`

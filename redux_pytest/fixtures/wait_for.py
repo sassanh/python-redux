@@ -127,6 +127,18 @@ class WaitFor:
 
         args['wait'] = wait or wait_exponential(multiplier=0.5)
 
+        if run_async:
+
+            def async_decorator(check: Callable[[], None]) -> AsyncWaiter:
+                async def async_wrapper() -> None:
+                    async for attempt in AsyncRetrying(**args):
+                        with attempt:
+                            check()
+
+                return async_wrapper
+
+            return async_decorator(check) if check else async_decorator
+
         def decorator(check: Callable[[], None]) -> Waiter:
             @retry(**args)
             def wrapper() -> None:
@@ -134,18 +146,7 @@ class WaitFor:
 
             return wrapper
 
-        def async_decorator(check: Callable[[], None]) -> AsyncWaiter:
-            async def async_wrapper() -> None:
-                async for attempt in AsyncRetrying(**args):
-                    with attempt:
-                        check()
-
-            return async_wrapper
-
-        if check:
-            return async_decorator(check) if run_async else decorator(check)
-
-        return async_decorator if run_async else decorator
+        return decorator(check) if check else decorator
 
 
 @pytest.fixture()

@@ -6,6 +6,7 @@ from __future__ import annotations
 import json
 import os
 from collections import defaultdict
+from distutils.util import strtobool
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Callable, Generic, cast
 
@@ -97,9 +98,9 @@ class StoreSnapshot(Generic[State]):
         if self.override:
             json_path.write_text(f'// {filename}\n{new_snapshot}\n')  # pragma: no cover
         else:
-            try:
+            if json_path.exists():
                 old_snapshot = json_path.read_text().split('\n', 1)[1][:-1]
-            except Exception:  # noqa: BLE001
+            else:
                 old_snapshot = None
             if old_snapshot != new_snapshot:
                 self._is_failed = True
@@ -114,7 +115,9 @@ class StoreSnapshot(Generic[State]):
         """Monitor the state of the store and take snapshots."""
 
         @self.store.autorun(selector=selector)
-        def _(state: State) -> None:
+        def _(state: object | None) -> None:
+            if state is None:
+                return
             self.take(selector=lambda _: state)
 
     def close(self: StoreSnapshot[State]) -> None:
@@ -137,7 +140,8 @@ def store_snapshot(request: SubRequest, store: Store) -> StoreSnapshot:
             '--override-store-snapshots',
             default=cast(
                 Any,
-                os.environ.get('REDUX_TEST_OVERRIDE_SNAPSHOTS', '0') == '1',
+                strtobool(os.environ.get('REDUX_TEST_OVERRIDE_SNAPSHOTS', 'false'))
+                == 1,
             ),
         )
         is True
