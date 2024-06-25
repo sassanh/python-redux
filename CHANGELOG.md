@@ -1,5 +1,10 @@
 # Changelog
 
+## Version 0.15.9
+
+- refactor(core): use `str_to_bool` of `python-strtobool` instead of `strtobool`
+  of `distutils`
+
 ## Version 0.15.8
 
 - feat(test-snapshot): the `selector` function can signal the `monitor` it should

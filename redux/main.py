@@ -324,7 +324,7 @@ class Store(Generic[State, Action, Event], SerializationMixin):
                 store=self,
                 selector=selector,
                 comparator=comparator,
-                func=func,
+                func=cast(Callable, func),
                 options=options or AutorunOptions(),
             )
 
@@ -381,7 +381,7 @@ class Store(Generic[State, Action, Event], SerializationMixin):
                 store=self,
                 selector=selector,
                 comparator=None,
-                func=func,
+                func=cast(Callable, func),
                 options=AutorunOptions(
                     default_value=_options.default_value,
                     initial_call=False,

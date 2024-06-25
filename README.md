@@ -144,6 +144,7 @@ store.dispatch(FinishAction())
 ## ⚙️ Features
 
 - Redux API for Python developers.
+
 - Reduce boilerplate by dropping `type` property, payload classes and action creators:
 
   - Each action is a subclass of `BaseAction`.
@@ -152,13 +153,17 @@ store.dispatch(FinishAction())
   - Its creator is its auto-generated constructor.
 
 - Use type annotations for all its API.
+
 - Immutable state management for predictable state updates using [python-immutable](https://github.com/sassanh/python-immutable).
+
 - Offers a streamlined, native [API](#handling-side-effects-with-events) for handling
   side-effects asynchronously, eliminating the necessity for more intricate utilities
   such as redux-thunk or redux-saga.
+
 - Incorporates the [autorun decorator](#autorun-decorator) and
   the [view decorator](#view-decorator), inspired by the mobx framework, to better
   integrate with elements of the software following procedural patterns.
+
 - Supports middlewares.
 
 ## 📦 Installation
@@ -294,6 +299,7 @@ For a detailed example, see [features demo](/tests/test_features.py).
 
 Contributions following Python best practices are welcome.
 
-## 🔒 License
+## 📜 License
 
-Refer to the repository for license details.
+This project is released under the Apache-2.0 License. See the [LICENSE](./LICENSE)
+file for more details.

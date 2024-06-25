@@ -16,7 +16,7 @@ from .snapshot import StoreSnapshot, store_snapshot  # noqa: E402
 from .store import needs_finish, store  # noqa: E402
 from .wait_for import Waiter, WaitFor, wait_for  # noqa: E402
 
-__all__ = [
+__all__ = (
     'LoopThread',
     'StoreMonitor',
     'StoreSnapshot',
@@ -28,4 +28,4 @@ __all__ = [
     'store_monitor',
     'store_snapshot',
     'wait_for',
-]
+)
