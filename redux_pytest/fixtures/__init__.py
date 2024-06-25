@@ -12,7 +12,7 @@ pytest.register_assert_rewrite(
 
 from .event_loop import LoopThread, event_loop  # noqa: E402
 from .monitor import StoreMonitor, store_monitor  # noqa: E402
-from .snapshot import StoreSnapshot, store_snapshot  # noqa: E402
+from .snapshot import StoreSnapshot, snapshot_prefix, store_snapshot  # noqa: E402
 from .store import needs_finish, store  # noqa: E402
 from .wait_for import Waiter, WaitFor, wait_for  # noqa: E402
 
@@ -24,6 +24,7 @@ __all__ = (
     'WaitFor',
     'event_loop',
     'needs_finish',
+    'snapshot_prefix',
     'store',
     'store_monitor',
     'store_snapshot',

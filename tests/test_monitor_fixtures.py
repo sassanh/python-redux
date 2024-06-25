@@ -39,6 +39,11 @@ class DummyEvent(BaseEvent): ...
 Action = IncrementAction | InitAction | FinishAction
 
 
+@pytest.fixture()
+def snapshot_prefix() -> str:
+    return 'prefix'
+
+
 def reducer(
     state: StateType | None,
     action: Action,

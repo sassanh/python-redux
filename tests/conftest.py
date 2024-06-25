@@ -12,6 +12,7 @@ import pytest
 from redux_pytest.fixtures import (
     event_loop,
     needs_finish,
+    snapshot_prefix,
     store,
     store_monitor,
     store_snapshot,
@@ -21,6 +22,7 @@ from redux_pytest.fixtures import (
 __all__ = [
     'event_loop',
     'needs_finish',
+    'snapshot_prefix',
     'store',
     'store_monitor',
     'store_snapshot',

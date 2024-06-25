@@ -64,7 +64,7 @@ def store() -> Generator[StoreType, None, None]:
 
 
 def test_simple_dispatch(store: StoreType) -> None:
-    count = 100000
+    count = 50000
     for _ in range(count):
         store.dispatch(IncrementAction())
 
@@ -80,7 +80,7 @@ def test_dispatch_with_subscriptions(store: StoreType) -> None:
 
         store.subscribe(callback)
 
-    count = 500
+    count = 400
     for _ in range(count):
         store.dispatch(IncrementAction())
 

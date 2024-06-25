@@ -6,11 +6,11 @@ from __future__ import annotations
 import json
 import os
 from collections import defaultdict
-from distutils.util import strtobool
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Callable, Generic, cast
 
 import pytest
+from str_to_bool import str_to_bool
 
 from redux.basic_types import FinishEvent, State
 
@@ -23,15 +23,17 @@ if TYPE_CHECKING:
 class StoreSnapshot(Generic[State]):
     """Context object for tests taking snapshots of the store."""
 
-    def __init__(
+    def __init__(  # noqa: PLR0913
         self: StoreSnapshot,
         *,
         test_id: str,
         path: Path,
         override: bool,
         store: Store,
+        prefix: str | None,
     ) -> None:
         """Create a new store snapshot context."""
+        self.prefix = prefix
         self._is_failed = False
         self._is_closed = False
         self.override = override
@@ -41,8 +43,13 @@ class StoreSnapshot(Generic[State]):
             path.parent / 'results' / file / test_id.split('::')[-1][5:],
         )
         if self.results_dir.exists():
+            prefix_element = ''
+            if self.prefix:
+                prefix_element = self.prefix + '-'
             for file in self.results_dir.glob(
-                'store-*.jsonc' if override else 'store-*.mismatch.jsonc',
+                f'store-{prefix_element}*.jsonc'
+                if override
+                else f'store-{prefix_element}*.mismatch.jsonc',
             ):
                 file.unlink()  # pragma: no cover
         self.results_dir.mkdir(parents=True, exist_ok=True)
@@ -69,9 +76,15 @@ class StoreSnapshot(Generic[State]):
 
     def get_filename(self: StoreSnapshot[State], title: str | None) -> str:
         """Get the filename for the snapshot."""
+        title_element = ''
         if title:
-            return f"""store-{title}-{self.test_counter[title]:03d}"""
-        return f"""store-{self.test_counter[title]:03d}"""
+            title_element = title + '-'
+        prefix_element = ''
+        if self.prefix:
+            prefix_element = self.prefix + '-'
+        return (
+            f"""store-{prefix_element}{title_element}{self.test_counter[title]:03d}"""
+        )
 
     def take(
         self: StoreSnapshot[State],
@@ -101,10 +114,10 @@ class StoreSnapshot(Generic[State]):
             if json_path.exists():
                 old_snapshot = json_path.read_text().split('\n', 1)[1][:-1]
             else:
-                old_snapshot = None
-            if old_snapshot != new_snapshot:
+                old_snapshot = None  # pragma: no cover
+            if old_snapshot != new_snapshot:  # pragma: no cover
                 self._is_failed = True
-                mismatch_path.write_text(  # pragma: no cover
+                mismatch_path.write_text(
                     f'// MISMATCH: {filename}\n{new_snapshot}\n',
                 )
             assert new_snapshot == old_snapshot, f'Store snapshot mismatch - {filename}'
@@ -123,7 +136,7 @@ class StoreSnapshot(Generic[State]):
     def close(self: StoreSnapshot[State]) -> None:
         """Close the snapshot context."""
         self._is_closed = True
-        if self._is_failed:
+        if self._is_failed:  # pragma: no cover
             return
         for title in self.test_counter:
             filename = self.get_filename(title)
@@ -133,14 +146,24 @@ class StoreSnapshot(Generic[State]):
 
 
 @pytest.fixture()
-def store_snapshot(request: SubRequest, store: Store) -> StoreSnapshot:
+def snapshot_prefix() -> str | None:
+    """Return the prefix for the snapshots."""
+    return None
+
+
+@pytest.fixture()
+def store_snapshot(
+    request: SubRequest,
+    store: Store,
+    snapshot_prefix: str | None,
+) -> StoreSnapshot:
     """Take a snapshot of the current state of the store."""
     override = (
         request.config.getoption(
             '--override-store-snapshots',
             default=cast(
                 Any,
-                strtobool(os.environ.get('REDUX_TEST_OVERRIDE_SNAPSHOTS', 'false'))
+                str_to_bool(os.environ.get('REDUX_TEST_OVERRIDE_SNAPSHOTS', 'false'))
                 == 1,
             ),
         )
@@ -151,4 +174,5 @@ def store_snapshot(request: SubRequest, store: Store) -> StoreSnapshot:
         path=request.node.path,
         override=override,
         store=store,
+        prefix=snapshot_prefix,
     )

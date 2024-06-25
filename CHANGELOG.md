@@ -4,6 +4,7 @@
 
 - refactor(core): use `str_to_bool` of `python-strtobool` instead of `strtobool`
   of `distutils`
+- feat(test-snapshot): add prefix to snapshot fixture
 
 ## Version 0.15.8
 
