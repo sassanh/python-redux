@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "python-redux"
-version = "0.15.9"
+version = "0.15.10"
 description = "Redux implementation for Python"
 authors = ["Sassan Haradji <sassanh@gmail.com>"]
 license = "Apache-2.0"
@@ -20,8 +20,8 @@ optional = true
 
 [tool.poetry.group.dev.dependencies]
 poethepoet = "^0.24.4"
-pyright = "^1.1.361"
-ruff = "^0.4.3"
+pyright = "^1.1.373"
+ruff = "^0.5.4"
 pytest = "^8.1.1"
 pytest-cov = "^4.1.0"
 pytest-timeout = "^2.3.1"

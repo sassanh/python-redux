@@ -1,7 +1,6 @@
 # ruff: noqa: D100, D101, D102, D103, D104, D107
 from __future__ import annotations
 
-import gc
 import weakref
 from dataclasses import replace
 from typing import TYPE_CHECKING, Generator, TypeAlias
@@ -94,7 +93,7 @@ class EventSubscriptionClass:
 
 @pytest.fixture()
 def store() -> Generator[StoreType, None, None]:
-    store = Store(reducer, options=CreateStoreOptions(auto_init=True))
+    store = Store(reducer, options=CreateStoreOptions(auto_init=True))  # pyright: ignore [reportArgumentType]
     yield store
     store.dispatch(FinishAction())
 
@@ -131,7 +130,6 @@ def test_autorun(
 
     @wait_for
     def check_no_ref() -> None:
-        gc.collect()
         assert ref() is None
 
     check_no_ref()

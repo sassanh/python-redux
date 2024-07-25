@@ -3,7 +3,7 @@ from __future__ import annotations
 
 import re
 from dataclasses import replace
-from typing import TYPE_CHECKING, Generator
+from typing import TYPE_CHECKING, Any, Generator, cast
 from unittest.mock import call
 
 import pytest
@@ -88,7 +88,7 @@ def test_general(store_snapshot: StoreSnapshot, store: StoreType) -> None:
 
 
 def test_ignore_attribute_error_in_selector(store: StoreType) -> None:
-    @store.autorun(lambda state: state.non_existing)  # pyright: ignore[reportAttributeAccessIssue]
+    @store.autorun(lambda state: cast(Any, state).non_existing)
     def _(_: int) -> int:
         pytest.fail('This should never be called')
 
@@ -96,7 +96,7 @@ def test_ignore_attribute_error_in_selector(store: StoreType) -> None:
 def test_ignore_attribute_error_in_comparator(store: StoreType) -> None:
     @store.autorun(
         lambda state: state.value,
-        lambda state: state.non_existing,  # pyright: ignore[reportAttributeAccessIssue]
+        lambda state: cast(Any, state).non_existing,
     )
     def _(_: int) -> int:
         pytest.fail('This should never be called')

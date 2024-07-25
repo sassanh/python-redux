@@ -33,7 +33,7 @@ class Autorun(
         AutorunArgs,
     ],
 ):
-    def __init__(  # noqa: PLR0913
+    def __init__(
         self: Autorun,
         *,
         store: Store[State, Action, Event],

@@ -8,6 +8,7 @@ from typing import (
     Coroutine,
     Generator,
     Literal,
+    ParamSpec,
     TypeAlias,
     overload,
 )
@@ -21,8 +22,10 @@ if TYPE_CHECKING:
     from tenacity.stop import StopBaseT
     from tenacity.wait import WaitBaseT
 
-Waiter: TypeAlias = Callable[[], None]
-AsyncWaiter: TypeAlias = Callable[[], Coroutine[None, None, None]]
+WaitForArgs = ParamSpec('WaitForArgs')
+
+Waiter: TypeAlias = Callable[WaitForArgs, None]
+AsyncWaiter: TypeAlias = Callable[WaitForArgs, Coroutine[None, None, None]]
 
 
 class WaitFor:
@@ -38,16 +41,16 @@ class WaitFor:
         *,
         stop: StopBaseT | None = None,
         wait: WaitBaseT | None = None,
-    ) -> Callable[[Callable[[], None]], Waiter]: ...
+    ) -> Callable[[Callable[WaitForArgs, None]], Waiter[WaitForArgs]]: ...
 
     @overload
     def __call__(
         self: WaitFor,
-        check: Callable[[], None],
+        check: Callable[WaitForArgs, None],
         *,
         stop: StopBaseT | None = None,
         wait: WaitBaseT | None = None,
-    ) -> Waiter: ...
+    ) -> Waiter[WaitForArgs]: ...
 
     @overload
     def __call__(
@@ -55,35 +58,35 @@ class WaitFor:
         *,
         timeout: float | None = None,
         wait: WaitBaseT | None = None,
-    ) -> Callable[[Callable[[], None]], Waiter]: ...
+    ) -> Callable[[Callable[WaitForArgs, None]], Waiter[WaitForArgs]]: ...
 
     @overload
     def __call__(
         self: WaitFor,
-        check: Callable[[], None],
+        check: Callable[WaitForArgs, None],
         *,
         timeout: float | None = None,
         wait: WaitBaseT | None = None,
-    ) -> Waiter: ...
+    ) -> Waiter[WaitForArgs]: ...
 
     @overload
     def __call__(
         self: WaitFor,
-        *,
-        stop: StopBaseT | None = None,
-        wait: WaitBaseT | None = None,
-        run_async: Literal[True],
-    ) -> Callable[[Callable[[], None]], AsyncWaiter]: ...
-
-    @overload
-    def __call__(
-        self: WaitFor,
-        check: Callable[[], None],
         *,
         stop: StopBaseT | None = None,
         wait: WaitBaseT | None = None,
         run_async: Literal[True],
-    ) -> AsyncWaiter: ...
+    ) -> Callable[[Callable[WaitForArgs, None]], AsyncWaiter[WaitForArgs]]: ...
+
+    @overload
+    def __call__(
+        self: WaitFor,
+        check: Callable[WaitForArgs, None],
+        *,
+        stop: StopBaseT | None = None,
+        wait: WaitBaseT | None = None,
+        run_async: Literal[True],
+    ) -> AsyncWaiter[WaitForArgs]: ...
 
     @overload
     def __call__(
@@ -92,57 +95,62 @@ class WaitFor:
         timeout: float | None = None,
         wait: WaitBaseT | None = None,
         run_async: Literal[True],
-    ) -> Callable[[Callable[[], None]], AsyncWaiter]: ...
+    ) -> Callable[[Callable[WaitForArgs, None]], AsyncWaiter[WaitForArgs]]: ...
 
     @overload
     def __call__(
         self: WaitFor,
-        check: Callable[[], None],
+        check: Callable[WaitForArgs, None],
         *,
         timeout: float | None = None,
         wait: WaitBaseT | None = None,
         run_async: Literal[True],
-    ) -> AsyncWaiter: ...
+    ) -> AsyncWaiter[WaitForArgs]: ...
 
-    def __call__(  # noqa: PLR0913
+    def __call__(
         self: WaitFor,
-        check: Callable[[], None] | None = None,
+        check: Callable[WaitForArgs, None] | None = None,
         *,
         timeout: float | None = None,
         stop: StopBaseT | None = None,
         wait: WaitBaseT | None = None,
         run_async: bool = False,
     ) -> (
-        Callable[[Callable[[], None]], Waiter]
-        | Waiter
-        | Callable[[Callable[[], None]], AsyncWaiter]
-        | AsyncWaiter
+        Callable[[Callable[WaitForArgs, None]], Waiter[WaitForArgs]]
+        | Waiter[WaitForArgs]
+        | Callable[[Callable[WaitForArgs, None]], AsyncWaiter[WaitForArgs]]
+        | AsyncWaiter[WaitForArgs]
     ):
         """Create a waiter for a condition to be met."""
-        args = {}
+        parameters = {}
         if timeout is not None:
-            args['stop'] = stop_after_delay(timeout)
+            parameters['stop'] = stop_after_delay(timeout)
         elif stop:
-            args['stop'] = stop
+            parameters['stop'] = stop
 
-        args['wait'] = wait or wait_exponential(multiplier=0.5)
+        parameters['wait'] = wait or wait_exponential(multiplier=0.5)
 
         if run_async:
 
-            def async_decorator(check: Callable[[], None]) -> AsyncWaiter:
-                async def async_wrapper() -> None:
-                    async for attempt in AsyncRetrying(**args):
+            def async_decorator(
+                check: Callable[WaitForArgs, None],
+            ) -> AsyncWaiter[WaitForArgs]:
+                async def async_wrapper(
+                    *args: WaitForArgs.args,
+                    **kwargs: WaitForArgs.kwargs,
+                ) -> None:
+                    async for attempt in AsyncRetrying(**parameters):
                         with attempt:
-                            check()
+                            check(*args, **kwargs)
 
                 return async_wrapper
 
             return async_decorator(check) if check else async_decorator
 
-        def decorator(check: Callable[[], None]) -> Waiter:
-            @retry(**args)
-            def wrapper() -> None:
-                check()
+        def decorator(check: Callable[WaitForArgs, None]) -> Waiter[WaitForArgs]:
+            @retry(**parameters)
+            def wrapper(*args: WaitForArgs.args, **kwargs: WaitForArgs.kwargs) -> None:
+                check(*args, **kwargs)
 
             return wrapper
 

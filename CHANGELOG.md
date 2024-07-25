@@ -1,5 +1,9 @@
 # Changelog
 
+## Version 0.15.10
+
+- feat(test): add arguments for `wait_for`'s `check`
+
 ## Version 0.15.9
 
 - refactor(core): use `str_to_bool` of `python-strtobool` instead of `strtobool`

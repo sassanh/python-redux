@@ -23,7 +23,7 @@ if TYPE_CHECKING:
 class StoreSnapshot(Generic[State]):
     """Context object for tests taking snapshots of the store."""
 
-    def __init__(  # noqa: PLR0913
+    def __init__(
         self: StoreSnapshot,
         *,
         test_id: str,
