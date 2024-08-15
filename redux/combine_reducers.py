@@ -46,10 +46,7 @@ def combine_reducers(
     reducers = reducers.copy()
     _id = uuid.uuid4().hex
 
-    state_class = cast(
-        type[state_type],
-        make_immutable(state_type.__name__, (('_id', str), *reducers.keys())),
-    )
+    state_class = make_immutable(state_type.__name__, (('_id', str), *reducers.keys()))
 
     def combined_reducer(
         state: CombineReducerState | None,

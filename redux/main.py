@@ -102,7 +102,7 @@ class Store(Generic[State, Action, Event], SerializationMixin):
 
         self._is_running = Lock()
 
-        self.subscribe_event(cast(type[Event], FinishEvent), self._handle_finish_event)
+        self.subscribe_event(FinishEvent, self._handle_finish_event)
 
         if self.store_options.auto_init:
             if self.store_options.scheduler:
@@ -164,15 +164,19 @@ class Store(Generic[State, Action, Event], SerializationMixin):
 
     def clean_up(self: Store[State, Action, Event]) -> None:
         """Clean up the store."""
-        self._event_handlers_queue.join()
+        self.wait_for_event_handlers()
         for _ in range(self.store_options.threads):
             self._event_handlers_queue.put_nowait(None)
-        self._event_handlers_queue.join()
+        self.wait_for_event_handlers()
         for worker in self._workers:
             worker.join()
         self._workers.clear()
         self._listeners.clear()
         self._event_handlers.clear()
+
+    def wait_for_event_handlers(self: Store[State, Action, Event]) -> None:
+        """Wait for the event handlers to finish."""
+        self._event_handlers_queue.join()
 
     def dispatch(
         self: Store[State, Action, Event],
@@ -245,14 +249,14 @@ class Store(Generic[State, Action, Event], SerializationMixin):
         else:
             handler_ref = weakref.ref(handler)
 
-        self._event_handlers[cast(type[Event], event_type)].add(handler_ref)
+        self._event_handlers[cast(Any, event_type)].add(handler_ref)
 
         def unsubscribe() -> None:
-            self._event_handlers[cast(type[Event], event_type)].discard(handler_ref)
+            self._event_handlers[cast(Any, event_type)].discard(handler_ref)
 
         return unsubscribe
 
-    def wait_for_store_to_finish(self: Store[State, Action, Event]) -> None:
+    def _wait_for_store_to_finish(self: Store[State, Action, Event]) -> None:
         """Wait for the store to finish."""
         import time
 
@@ -270,7 +274,7 @@ class Store(Generic[State, Action, Event], SerializationMixin):
             time.sleep(0.1)
 
     def _handle_finish_event(self: Store[State, Action, Event]) -> None:
-        Thread(target=self.wait_for_store_to_finish).start()
+        Thread(target=self._wait_for_store_to_finish).start()
 
     @overload
     def autorun(

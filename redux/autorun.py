@@ -181,7 +181,7 @@ class Autorun(
     ) -> None:
         self._should_be_called = False
         func = self._func() if isinstance(self._func, weakref.ref) else self._func
-        if func:
+        if func and self._last_selector_result is not None:
             value: AutorunOriginalReturnType = func(
                 self._last_selector_result,
                 *args,
@@ -231,8 +231,10 @@ class Autorun(
             AutorunArgs,
         ],
     ) -> str:
-        return f"""{super().__repr__()}(func: {self._func}, last_value: {
-        self._latest_value})"""
+        return (
+            super().__repr__()
+            + f'(func: {self._func}, last_value: {self._latest_value})'
+        )
 
     @property
     def value(
