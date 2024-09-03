@@ -120,7 +120,7 @@ Reducer: TypeAlias = tuple[
 ]
 
 
-@pytest.fixture()
+@pytest.fixture
 def reducer() -> Reducer:
     return combine_reducers(
         state_type=StateType,
@@ -131,7 +131,7 @@ def reducer() -> Reducer:
     )
 
 
-@pytest.fixture()
+@pytest.fixture
 def store(reducer: Reducer) -> Store:
     return Store(
         reducer[0],

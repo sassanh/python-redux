@@ -52,7 +52,7 @@ class CallApi(BaseEvent):
     parameters: object
 
 
-@pytest.fixture()
+@pytest.fixture
 def store() -> Store:
     # reducer:
     def reducer(

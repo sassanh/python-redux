@@ -1,10 +1,13 @@
 // store-subscription-004
 {
   "_id": "e3e70682c2094cac629f6fbed82c07cd",
+  "_type": "StateType",
   "base10": {
+    "_type": "CountStateType",
     "count": 12
   },
   "inverse": {
+    "_type": "CountStateType",
     "count": -1
   }
 }

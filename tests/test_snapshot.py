@@ -23,10 +23,10 @@ def test_snapshot() -> None:
     initial_state = StateType(value=0)
 
     store = Store(
-        lambda state, __: state or initial_state,
+        lambda state, _: state or initial_state,
         options=CreateStoreOptions(auto_init=True),
     )
 
-    assert store.snapshot == {'value': 0}
+    assert store.snapshot == {'_type': 'StateType', 'value': 0}
 
     store.dispatch(FinishAction())

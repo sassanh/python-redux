@@ -10,14 +10,14 @@ if TYPE_CHECKING:
     from redux.main import Store
 
 
-@pytest.fixture()
-def store() -> Store:  # noqa: PT004 # pragma: no cover
+@pytest.fixture
+def store() -> Store:  # pragma: no cover
     """Provide current store (this is a placeholder returning None)."""
     msg = 'This fixture should be overridden.'
     raise NotImplementedError(msg)
 
 
-@pytest.fixture()
+@pytest.fixture
 def needs_finish(store: Store) -> Generator:
     """Dispatch a finish action after the test."""
     yield None

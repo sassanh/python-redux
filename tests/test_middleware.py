@@ -60,7 +60,7 @@ class StoreType(Store[StateType, Action, FinishEvent | SomeEvent]):
         return self._state
 
 
-@pytest.fixture()
+@pytest.fixture
 def store() -> StoreType:
     return StoreType(reducer, options=CreateStoreOptions(auto_init=True))
 

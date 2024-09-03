@@ -25,7 +25,7 @@ class LoopThread(threading.Thread):
         self.loop.call_soon_threadsafe(self.loop.create_task, coro)
 
 
-@pytest.fixture()
+@pytest.fixture
 def event_loop() -> LoopThread:
     loop_thread = LoopThread()
     loop_thread.start()

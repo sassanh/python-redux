@@ -91,7 +91,7 @@ class EventSubscriptionClass:
         pytest.fail('This should never be called')
 
 
-@pytest.fixture()
+@pytest.fixture
 def store() -> Generator[StoreType, None, None]:
     store = Store(reducer, options=CreateStoreOptions(auto_init=True))  # pyright: ignore [reportArgumentType]
     yield store

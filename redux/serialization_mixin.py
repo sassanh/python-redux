@@ -37,7 +37,7 @@ class SerializationMixin:
         cls: type[SerializationMixin],
         obj: Immutable,
     ) -> dict[str, Any]:
-        result = {}
+        result: dict[str, object] = {'_type': obj.__class__.__name__}
         for field in dataclasses.fields(obj):
             value = cls.serialize_value(getattr(obj, field.name))
             result[field.name] = value

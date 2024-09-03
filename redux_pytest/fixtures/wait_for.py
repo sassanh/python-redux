@@ -157,7 +157,7 @@ class WaitFor:
         return decorator(check) if check else decorator
 
 
-@pytest.fixture()
+@pytest.fixture
 def wait_for() -> Generator[WaitFor, None, None]:
     """Provide `wait_for` decorator."""
     context = WaitFor()

@@ -1,5 +1,9 @@
 # Changelog
 
+## Version 0.16.1
+
+- feat(core): add `_type` field to the serialized immutable instances
+
 ## Version 0.16.0
 
 - feat(core): add blocking `wait_for_event_handlers` method to `Store` to wait for all event handlers to finish

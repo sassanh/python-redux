@@ -51,7 +51,7 @@ class StoreType(Store[StateType, Action, FinishEvent]):
         return self._state
 
 
-@pytest.fixture()
+@pytest.fixture
 def store() -> Generator[StoreType, None, None]:
     store = StoreType(reducer, options=CreateStoreOptions(auto_init=True))
     yield store

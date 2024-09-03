@@ -74,6 +74,7 @@ def test_immutable() -> None:
             list_=[1, 2, 3],
         ),
     ) == {
+        '_type': 'State',
         'integer': 1,
         'floating_poing': 1.0,
         'string': 'string',

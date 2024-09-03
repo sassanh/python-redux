@@ -50,7 +50,7 @@ def reducer(
     return state
 
 
-@pytest.fixture()
+@pytest.fixture
 def store() -> Store:
     return Store(
         reducer,

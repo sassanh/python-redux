@@ -145,13 +145,13 @@ class StoreSnapshot(Generic[State]):
             assert not json_path.exists(), f'Snapshot {filename} not taken'
 
 
-@pytest.fixture()
+@pytest.fixture
 def snapshot_prefix() -> str | None:
     """Return the prefix for the snapshots."""
     return None
 
 
-@pytest.fixture()
+@pytest.fixture
 def store_snapshot(
     request: SubRequest,
     store: Store,

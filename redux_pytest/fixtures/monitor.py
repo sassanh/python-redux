@@ -39,7 +39,7 @@ class StoreMonitor:
         self.store.register_event_middleware(self._event_middleware)
 
 
-@pytest.fixture()
+@pytest.fixture
 def store_monitor(store: Store, mocker: MockerFixture) -> StoreMonitor:
     """Fixture to check if an action was dispatched."""
     monitor = StoreMonitor(mocker)

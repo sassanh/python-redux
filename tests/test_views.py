@@ -62,7 +62,7 @@ def reducer(
 StoreType = Store[StateType, Action, FinishEvent]
 
 
-@pytest.fixture()
+@pytest.fixture
 def store() -> Generator[StoreType, None, None]:
     store = Store(reducer, options=CreateStoreOptions(auto_init=True))
     yield store

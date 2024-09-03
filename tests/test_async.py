@@ -59,7 +59,7 @@ Action = IncrementAction | SetMirroredValueAction | InitAction | FinishAction
 StoreType = Store[StateType, Action, FinishEvent]
 
 
-@pytest.fixture()
+@pytest.fixture
 def store(event_loop: LoopThread) -> StoreType:
     def _create_task_with_callback(
         coro: Coroutine,
