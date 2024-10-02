@@ -389,7 +389,6 @@ class Store(Generic[State, Action, Event], SerializationMixin):
                 options=AutorunOptions(
                     default_value=_options.default_value,
                     initial_call=False,
-                    auto_call=False,
                     reactive=False,
                     keep_ref=_options.keep_ref,
                     subscribers_initial_run=_options.subscribers_initial_run,

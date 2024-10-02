@@ -45,9 +45,6 @@ class Autorun(
         ],
         options: AutorunOptions[AutorunOriginalReturnType],
     ) -> None:
-        if not options.reactive and options.auto_call:
-            msg = '`reactive` must be `True` if `auto_call` is `True`'
-            raise ValueError(msg)
         self._store = store
         self._selector = selector
         self._comparator = comparator
@@ -80,9 +77,7 @@ class Autorun(
 
         if self._options.reactive:
             self._unsubscribe = store.subscribe(
-                lambda state: self._call()
-                if self._check(state) and self._options.auto_call
-                else None,
+                lambda state: self._call() if self._check(state) else None,
             )
         else:
             self._unsubscribe = None

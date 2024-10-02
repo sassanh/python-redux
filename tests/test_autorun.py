@@ -183,20 +183,6 @@ def test_repr(store: StoreType) -> None:
     )
 
 
-def test_auto_call_without_reactive(store: StoreType) -> None:
-    with pytest.raises(
-        ValueError,
-        match='^`reactive` must be `True` if `auto_call` is `True`$',
-    ):
-
-        @store.autorun(
-            lambda state: state.value,
-            options=AutorunOptions(reactive=False, auto_call=True),
-        )
-        def _(_: int) -> int:
-            pytest.fail('This should never be called')
-
-
 call_sequence = [
     # 0
     [
@@ -229,7 +215,7 @@ def test_no_auto_call_with_initial_call_and_reactive_set(
 
     render_autorun = store.autorun(
         lambda state: state.value,
-        options=AutorunOptions(reactive=True, auto_call=False, initial_call=True),
+        options=AutorunOptions(reactive=False, initial_call=True),
     )(render)
 
     for actions in call_sequence:
@@ -250,7 +236,7 @@ def test_no_auto_call_and_no_initial_call_with_reactive_set(
 
     render_autorun = store.autorun(
         lambda state: state.value,
-        options=AutorunOptions(reactive=True, auto_call=False, initial_call=False),
+        options=AutorunOptions(reactive=False, initial_call=False),
     )(render)
 
     for actions in call_sequence:
@@ -269,15 +255,15 @@ def test_with_auto_call_and_initial_call_and_reactive_set(
 
     render = mocker.create_autospec(render)
 
-    render_autorun = store.autorun(
+    trigger_autorun = store.autorun(
         lambda state: state.value,
-        options=AutorunOptions(reactive=True, auto_call=True, initial_call=True),
+        options=AutorunOptions(reactive=True, initial_call=True),
     )(render)
 
     for actions in call_sequence:
         for action in actions:
             store.dispatch(action)
-        render_autorun()
+        trigger_autorun()
 
     assert render.mock_calls == [
         call(0),
@@ -299,7 +285,6 @@ def test_view_mode_with_arguments_autorun(
         lambda state: state.value,
         options=AutorunOptions(
             reactive=False,
-            auto_call=False,
             initial_call=False,
             default_value=0,
         ),

@@ -85,6 +85,25 @@ def test_general(
     assert render() == 1
 
 
+def test_not_reactive(
+    store: StoreType,
+) -> None:
+    runs = 0
+
+    @store.view(lambda state: state.value)
+    def render(value: int) -> int:
+        nonlocal runs
+        runs += 1
+        return value
+
+    store.dispatch(IncrementAction())
+    store.dispatch(IncrementAction())
+    store.dispatch(IncrementAction())
+
+    assert render() == 3
+    assert runs == 1
+
+
 def test_uninitialized_store(
     store: StoreType,
 ) -> None:

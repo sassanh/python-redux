@@ -1,5 +1,9 @@
 # Changelog
 
+## Version 0.17.0
+
+- refactor(autorun): remove `auto_call` option as it was addressing such a rare use case that it was not worth the complexity
+
 ## Version 0.16.1
 
 - feat(core): add `_type` field to the serialized immutable instances

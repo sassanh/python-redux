@@ -134,7 +134,6 @@ class CreateStoreOptions(Immutable, Generic[Action, Event]):
 class AutorunOptions(Immutable, Generic[AutorunOriginalReturnType]):
     default_value: AutorunOriginalReturnType | None = None
     initial_call: bool = True
-    auto_call: bool = True
     reactive: bool = True
     keep_ref: bool = True
     subscribers_initial_run: bool = True
