@@ -39,9 +39,9 @@ class BaseEvent(Immutable): ...
 
 
 # Type variables
-State = TypeVar('State', bound=Immutable, infer_variance=True)
-Action = TypeVar('Action', bound=BaseAction, infer_variance=True)
-Event = TypeVar('Event', bound=BaseEvent, infer_variance=True)
+State = TypeVar('State', bound=Immutable | None, infer_variance=True)
+Action = TypeVar('Action', bound=BaseAction | None, infer_variance=True)
+Event = TypeVar('Event', bound=BaseEvent | None, infer_variance=True)
 Event2 = TypeVar('Event2', bound=BaseEvent, infer_variance=True)
 SelectorOutput = TypeVar('SelectorOutput', infer_variance=True)
 ComparatorOutput = TypeVar('ComparatorOutput', infer_variance=True)

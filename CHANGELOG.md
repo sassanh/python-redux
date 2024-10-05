@@ -1,5 +1,9 @@
 # Changelog
 
+## Version 0.17.1
+
+- refactor(core): allow `None` type for state, action and event types in `ReducerResult` and `CompleteReducerResult`
+
 ## Version 0.17.0
 
 - refactor(autorun): remove `auto_call` option as it was addressing such a rare use case that it was not worth the complexity
