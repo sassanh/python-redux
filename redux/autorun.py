@@ -1,11 +1,22 @@
 # ruff: noqa: D100, D101, D102, D103, D104, D105, D107
 from __future__ import annotations
 
+import asyncio
 import functools
 import inspect
 import weakref
 from asyncio import Future, Task, iscoroutine, iscoroutinefunction
-from typing import TYPE_CHECKING, Any, Callable, Concatenate, Generic, cast
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    Callable,
+    Concatenate,
+    Coroutine,
+    Generator,
+    Generic,
+    TypeVar,
+    cast,
+)
 
 from redux.basic_types import (
     Action,
@@ -20,6 +31,25 @@ from redux.basic_types import (
 
 if TYPE_CHECKING:
     from redux.main import Store
+
+
+T = TypeVar('T')
+
+
+class AwaitableWrapper(Generic[T]):
+    def __init__(self, coro: Coroutine[None, None, T]) -> None:
+        self.coro = coro
+        self.awaited = False
+
+    def __await__(self) -> Generator[None, None, T]:
+        self.awaited = True
+        return self.coro.__await__()
+
+    def close(self) -> None:
+        self.coro.close()
+
+    def __repr__(self) -> str:
+        return f'AwaitableWrapper({self.coro}, awaited={self.awaited})'
 
 
 class Autorun(
@@ -45,6 +75,7 @@ class Autorun(
         ],
         options: AutorunOptions[AutorunOriginalReturnType],
     ) -> None:
+        self.__name__ = func.__name__
         self._store = store
         self._selector = selector
         self._comparator = comparator
@@ -55,6 +86,11 @@ class Autorun(
             self._func = weakref.WeakMethod(func, self.unsubscribe)
         else:
             self._func = weakref.ref(func, self.unsubscribe)
+        self._is_coroutine = (
+            asyncio.coroutines._is_coroutine  # pyright: ignore [reportAttributeAccessIssue]  # noqa: SLF001
+            if asyncio.iscoroutinefunction(func) and not options.auto_await
+            else None
+        )
         self._options = options
 
         self._last_selector_result: SelectorOutput | None = None
@@ -120,11 +156,11 @@ class Autorun(
         ],
         task: Task,
         *,
-        future: Future | None,
+        future: Future,
     ) -> None:
         task.add_done_callback(
             lambda result: (
-                future.set_result(result.result()) if future else None,
+                future.set_result(result.result()),
                 self.inform_subscribers(),
             ),
         )
@@ -184,15 +220,27 @@ class Autorun(
             )
             create_task = self._store._create_task  # noqa: SLF001
             if iscoroutine(value) and create_task:
-                future = Future()
-                self._latest_value = cast(AutorunOriginalReturnType, future)
-                create_task(
-                    value,
-                    callback=functools.partial(
-                        self._task_callback,
-                        future=future,
-                    ),
-                )
+                if self._options.auto_await:
+                    future = Future()
+                    self._latest_value = cast(AutorunOriginalReturnType, future)
+                    create_task(
+                        value,
+                        callback=functools.partial(
+                            self._task_callback,
+                            future=future,
+                        ),
+                    )
+                else:
+                    if (
+                        self._latest_value is not None
+                        and isinstance(self._latest_value, AwaitableWrapper)
+                        and not self._latest_value.awaited
+                    ):
+                        self._latest_value.close()
+                    self._latest_value = cast(
+                        AutorunOriginalReturnType,
+                        AwaitableWrapper(value),
+                    )
             else:
                 self._latest_value = value
             self.inform_subscribers()

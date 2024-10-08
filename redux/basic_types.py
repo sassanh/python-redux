@@ -133,6 +133,7 @@ class CreateStoreOptions(Immutable, Generic[Action, Event]):
 
 class AutorunOptions(Immutable, Generic[AutorunOriginalReturnType]):
     default_value: AutorunOriginalReturnType | None = None
+    auto_await: bool = True
     initial_call: bool = True
     reactive: bool = True
     keep_ref: bool = True
@@ -166,6 +167,8 @@ class AutorunReturnType(
     ) -> Callable[[], None]: ...
 
     def unsubscribe(self: AutorunReturnType) -> None: ...
+
+    __name__: str
 
 
 class AutorunDecorator(

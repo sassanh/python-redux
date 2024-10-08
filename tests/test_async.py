@@ -24,7 +24,7 @@ from redux.main import Store
 if TYPE_CHECKING:
     from redux_pytest.fixtures.event_loop import LoopThread
 
-INCREMENTS = 2
+INCREMENTS = 20
 
 
 class StateType(Immutable):
@@ -91,22 +91,54 @@ def test_autorun(
     event_loop: LoopThread,
 ) -> None:
     @store.autorun(lambda state: state.value)
-    async def _(value: int) -> int:
+    async def sync_mirror(value: int) -> int:
         await asyncio.sleep(value / 10)
         store.dispatch(SetMirroredValueAction(value=value))
         return value
+
+    assert not asyncio.iscoroutinefunction(sync_mirror)
 
     @store.autorun(
         lambda state: state.mirrored_value,
         lambda state: state.mirrored_value >= INCREMENTS,
     )
-    async def _(mirrored_value: int) -> None:
+    def _(mirrored_value: int) -> None:
         if mirrored_value < INCREMENTS:
             return
         event_loop.stop()
         store.dispatch(FinishAction())
 
     dispatch_actions(store)
+
+
+def test_autorun_autoawait(
+    store: StoreType,
+    event_loop: LoopThread,
+) -> None:
+    @store.autorun(lambda state: state.value, options=AutorunOptions(auto_await=False))
+    async def sync_mirror(value: int) -> int:
+        store.dispatch(SetMirroredValueAction(value=value))
+        return value * 2
+
+    assert asyncio.iscoroutinefunction(sync_mirror)
+
+    @store.autorun(lambda state: (state.value, state.mirrored_value))
+    async def _(values: tuple[int, int]) -> None:
+        value, mirrored_value = values
+        if mirrored_value != value:
+            assert 'awaited=False' in str(sync_mirror())
+            await sync_mirror()
+            assert 'awaited=True' in str(sync_mirror())
+            with pytest.raises(
+                RuntimeError,
+                match=r'^cannot reuse already awaited coroutine$',
+            ):
+                await sync_mirror()
+        elif value < INCREMENTS:
+            store.dispatch(IncrementAction())
+        else:
+            event_loop.stop()
+            store.dispatch(FinishAction())
 
 
 def test_autorun_default_value(
@@ -122,7 +154,7 @@ def test_autorun_default_value(
         lambda state: state.mirrored_value,
         lambda state: state.mirrored_value >= INCREMENTS,
     )
-    async def _(mirrored_value: int) -> None:
+    def _(mirrored_value: int) -> None:
         if mirrored_value < INCREMENTS:
             return
         event_loop.stop()
@@ -145,8 +177,35 @@ def test_view(
     @store.autorun(lambda state: state.value)
     async def _(value: int) -> None:
         assert await doubled() == value * 2
-        for _ in range(10):
+        with pytest.raises(
+            RuntimeError,
+            match=r'^cannot reuse already awaited coroutine$',
+        ):
             await doubled()
+        if value < INCREMENTS:
+            store.dispatch(IncrementAction())
+        else:
+            event_loop.stop()
+            store.dispatch(FinishAction())
+            assert calls == list(range(INCREMENTS + 1))
+
+
+def test_view_await(store: StoreType, event_loop: LoopThread) -> None:
+    calls = []
+
+    @store.view(lambda state: state.value)
+    async def doubled(value: int) -> int:
+        calls.append(value)
+        return value * 2
+
+    assert asyncio.iscoroutinefunction(doubled)
+
+    @store.autorun(lambda state: state.value)
+    async def _(value: int) -> None:
+        calls_length = len(calls)
+        assert await doubled() == value * 2
+        assert len(calls) == calls_length + 1
+
         if value < INCREMENTS:
             store.dispatch(IncrementAction())
         else:
