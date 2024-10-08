@@ -82,9 +82,11 @@ def store() -> Generator[StoreType, None, None]:
 
 def test_general(store_snapshot: StoreSnapshot, store: StoreType) -> None:
     @store.autorun(lambda state: state.value)
-    def _(value: int) -> int:
+    def decorated(value: int) -> int:
         store_snapshot.take()
         return value
+
+    assert decorated.__name__ == 'decorated'
 
 
 def test_ignore_attribute_error_in_selector(store: StoreType) -> None:

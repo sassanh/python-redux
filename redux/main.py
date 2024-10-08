@@ -388,6 +388,7 @@ class Store(Generic[State, Action, Event], SerializationMixin):
                 func=cast(Callable, func),
                 options=AutorunOptions(
                     default_value=_options.default_value,
+                    auto_await=True,
                     initial_call=False,
                     reactive=False,
                     keep_ref=_options.keep_ref,

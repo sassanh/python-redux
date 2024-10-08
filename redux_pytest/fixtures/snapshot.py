@@ -128,9 +128,7 @@ class StoreSnapshot(Generic[State]):
         """Monitor the state of the store and take snapshots."""
 
         @self.store.autorun(selector=selector)
-        def _(state: object | None) -> None:
-            if state is None:
-                return
+        def _(state: object) -> None:
             self.take(selector=lambda _: state)
 
     def close(self: StoreSnapshot[State]) -> None:
