@@ -21,11 +21,11 @@ class SerializationMixin:
         obj: object | type,
     ) -> SnapshotAtom:
         """Serialize a value to a snapshot atom."""
-        if isinstance(obj, (int, float, str, bool, NoneType)):
+        if isinstance(obj, int | float | str | bool | NoneType):
             return obj
         if callable(obj):
             return cls.serialize_value(obj())
-        if isinstance(obj, (list, tuple)):
+        if isinstance(obj, list | tuple):
             return [cls.serialize_value(i) for i in obj]
         if is_immutable(obj):
             return cls._serialize_dataclass_to_dict(obj)

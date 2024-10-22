@@ -1,20 +1,17 @@
 # ruff: noqa: A003, D100, D101, D102, D103, D104, D105, D107
 from __future__ import annotations
 
+from collections.abc import Awaitable, Callable, Coroutine, Sequence
 from dataclasses import field
 from types import NoneType
 from typing import (
     TYPE_CHECKING,
     Any,
-    Awaitable,
-    Callable,
     Concatenate,
-    Coroutine,
     Generic,
     Never,
     ParamSpec,
     Protocol,
-    Sequence,
     TypeAlias,
     TypeGuard,
     overload,

@@ -39,12 +39,12 @@ def _(monkeypatch: pytest.MonkeyPatch) -> None:
         @classmethod
         def now(cls: type[DateTime], tz: datetime.tzinfo | None = None) -> DateTime:
             _ = tz
-            return DateTime(2023, 1, 1, 0, 0, 0, tzinfo=datetime.timezone.utc)
+            return DateTime(2023, 1, 1, 0, 0, 0, tzinfo=datetime.UTC)
 
     monkeypatch.setattr(datetime, 'datetime', DateTime)
     monkeypatch.setattr(
         time,
         'time',
-        lambda: datetime.datetime.now(tz=datetime.timezone.utc).timestamp(),
+        lambda: datetime.datetime.now(tz=datetime.UTC).timestamp(),
     )
     monkeypatch.setattr(uuid, 'uuid4', lambda: uuid.UUID(int=random.getrandbits(128)))

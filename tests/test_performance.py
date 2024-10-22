@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import replace
-from typing import Generator
+from typing import TYPE_CHECKING
 
 import pytest
 from immutable import Immutable
@@ -18,6 +18,9 @@ from redux.basic_types import (
     InitializationActionError,
 )
 from redux.main import Store
+
+if TYPE_CHECKING:
+    from collections.abc import Generator
 
 
 class StateType(Immutable):

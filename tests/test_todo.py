@@ -5,7 +5,7 @@ import logging
 import time
 import uuid
 from dataclasses import replace
-from typing import TYPE_CHECKING, Sequence
+from typing import TYPE_CHECKING
 
 import pytest
 from immutable import Immutable
@@ -23,6 +23,8 @@ from redux import (
 )
 
 if TYPE_CHECKING:
+    from collections.abc import Sequence
+
     from redux_pytest.fixtures import StoreSnapshot
 
 

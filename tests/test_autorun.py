@@ -3,7 +3,7 @@ from __future__ import annotations
 
 import re
 from dataclasses import replace
-from typing import TYPE_CHECKING, Any, Generator, cast
+from typing import TYPE_CHECKING, Any, cast
 from unittest.mock import call
 
 import pytest
@@ -22,6 +22,8 @@ from redux.basic_types import (
 from redux.main import Store
 
 if TYPE_CHECKING:
+    from collections.abc import Generator
+
     from pytest_mock import MockerFixture
 
     from redux_pytest.fixtures import StoreSnapshot

@@ -3,9 +3,12 @@ from __future__ import annotations
 
 import asyncio
 import threading
-from typing import Coroutine
+from typing import TYPE_CHECKING
 
 import pytest
+
+if TYPE_CHECKING:
+    from collections.abc import Coroutine
 
 
 class LoopThread(threading.Thread):

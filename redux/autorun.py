@@ -9,10 +9,7 @@ from asyncio import Future, Task, iscoroutine, iscoroutinefunction
 from typing import (
     TYPE_CHECKING,
     Any,
-    Callable,
     Concatenate,
-    Coroutine,
-    Generator,
     Generic,
     TypeVar,
     cast,
@@ -30,6 +27,8 @@ from redux.basic_types import (
 )
 
 if TYPE_CHECKING:
+    from collections.abc import Callable, Coroutine, Generator
+
     from redux.main import Store
 
 

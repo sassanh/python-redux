@@ -7,11 +7,10 @@ import inspect
 import queue
 import weakref
 from collections import defaultdict
+from collections.abc import Awaitable, Callable
 from threading import Lock, Thread
 from typing import (
     Any,
-    Awaitable,
-    Callable,
     Concatenate,
     Generic,
     cast,

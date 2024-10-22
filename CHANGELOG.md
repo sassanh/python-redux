@@ -1,5 +1,9 @@
 # Changelog
 
+## Upcoming
+
+- chore: migrate from poetry to uv for the sake of improving performance and dealing with conflicting sub-dependencies
+
 ## Version 0.18.0
 
 - feat(autorun): add `auto_await` to `AutorunOptions` so that one can define an autorun/view as a decorator of a function without automatically awaiting its result, when `auto_await` is set to `False`, which activates the new behavior, the decorated function passes `asyncio.iscoroutinefunction` test, useful for certain libraries like quart

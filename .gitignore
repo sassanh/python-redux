@@ -31,7 +31,7 @@ wheels/
 *.manifest
 *.spec
 
-# Installer logs
+# Installer Logs
 pip-log.txt
 pip-delete-this-directory.txt
 
@@ -99,3 +99,6 @@ ENV/
 
 # mypy
 .mypy_cache/
+
+# hatch
+redux/_version.py

@@ -1,11 +1,14 @@
 # ruff: noqa: D100, D101, D102, D103, D104, D107
 from __future__ import annotations
 
-from typing import Callable
+from typing import TYPE_CHECKING
 
 import pytest
 
 from redux.main import Store
+
+if TYPE_CHECKING:
+    from collections.abc import Callable
 
 
 def test_int() -> None:

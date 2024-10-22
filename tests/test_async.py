@@ -3,7 +3,7 @@ from __future__ import annotations
 
 import asyncio
 from dataclasses import replace
-from typing import TYPE_CHECKING, Callable, Coroutine
+from typing import TYPE_CHECKING
 
 import pytest
 from immutable import Immutable
@@ -22,6 +22,8 @@ from redux.basic_types import (
 from redux.main import Store
 
 if TYPE_CHECKING:
+    from collections.abc import Callable, Coroutine
+
     from redux_pytest.fixtures.event_loop import LoopThread
 
 INCREMENTS = 20

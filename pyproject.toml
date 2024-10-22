@@ -1,40 +1,49 @@
-[tool.poetry]
+[project]
 name = "python-redux"
-version = "0.18.0"
+dynamic = ["version"]
 description = "Redux implementation for Python"
-authors = ["Sassan Haradji <sassanh@gmail.com>"]
-license = "Apache-2.0"
+license = { text = "Apache-2.0" }
 readme = "README.md"
-homepage = 'https://github.com/sassanh/python-redux/'
-repository = 'https://github.com/sassanh/python-redux/'
+requires-python = ">=3.11"
 keywords = ['store', 'redux', 'reactive', 'autorun']
-packages = [{ include = "redux" }, { include = "redux_pytest" }]
+dependencies = ["python-immutable >= 1.1.1", "python-strtobool >= 1.0.0"]
 
-[tool.poetry.dependencies]
-python = "^3.11"
-python-immutable = "^1.1.1"
-python-strtobool = "^1.0.0"
-pyright = "^1.1.383"
-ruff = "^0.6.9"
-
-[tool.poetry.group.dev]
-optional = true
-
-[tool.poetry.group.dev.dependencies]
-poethepoet = "^0.24.4"
-pyright = "^1.1.376"
-ruff = "^0.6.0"
-pytest = "^8.1.1"
-pytest-cov = "^4.1.0"
-pytest-timeout = "^2.3.1"
-pytest-mock = "^3.14.0"
-tenacity = "^8.2.3"
+[tool.uv]
+dev-dependencies = [
+  "poethepoet >= 0.24.4",
+  "pyright >= 1.1.376",
+  "ruff >= 0.6.0",
+  "pytest >= 8.1.1",
+  "pytest-cov >= 4.1.0",
+  "pytest-timeout >= 2.3.1",
+  "pytest-mock >= 3.14.0",
+  "tenacity >= 8.2.3",
+]
 
 [build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
+requires = ["hatchling", "hatch-vcs"]
+build-backend = "hatchling.build"
 
-[tool.poetry.scripts]
+[tool.hatch.version]
+source = "vcs"
+
+[tool.hatch.build.hooks.vcs]
+version-file = "redux/_version.py"
+
+[tool.hatch.version.raw-options]
+local_scheme = "setup_scm_schemes:local_scheme"
+
+[tool.hatch.build]
+packages = ["redux", "redux_pytest"]
+
+[tool.hatch.build.targets.sdist]
+packages = ["redux", "redux_pytest"]
+
+[[project.authors]]
+name = "Sassan Haradji"
+email = "sassanh@gmail.com"
+
+[project.scripts]
 demo = "demo:main"
 todo_demo = "todo_demo:main"
 
@@ -45,10 +54,13 @@ test = "pytest --cov --cov-report=term-missing --cov-report=html --cov-report=xm
 sanity = ["typecheck", "lint", "test"]
 
 [tool.ruff]
-lint.select = ['ALL']
-lint.ignore = ['INP001', 'PLR0911', 'D203', 'D213']
-lint.fixable = ['ALL']
-lint.unfixable = []
+target-version = 'py311'
+
+[tool.ruff.lint]
+select = ['ALL']
+ignore = ['INP001', 'PLR0911', 'D203', 'D213']
+fixable = ['ALL']
+unfixable = []
 
 [tool.ruff.lint.flake8-quotes]
 docstring-quotes = "double"
@@ -65,7 +77,7 @@ quote-style = 'single'
 profile = "black"
 
 [tool.pyright]
-exclude = ['typings']
+exclude = ['typings', '.venv']
 filterwarnings = 'error'
 
 [tool.pytest.ini_options]
@@ -78,7 +90,4 @@ exclude_also = ["if TYPE_CHECKING:"]
 
 [tool.coverage.run]
 source = ['redux', 'redux_pytest']
-omit = ['redux_pytest/plugin.py']
-
-[tool.poetry.plugins.pytest11]
-redux = "redux_pytest.plugin"
+omit = ['redux_pytest/plugin.py', 'redux/_version.py', "setup_scm_schemes.py"]

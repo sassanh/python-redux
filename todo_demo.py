@@ -4,7 +4,7 @@ from __future__ import annotations
 import time
 import uuid
 from dataclasses import replace
-from typing import Sequence
+from typing import TYPE_CHECKING
 
 from immutable import Immutable
 
@@ -15,6 +15,9 @@ from redux.basic_types import (
     FinishAction,
     ReducerResult,
 )
+
+if TYPE_CHECKING:
+    from collections.abc import Sequence
 
 
 # state:

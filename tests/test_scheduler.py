@@ -4,7 +4,7 @@ from __future__ import annotations
 import asyncio
 import threading
 from dataclasses import replace
-from typing import TYPE_CHECKING, Callable, Coroutine, TypeAlias
+from typing import TYPE_CHECKING, TypeAlias
 from unittest.mock import call
 
 from immutable import Immutable
@@ -23,6 +23,8 @@ from redux.basic_types import (
 from redux.main import Store
 
 if TYPE_CHECKING:
+    from collections.abc import Callable, Coroutine
+
     from pytest_mock import MockerFixture
 
 

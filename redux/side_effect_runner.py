@@ -7,8 +7,9 @@ import contextlib
 import threading
 import weakref
 from asyncio import Handle, iscoroutine
+from collections.abc import Callable
 from inspect import signature
-from typing import TYPE_CHECKING, Any, Callable, Generic, cast
+from typing import TYPE_CHECKING, Any, Generic, cast
 
 from redux.basic_types import Event, EventHandler
 

@@ -7,7 +7,7 @@ import json
 import os
 from collections import defaultdict
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Callable, Generic, cast
+from typing import TYPE_CHECKING, Any, Generic, cast
 
 import pytest
 from str_to_bool import str_to_bool
@@ -15,6 +15,8 @@ from str_to_bool import str_to_bool
 from redux.basic_types import FinishEvent, State
 
 if TYPE_CHECKING:
+    from collections.abc import Callable
+
     from _pytest.fixtures import SubRequest
 
     from redux.main import Store
