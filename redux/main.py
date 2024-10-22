@@ -136,13 +136,13 @@ class Store(Generic[State, Action, Event], SerializationMixin):
                 if is_complete_reducer_result(result):
                     self._state = result.state
                     self._call_listeners(self._state)
-                    self.dispatch([*(result.actions or []), *(result.events or [])])
+                    self._dispatch([*(result.actions or []), *(result.events or [])])
                 elif is_state_reducer_result(result):
                     self._state = result
                     self._call_listeners(self._state)
 
                 if isinstance(action, FinishAction):
-                    self.dispatch(cast(Event, FinishEvent()))
+                    self._dispatch([cast(Event, FinishEvent())])
 
     def _run_event_handlers(self: Store[State, Action, Event]) -> None:
         while len(self._events) > 0:
@@ -177,22 +177,37 @@ class Store(Generic[State, Action, Event], SerializationMixin):
         """Wait for the event handlers to finish."""
         self._event_handlers_queue.join()
 
+    @overload
     def dispatch(
         self: Store[State, Action, Event],
-        *parameters: DispatchParameters[Action, Event],
-        with_state: Callable[[State | None], DispatchParameters[Action, Event]]
-        | None = None,
+        *parameters: DispatchParameters[Action],
+    ) -> None: ...
+    @overload
+    def dispatch(
+        self: Store[State, Action, Event],
+        *,
+        with_state: Callable[[State | None], DispatchParameters[Action]] | None = None,
+    ) -> None: ...
+    def dispatch(
+        self: Store[State, Action, Event],
+        *parameters: DispatchParameters[Action],
+        with_state: Callable[[State | None], DispatchParameters[Action]] | None = None,
     ) -> None:
-        """Dispatch actions and/or events."""
+        """Dispatch actions."""
         if with_state is not None:
             self.dispatch(with_state(self._state))
 
-        items = [
-            item
-            for items in parameters
-            for item in (items if isinstance(items, list) else [items])
+        actions = [
+            action
+            for actions in parameters
+            for action in (actions if isinstance(actions, list) else [actions])
         ]
+        self._dispatch(actions)
 
+    def _dispatch(
+        self: Store[State, Action, Event],
+        items: list[Action | Event],
+    ) -> None:
         for item in items:
             if isinstance(item, BaseAction):
                 action = cast(Action, item)

@@ -16,6 +16,7 @@ from redux.basic_types import (
     FinishEvent,
     InitAction,
     InitializationActionError,
+    ReducerResult,
 )
 from redux.main import Store
 
@@ -39,14 +40,17 @@ Action = IncrementAction | DecrementAction | InitAction | FinishAction
 def reducer(
     state: StateType | None,
     action: Action,
-) -> StateType | CompleteReducerResult[StateType, Action, SomeEvent | FinishEvent]:
+) -> StateType | ReducerResult[StateType, Action, SomeEvent | FinishEvent]:
     if state is None:
         if isinstance(action, InitAction):
             return StateType(value=0)
         raise InitializationActionError(action)
 
     if isinstance(action, IncrementAction):
-        return replace(state, value=state.value + 1)
+        return CompleteReducerResult(
+            state=replace(state, value=state.value + 1),
+            events=[SomeEvent()],
+        )
 
     if isinstance(action, DecrementAction):
         return replace(state, value=state.value - 1)
@@ -131,19 +135,15 @@ def test_identity_event_middlewares(store: StoreType) -> None:
 
     store.register_event_middleware(middleware)
 
-    events = [
-        SomeEvent(),
-        SomeEvent(),
-        SomeEvent(),
-    ]
+    actions = [IncrementAction()] * 3
 
     def check() -> None:
-        assert calls == events
+        assert calls == [SomeEvent()] * 3
 
     store.subscribe_event(FinishEvent, check)
 
-    for event in events:
-        store.dispatch(event)
+    for action in actions:
+        store.dispatch(action)
 
 
 def test_cancelling_event_middlewares(store: StoreType) -> None:
@@ -162,17 +162,14 @@ def test_cancelling_event_middlewares(store: StoreType) -> None:
 
     store.register_event_middleware(middleware)
 
-    events = [
-        SomeEvent(),
-        SomeEvent(),
-    ]
+    actions = [IncrementAction()] * 2
 
     def check() -> None:
-        assert side_effect_calls == events[1:2]
+        assert side_effect_calls == actions[1:2]
 
     store.subscribe_event(SomeEvent, some_side_effect)
     store.subscribe_event(FinishEvent, check)
 
-    for event in events:
-        store.dispatch(event)
+    for action in actions:
+        store.dispatch(action)
     store.dispatch(FinishAction())

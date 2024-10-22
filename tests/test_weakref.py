@@ -300,7 +300,7 @@ def test_event_subscription(
     del event_subscription_without_keep_ref
     assert ref2() is None
 
-    store.dispatch(DummyEvent())
+    store._dispatch([DummyEvent()])  # noqa: SLF001
 
     @wait_for
     def subscriptions_ran() -> None:
@@ -343,7 +343,7 @@ def test_event_subscription_method(
     del instance_without_keep_ref
     assert ref() is None
 
-    store.dispatch(DummyEvent())
+    store._dispatch([DummyEvent()])  # noqa: SLF001
 
     @wait_for
     def subscriptions_ran() -> None:

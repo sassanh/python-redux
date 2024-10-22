@@ -282,7 +282,7 @@ class EventSubscriber(Protocol):
     ) -> Callable[[], None]: ...
 
 
-DispatchParameters: TypeAlias = Action | Event | list[Action | Event]
+DispatchParameters: TypeAlias = Action | list[Action]
 
 
 class Dispatch(Protocol, Generic[State, Action, Event]):
