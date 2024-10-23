@@ -1,6 +1,6 @@
 # Changelog
 
-## Upcoming
+## Version 0.18.1
 
 - chore: migrate from poetry to uv for the sake of improving performance and dealing with conflicting sub-dependencies
 - refactor(core): avoid passing events to `dispatch`, to enforce using them as side-effects only

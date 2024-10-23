@@ -177,7 +177,7 @@ jobs:
             fi
           else
             VERSION_CHANGELOG=$(echo $FIRST_HEADER | sed 's/Version //')
-            if [ "${{ steps.extract-version.outputs.VERSION }}" != "$VERSION_CHANGELOG" ]; then
+            if [ "${{ steps.extract-version.outputs.VERSION }}" =~ "^$VERSION_CHANGELOG\.dev[0-9]+" ]; then
               echo "Error: Version extracted from CHANGELOG.md does not match the version in pyproject.toml"
               exit 1 
             else
@@ -207,9 +207,9 @@ jobs:
   publish:
     name: Publish
     if: >-
-      github.event_name == 'push' && github.ref == 'refs/heads/main' ||
-      github.event_name == 'pull_request' && github.event.pull_request.base.ref
-      == 'main'
+      github.event_name == 'push' && (github.ref == 'refs/heads/main' ||
+      startsWith(github.ref, 'refs/tags/v')) || github.event_name ==
+      'pull_request' && github.event.pull_request.base.ref == 'main'
     needs:
       - type-check
       - lint
