@@ -1,6 +1,6 @@
 # Changelog
 
-## Upcoming
+## Version 0.18.2
 
 - chore(pytest): add `project.entry-points.pytest11` section to `pyproject.toml` so that it can be used as a pytest plugin
 
