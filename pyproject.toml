@@ -91,3 +91,6 @@ exclude_also = ["if TYPE_CHECKING:"]
 [tool.coverage.run]
 source = ['redux', 'redux_pytest']
 omit = ['redux_pytest/plugin.py', 'redux/_version.py', "setup_scm_schemes.py"]
+
+[project.entry-points.pytest11]
+redux = "redux_pytest.plugin"

@@ -1,5 +1,9 @@
 # Changelog
 
+## Upcoming
+
+- chore(pytest): add `project.entry-points.pytest11` section to `pyproject.toml` so that it can be used as a pytest plugin
+
 ## Version 0.18.1
 
 - chore: migrate from poetry to uv for the sake of improving performance and dealing with conflicting sub-dependencies
