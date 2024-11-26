@@ -3,6 +3,8 @@ name = "python-redux"
 dynamic = ["version"]
 description = "Redux implementation for Python"
 license = { text = "Apache-2.0" }
+authors = [{ name = "Sassan Haradji", email = "me@sassanh.com" }]
+maintainers = [{ name = "Sassan Haradji", email = "me@sassanh.com" }]
 readme = "README.md"
 requires-python = ">=3.11"
 keywords = ['store', 'redux', 'reactive', 'autorun']
@@ -19,6 +21,12 @@ dev-dependencies = [
   "pytest-mock >= 3.14.0",
   "tenacity >= 8.2.3",
 ]
+
+[project.urls]
+homepage = 'https://github.com/sassanh/python-redux/'
+repository = 'https://github.com/sassanh/python-redux/'
+documentation = 'https://github.com/sassanh/python-redux/'
+changelog = 'https://github.com/sassanh/python-redux/blob/main/CHANGELOG.md'
 
 [build-system]
 requires = ["hatchling", "hatch-vcs"]
@@ -38,10 +46,6 @@ packages = ["redux", "redux_pytest"]
 
 [tool.hatch.build.targets.sdist]
 packages = ["redux", "redux_pytest"]
-
-[[project.authors]]
-name = "Sassan Haradji"
-email = "sassanh@gmail.com"
 
 [project.scripts]
 demo = "demo:main"

@@ -55,8 +55,12 @@ def combine_reducers(
         result_actions = []
         result_events = []
         nonlocal state_class
-        if state is not None and isinstance(action, CombineReducerAction):
-            if isinstance(action, CombineReducerRegisterAction) and action._id == _id:  # noqa: SLF001
+        if (
+            state is not None
+            and isinstance(action, CombineReducerAction)
+            and action._id == _id  # noqa: SLF001
+        ):
+            if isinstance(action, CombineReducerRegisterAction):
                 key = action.key
                 reducer = action.reducer
                 reducers[key] = reducer
@@ -66,7 +70,7 @@ def combine_reducers(
                 )
                 reducer_result = reducer(
                     None,
-                    CombineReducerInitAction(_id=_id, key=key),
+                    CombineReducerInitAction(_id=_id, key=key, payload=action.payload),
                 )
                 state = state_class(
                     _id=state._id,  # noqa: SLF001
@@ -93,9 +97,7 @@ def combine_reducers(
                     if is_complete_reducer_result(reducer_result)
                     else []
                 )
-            elif (
-                isinstance(action, CombineReducerUnregisterAction) and action._id == _id  # noqa: SLF001
-            ):
+            elif isinstance(action, CombineReducerUnregisterAction):
                 key = action.key
 
                 del reducers[key]

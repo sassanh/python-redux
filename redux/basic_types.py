@@ -48,6 +48,7 @@ Comparator = Callable[[State], ComparatorOutput]
 EventHandler = Callable[[Event], Any] | Callable[[], Any]
 AutorunArgs = ParamSpec('AutorunArgs')
 ViewArgs = ParamSpec('ViewArgs')
+Payload = TypeVar('Payload', bound=Any, default=None)
 
 
 class CompleteReducerResult(Immutable, Generic[State, Action, Event]):
@@ -302,13 +303,15 @@ class CombineReducerAction(BaseAction):
     _id: str
 
 
-class CombineReducerInitAction(CombineReducerAction, InitAction):
+class CombineReducerInitAction(CombineReducerAction, InitAction, Generic[Payload]):
     key: str
+    payload: Payload | None = None
 
 
-class CombineReducerRegisterAction(CombineReducerAction):
+class CombineReducerRegisterAction(CombineReducerAction, Generic[Payload]):
     key: str
     reducer: ReducerType
+    payload: Payload | None = None
 
 
 class CombineReducerUnregisterAction(CombineReducerAction):

@@ -55,11 +55,11 @@ __all__ = (
     'ReducerResult',
     'ReducerType',
     'Scheduler',
+    'Store',
     'ViewDecorator',
     'ViewOptions',
     'ViewReturnType',
+    'combine_reducers',
     'is_complete_reducer_result',
     'is_state_reducer_result',
-    'combine_reducers',
-    'Store',
 )

@@ -87,18 +87,11 @@ env/
 venv/
 ENV/
 
-# Spyder project settings
-.spyderproject
-.spyproject
-
-# Rope project settings
-.ropeproject
+# hatch
+redux/_version.py
 
 # mkdocs documentation
 /site
 
 # mypy
 .mypy_cache/
-
-# hatch
-redux/_version.py

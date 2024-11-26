@@ -1,5 +1,9 @@
 # Changelog
 
+## Version 0.18.3
+
+- refactor(combine_reducers): add custom payload to `CombineReducerInitAction` and `CombineReducerRegisterAction` to allow custom initialization of sub-reducers
+
 ## Version 0.18.2
 
 - chore(pytest): add `project.entry-points.pytest11` section to `pyproject.toml` so that it can be used as a pytest plugin
