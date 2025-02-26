@@ -79,6 +79,14 @@ class Autorun(
         self._selector = selector
         self._comparator = comparator
         self._should_be_called = False
+        signature = inspect.signature(func)
+        parameters = list(signature.parameters.values())
+        if parameters and parameters[0].kind in [
+            inspect.Parameter.POSITIONAL_ONLY,
+            inspect.Parameter.POSITIONAL_OR_KEYWORD,
+        ]:
+            parameters = parameters[1:]
+        self._signature = signature.replace(parameters=parameters)
         if options.keep_ref:
             self._func = func
         elif inspect.ismethod(func):
@@ -326,3 +334,17 @@ class Autorun(
             self._subscriptions.discard(callback_ref)
 
         return unsubscribe
+
+    @property
+    def __signature__(
+        self: Autorun[
+            State,
+            Action,
+            Event,
+            SelectorOutput,
+            ComparatorOutput,
+            AutorunOriginalReturnType,
+            AutorunArgs,
+        ],
+    ) -> inspect.Signature:
+        return self._signature

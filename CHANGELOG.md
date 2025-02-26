@@ -1,5 +1,9 @@
 # Changelog
 
+## Upcoming
+
+- refactor: provide correct signature for the autorun instance based on the function it decorates
+
 ## Version 0.18.3
 
 - refactor(combine_reducers): add custom payload to `CombineReducerInitAction` and `CombineReducerRegisterAction` to allow custom initialization of sub-reducers
