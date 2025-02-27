@@ -11,6 +11,7 @@ from immutable import Immutable
 from redux.basic_types import (
     AutorunOptions,
     BaseAction,
+    BaseEvent,
     CompleteReducerResult,
     CreateStoreOptions,
     FinishAction,
@@ -22,7 +23,7 @@ from redux.basic_types import (
 from redux.main import Store
 
 if TYPE_CHECKING:
-    from collections.abc import Callable, Coroutine
+    from collections.abc import Generator
 
     from redux_pytest.fixtures.event_loop import LoopThread
 
@@ -37,6 +38,10 @@ class StateType(Immutable):
 class IncrementAction(BaseAction): ...
 
 
+class IncrementEvent(BaseEvent):
+    post_value: int
+
+
 class SetMirroredValueAction(BaseAction):
     value: int
 
@@ -44,14 +49,17 @@ class SetMirroredValueAction(BaseAction):
 def reducer(
     state: StateType | None,
     action: Action,
-) -> StateType | CompleteReducerResult[StateType, Action, FinishEvent]:
+) -> StateType | CompleteReducerResult[StateType, Action, IncrementEvent]:
     if state is None:
         if isinstance(action, InitAction):
             return StateType(value=0, mirrored_value=0)
         raise InitializationActionError(action)
 
     if isinstance(action, IncrementAction):
-        return replace(state, value=state.value + 1)
+        return CompleteReducerResult(
+            state=replace(state, value=state.value + 1),
+            events=[IncrementEvent(post_value=state.value + 1)],
+        )
     if isinstance(action, SetMirroredValueAction):
         return replace(state, mirrored_value=action.value)
     return state
@@ -62,25 +70,16 @@ StoreType = Store[StateType, Action, FinishEvent]
 
 
 @pytest.fixture
-def store(event_loop: LoopThread) -> StoreType:
-    def _create_task_with_callback(
-        coro: Coroutine,
-        callback: Callable[[asyncio.Task], None] | None = None,
-    ) -> None:
-        def create_task_with_callback() -> None:
-            task = event_loop.loop.create_task(coro)
-            if callback:
-                callback(task)
-
-        event_loop.loop.call_soon_threadsafe(create_task_with_callback)
-
-    return Store(
+def store(event_loop: LoopThread) -> Generator[StoreType, None, None]:
+    store = Store(
         reducer,
         options=CreateStoreOptions(
             auto_init=True,
-            task_creator=_create_task_with_callback,
+            task_creator=event_loop.create_task,
         ),
     )
+    yield store
+    store.subscribe_event(FinishEvent, lambda: event_loop.stop())
 
 
 def dispatch_actions(store: StoreType) -> None:
@@ -90,7 +89,6 @@ def dispatch_actions(store: StoreType) -> None:
 
 def test_autorun(
     store: StoreType,
-    event_loop: LoopThread,
 ) -> None:
     @store.autorun(lambda state: state.value)
     async def sync_mirror(value: int) -> int:
@@ -104,19 +102,16 @@ def test_autorun(
         lambda state: state.mirrored_value,
         lambda state: state.mirrored_value >= INCREMENTS,
     )
-    def _(mirrored_value: int) -> None:
+    async def _(mirrored_value: int) -> None:
         if mirrored_value < INCREMENTS:
             return
-        event_loop.stop()
+        await asyncio.sleep(0.1)
         store.dispatch(FinishAction())
 
     dispatch_actions(store)
 
 
-def test_autorun_autoawait(
-    store: StoreType,
-    event_loop: LoopThread,
-) -> None:
+def test_autorun_autoawait(store: StoreType) -> None:
     @store.autorun(lambda state: state.value, options=AutorunOptions(auto_await=False))
     async def sync_mirror(value: int) -> int:
         store.dispatch(SetMirroredValueAction(value=value))
@@ -139,14 +134,11 @@ def test_autorun_autoawait(
         elif value < INCREMENTS:
             store.dispatch(IncrementAction())
         else:
-            event_loop.stop()
+            await asyncio.sleep(0.1)
             store.dispatch(FinishAction())
 
 
-def test_autorun_default_value(
-    store: StoreType,
-    event_loop: LoopThread,
-) -> None:
+def test_autorun_default_value(store: StoreType) -> None:
     @store.autorun(lambda state: state.value, options=AutorunOptions(default_value=5))
     async def _(value: int) -> int:
         store.dispatch(SetMirroredValueAction(value=value))
@@ -156,19 +148,16 @@ def test_autorun_default_value(
         lambda state: state.mirrored_value,
         lambda state: state.mirrored_value >= INCREMENTS,
     )
-    def _(mirrored_value: int) -> None:
+    async def _(mirrored_value: int) -> None:
         if mirrored_value < INCREMENTS:
             return
-        event_loop.stop()
+        await asyncio.sleep(0.1)
         store.dispatch(FinishAction())
 
     dispatch_actions(store)
 
 
-def test_view(
-    store: StoreType,
-    event_loop: LoopThread,
-) -> None:
+def test_view(store: StoreType) -> None:
     calls = []
 
     @store.view(lambda state: state.value)
@@ -184,12 +173,12 @@ def test_view(
         if value < INCREMENTS:
             store.dispatch(IncrementAction())
         else:
-            event_loop.stop()
-            store.dispatch(FinishAction())
             assert calls == list(range(INCREMENTS + 1))
+            await asyncio.sleep(0.1)
+            store.dispatch(FinishAction())
 
 
-def test_view_await(store: StoreType, event_loop: LoopThread) -> None:
+def test_view_await(store: StoreType) -> None:
     calls = []
 
     @store.view(lambda state: state.value)
@@ -208,15 +197,12 @@ def test_view_await(store: StoreType, event_loop: LoopThread) -> None:
         if value < INCREMENTS:
             store.dispatch(IncrementAction())
         else:
-            event_loop.stop()
-            store.dispatch(FinishAction())
             assert calls == list(range(INCREMENTS + 1))
+            await asyncio.sleep(0.1)
+            store.dispatch(FinishAction())
 
 
-def test_view_with_args(
-    store: StoreType,
-    event_loop: LoopThread,
-) -> None:
+def test_view_with_args(store: StoreType) -> None:
     calls = []
 
     @store.view(lambda state: state.value)
@@ -231,15 +217,12 @@ def test_view_with_args(
         if value < INCREMENTS:
             store.dispatch(IncrementAction())
         else:
-            event_loop.stop()
-            store.dispatch(FinishAction())
             assert calls == [j for i in list(range(INCREMENTS + 1)) for j in [i] * 2]
+            await asyncio.sleep(0.1)
+            store.dispatch(FinishAction())
 
 
-def test_view_with_default_value(
-    store: StoreType,
-    event_loop: LoopThread,
-) -> None:
+def test_view_with_default_value(store: StoreType) -> None:
     calls = []
 
     @store.view(lambda state: state.value, options=ViewOptions(default_value=5))
@@ -253,51 +236,40 @@ def test_view_with_default_value(
         if value < INCREMENTS:
             store.dispatch(IncrementAction())
         else:
-            event_loop.stop()
-            store.dispatch(FinishAction())
             assert calls == list(range(INCREMENTS + 1))
+            await asyncio.sleep(0.1)
+            store.dispatch(FinishAction())
 
     store.dispatch(InitAction())
 
 
-def test_subscription(
-    store: StoreType,
-    event_loop: LoopThread,
-) -> None:
+def test_subscription(store: StoreType) -> None:
     async def render(state: StateType) -> None:
         if state.value == INCREMENTS:
             unsubscribe()
+            await asyncio.sleep(0.1)
             store.dispatch(FinishAction())
-            event_loop.stop()
 
     unsubscribe = store.subscribe(render)
 
     dispatch_actions(store)
 
 
-def test_event_subscription(
-    store: StoreType,
-    event_loop: LoopThread,
-) -> None:
-    async def finish() -> None:
-        await asyncio.sleep(0.1)
-        event_loop.stop()
+def test_event_subscription(store: StoreType) -> None:
+    async def handler(event: IncrementEvent) -> None:
+        if event.post_value == INCREMENTS:
+            unsubscribe()
+            await asyncio.sleep(0.1)
+            store.dispatch(FinishAction())
 
-    store.subscribe_event(FinishEvent, finish)
-    store.dispatch(FinishAction())
+    unsubscribe = store.subscribe_event(IncrementEvent, handler)
 
     dispatch_actions(store)
 
 
-def test_event_subscription_with_no_task_creator(event_loop: LoopThread) -> None:
+def test_event_subscription_with_no_task_creator() -> None:
     store = Store(
         reducer,
         options=CreateStoreOptions(auto_init=True),
     )
-
-    async def finish() -> None:
-        await asyncio.sleep(0.1)
-        event_loop.stop()
-
-    store.subscribe_event(FinishEvent, finish)
     store.dispatch(FinishAction())

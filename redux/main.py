@@ -93,7 +93,10 @@ class Store(Generic[State, Action, Event], SerializationMixin):
             tuple[EventHandler[Event], Event] | None
         ]()
         self._workers = [
-            SideEffectRunnerThread(task_queue=self._event_handlers_queue)
+            SideEffectRunnerThread(
+                task_queue=self._event_handlers_queue,
+                create_task=self._create_task,
+            )
             for _ in range(self.store_options.threads)
         ]
         for worker in self._workers:

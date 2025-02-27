@@ -26,6 +26,7 @@ if TYPE_CHECKING:
     from pytest_mock import MockerFixture
 
     from redux_pytest.fixtures import StoreSnapshot, WaitFor
+    from redux_pytest.fixtures.event_loop import LoopThread
 
 
 class StateType(Immutable):
@@ -94,9 +95,16 @@ class EventSubscriptionClass:
 
 
 @pytest.fixture
-def store() -> Generator[StoreType, None, None]:
-    store = Store(reducer, options=CreateStoreOptions(auto_init=True))  # pyright: ignore [reportArgumentType]
+def store(event_loop: LoopThread) -> Generator[StoreType, None, None]:
+    store = Store(
+        reducer,
+        options=CreateStoreOptions(
+            auto_init=True,
+            task_creator=event_loop.create_task,
+        ),
+    )
     yield store
+    store.subscribe_event(FinishEvent, lambda: event_loop.stop())
     store.dispatch(FinishAction())
 
 

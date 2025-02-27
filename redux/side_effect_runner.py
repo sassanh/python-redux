@@ -4,14 +4,14 @@ from __future__ import annotations
 
 import asyncio
 import contextlib
+import inspect
 import threading
 import weakref
 from asyncio import Handle, iscoroutine
 from collections.abc import Callable
-from inspect import signature
 from typing import TYPE_CHECKING, Any, Generic, cast
 
-from redux.basic_types import Event, EventHandler
+from redux.basic_types import Event, EventHandler, TaskCreator
 
 if TYPE_CHECKING:
     import queue
@@ -24,15 +24,14 @@ class SideEffectRunnerThread(threading.Thread, Generic[Event]):
         self: SideEffectRunnerThread,
         *,
         task_queue: queue.Queue[tuple[EventHandler[Event], Event] | None],
+        create_task: TaskCreator | None,
     ) -> None:
         """Initialize the side effect runner thread."""
         super().__init__()
         self.task_queue = task_queue
         self.loop = asyncio.get_event_loop()
         self._handles: set[Handle] = set()
-        self.create_task = lambda coro: self._handles.add(
-            self.loop.call_soon_threadsafe(self.loop.create_task, coro),
-        )
+        self.create_task = create_task
 
     def run(self: SideEffectRunnerThread[Event]) -> None:
         """Run the side effect runner thread."""
@@ -51,12 +50,27 @@ class SideEffectRunnerThread(threading.Thread, Generic[Event]):
                     event_handler = event_handler_
                 parameters = 1
                 with contextlib.suppress(Exception):
-                    parameters = len(signature(event_handler).parameters)
-                if parameters == 1:
-                    result = cast(Callable[[Event], Any], event_handler)(event)
-                else:
-                    result = cast(Callable[[], Any], event_handler)()
-                if iscoroutine(result):
-                    self.create_task(result)
+                    parameters = len(inspect.signature(event_handler).parameters)
+
+                if self.create_task:
+
+                    async def _(
+                        event_handler: EventHandler[Event],
+                        event: Event,
+                        parameters: int,
+                    ) -> None:
+                        if parameters == 1:
+                            result = cast(Callable[[Event], Any], event_handler)(event)
+                        else:
+                            result = cast(Callable[[], Any], event_handler)()
+                        if iscoroutine(result):
+                            await result
+
+                    self.create_task(_(event_handler, event, parameters))
+                else:  # noqa: PLR5501
+                    if parameters == 1:
+                        cast(Callable[[Event], Any], event_handler)(event)
+                    else:
+                        cast(Callable[[], Any], event_handler)()
             finally:
                 self.task_queue.task_done()
