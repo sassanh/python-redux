@@ -1,6 +1,6 @@
 # Changelog
 
-## Upcoming
+## Version 0.19.0
 
 - refactor: provide correct signature for the autorun instance based on the function it decorates
 - refactor: side effect runners always run the side effect in the event loop provided to them regardless of the return value of the side effect being a coroutine or not, this is because even if the side effect is not a coroutine, it might still use async features internally
