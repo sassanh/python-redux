@@ -1,6 +1,6 @@
 # Changelog
 
-## Upcoming
+## Version 0.20.0
 
 - feat: add `memoization` option to `autorun`, default is `True`, compatible with old behavior, if set to `False`, calling the function explicitly will always run it regardless of the selector's value
 - feat: add `with_selector`, as a decorator to run functions with the result of a selector.
