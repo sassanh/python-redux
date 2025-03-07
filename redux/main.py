@@ -408,6 +408,7 @@ class Store(Generic[State, Action, Event], SerializationMixin):
                     auto_await=True,
                     initial_call=False,
                     reactive=False,
+                    memoization=_options.memoization,
                     keep_ref=_options.keep_ref,
                     subscribers_initial_run=_options.subscribers_initial_run,
                     subscribers_keep_ref=_options.subscribers_keep_ref,

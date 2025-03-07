@@ -282,6 +282,29 @@ def test_with_auto_call_and_initial_call_and_reactive_set(
     ]
 
 
+def test_task_mode_without_arguments(
+    store: StoreType,
+) -> None:
+    @store.autorun(
+        lambda state: state.value,
+        options=AutorunOptions(
+            reactive=False,
+            initial_call=False,
+            memoization=False,
+        ),
+    )
+    def act(value: int) -> int:
+        assert value == 4, (
+            'This is expected to be called only after the last action is dispatched'
+        )
+        return value
+
+    def check() -> None:
+        assert act() == 4
+
+    store.subscribe_event(FinishEvent, check)
+
+
 def test_view_mode_with_arguments_autorun(
     store: StoreType,
 ) -> None:
@@ -290,6 +313,7 @@ def test_view_mode_with_arguments_autorun(
         options=AutorunOptions(
             reactive=False,
             initial_call=False,
+            memoization=True,
             default_value=0,
         ),
     )

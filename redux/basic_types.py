@@ -134,6 +134,7 @@ class AutorunOptions(Immutable, Generic[AutorunOriginalReturnType]):
     auto_await: bool = True
     initial_call: bool = True
     reactive: bool = True
+    memoization: bool = True
     keep_ref: bool = True
     subscribers_initial_run: bool = True
     subscribers_keep_ref: bool = True
@@ -207,6 +208,7 @@ class UnknownAutorunDecorator(Protocol, Generic[SelectorOutput]):
 
 class ViewOptions(Immutable, Generic[ViewOriginalReturnType]):
     default_value: ViewOriginalReturnType | None = None
+    memoization: bool = True
     keep_ref: bool = True
     subscribers_initial_run: bool = True
     subscribers_keep_ref: bool = True

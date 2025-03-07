@@ -1,5 +1,9 @@
 # Changelog
 
+## Upcoming
+
+- feat: add `memoization` option to `autorun`, default is `True`, compatible with old behavior, if set to `False`, calling the function explicitly will always run it regardless of the selector's value
+
 ## Version 0.19.1
 
 - refactor: provide correct signature for the autorun instance based on the function it decorates

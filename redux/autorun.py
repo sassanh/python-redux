@@ -266,7 +266,8 @@ class Autorun(
         **kwargs: AutorunArgs.kwargs,
     ) -> AutorunOriginalReturnType:
         state = self._store._state  # noqa: SLF001
-        if self._check(state) or self._should_be_called or args or kwargs:
+        self._check(state)
+        if self._should_be_called or args or kwargs or not self._options.memoization:
             self._call(*args, **kwargs)
         return cast(AutorunOriginalReturnType, self._latest_value)
 
