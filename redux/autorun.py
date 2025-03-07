@@ -17,11 +17,11 @@ from typing import (
 
 from redux.basic_types import (
     Action,
-    AutorunArgs,
+    Args,
     AutorunOptions,
-    AutorunOriginalReturnType,
     ComparatorOutput,
     Event,
+    ReturnType,
     SelectorOutput,
     State,
 )
@@ -58,8 +58,8 @@ class Autorun(
         Event,
         SelectorOutput,
         ComparatorOutput,
-        AutorunOriginalReturnType,
-        AutorunArgs,
+        ReturnType,
+        Args,
     ],
 ):
     def __init__(
@@ -69,10 +69,10 @@ class Autorun(
         selector: Callable[[State], SelectorOutput],
         comparator: Callable[[State], Any] | None,
         func: Callable[
-            Concatenate[SelectorOutput, AutorunArgs],
-            AutorunOriginalReturnType,
+            Concatenate[SelectorOutput, Args],
+            ReturnType,
         ],
-        options: AutorunOptions[AutorunOriginalReturnType],
+        options: AutorunOptions[ReturnType],
     ) -> None:
         self.__name__ = func.__name__
         self._store = store
@@ -109,10 +109,9 @@ class Autorun(
             self._latest_value = Future()
             self._latest_value.set_result(options.default_value)
         else:
-            self._latest_value: AutorunOriginalReturnType = options.default_value
+            self._latest_value: ReturnType = options.default_value
         self._subscriptions: set[
-            Callable[[AutorunOriginalReturnType], Any]
-            | weakref.ref[Callable[[AutorunOriginalReturnType], Any]]
+            Callable[[ReturnType], Any] | weakref.ref[Callable[[ReturnType], Any]]
         ] = set()
 
         if self._check(store._state) and self._options.initial_call:  # noqa: SLF001
@@ -137,8 +136,8 @@ class Autorun(
             Event,
             SelectorOutput,
             ComparatorOutput,
-            AutorunOriginalReturnType,
-            AutorunArgs,
+            ReturnType,
+            Args,
         ],
     ) -> None:
         for subscriber_ in self._subscriptions.copy():
@@ -158,8 +157,8 @@ class Autorun(
             Event,
             SelectorOutput,
             ComparatorOutput,
-            AutorunOriginalReturnType,
-            AutorunArgs,
+            ReturnType,
+            Args,
         ],
         task: Task,
         *,
@@ -179,8 +178,8 @@ class Autorun(
             Event,
             SelectorOutput,
             ComparatorOutput,
-            AutorunOriginalReturnType,
-            AutorunArgs,
+            ReturnType,
+            Args,
         ],
         state: State | None,
     ) -> bool:
@@ -211,16 +210,16 @@ class Autorun(
             Event,
             SelectorOutput,
             ComparatorOutput,
-            AutorunOriginalReturnType,
-            AutorunArgs,
+            ReturnType,
+            Args,
         ],
-        *args: AutorunArgs.args,
-        **kwargs: AutorunArgs.kwargs,
+        *args: Args.args,
+        **kwargs: Args.kwargs,
     ) -> None:
         self._should_be_called = False
         func = self._func() if isinstance(self._func, weakref.ref) else self._func
         if func and self._last_selector_result is not None:
-            value: AutorunOriginalReturnType = func(
+            value: ReturnType = func(
                 self._last_selector_result,
                 *args,
                 **kwargs,
@@ -229,7 +228,7 @@ class Autorun(
             if iscoroutine(value) and create_task:
                 if self._options.auto_await:
                     future = Future()
-                    self._latest_value = cast(AutorunOriginalReturnType, future)
+                    self._latest_value = cast(ReturnType, future)
                     create_task(
                         value,
                         callback=functools.partial(
@@ -245,7 +244,7 @@ class Autorun(
                     ):
                         self._latest_value.close()
                     self._latest_value = cast(
-                        AutorunOriginalReturnType,
+                        ReturnType,
                         AwaitableWrapper(value),
                     )
             else:
@@ -259,17 +258,17 @@ class Autorun(
             Event,
             SelectorOutput,
             ComparatorOutput,
-            AutorunOriginalReturnType,
-            AutorunArgs,
+            ReturnType,
+            Args,
         ],
-        *args: AutorunArgs.args,
-        **kwargs: AutorunArgs.kwargs,
-    ) -> AutorunOriginalReturnType:
+        *args: Args.args,
+        **kwargs: Args.kwargs,
+    ) -> ReturnType:
         state = self._store._state  # noqa: SLF001
         self._check(state)
         if self._should_be_called or args or kwargs or not self._options.memoization:
             self._call(*args, **kwargs)
-        return cast(AutorunOriginalReturnType, self._latest_value)
+        return cast(ReturnType, self._latest_value)
 
     def __repr__(
         self: Autorun[
@@ -278,8 +277,8 @@ class Autorun(
             Event,
             SelectorOutput,
             ComparatorOutput,
-            AutorunOriginalReturnType,
-            AutorunArgs,
+            ReturnType,
+            Args,
         ],
     ) -> str:
         return (
@@ -295,11 +294,11 @@ class Autorun(
             Event,
             SelectorOutput,
             ComparatorOutput,
-            AutorunOriginalReturnType,
-            AutorunArgs,
+            ReturnType,
+            Args,
         ],
-    ) -> AutorunOriginalReturnType:
-        return cast(AutorunOriginalReturnType, self._latest_value)
+    ) -> ReturnType:
+        return cast(ReturnType, self._latest_value)
 
     def subscribe(
         self: Autorun[
@@ -308,10 +307,10 @@ class Autorun(
             Event,
             SelectorOutput,
             ComparatorOutput,
-            AutorunOriginalReturnType,
-            AutorunArgs,
+            ReturnType,
+            Args,
         ],
-        callback: Callable[[AutorunOriginalReturnType], Any],
+        callback: Callable[[ReturnType], Any],
         *,
         initial_run: bool | None = None,
         keep_ref: bool | None = None,
@@ -344,8 +343,8 @@ class Autorun(
             Event,
             SelectorOutput,
             ComparatorOutput,
-            AutorunOriginalReturnType,
-            AutorunArgs,
+            ReturnType,
+            Args,
         ],
     ) -> inspect.Signature:
         return self._signature

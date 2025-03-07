@@ -42,12 +42,10 @@ Event = TypeVar('Event', bound=BaseEvent | None, infer_variance=True)
 Event2 = TypeVar('Event2', bound=BaseEvent, infer_variance=True)
 SelectorOutput = TypeVar('SelectorOutput', infer_variance=True)
 ComparatorOutput = TypeVar('ComparatorOutput', infer_variance=True)
-AutorunOriginalReturnType = TypeVar('AutorunOriginalReturnType', infer_variance=True)
-ViewOriginalReturnType = TypeVar('ViewOriginalReturnType', infer_variance=True)
+ReturnType = TypeVar('ReturnType', infer_variance=True)
 Comparator = Callable[[State], ComparatorOutput]
 EventHandler = Callable[[Event], Any] | Callable[[], Any]
-AutorunArgs = ParamSpec('AutorunArgs')
-ViewArgs = ParamSpec('ViewArgs')
+Args = ParamSpec('Args')
 Payload = TypeVar('Payload', bound=Any, default=None)
 
 
@@ -129,8 +127,8 @@ class CreateStoreOptions(Immutable, Generic[Action, Event]):
 # Autorun
 
 
-class AutorunOptions(Immutable, Generic[AutorunOriginalReturnType]):
-    default_value: AutorunOriginalReturnType | None = None
+class AutorunOptions(Immutable, Generic[ReturnType]):
+    default_value: ReturnType | None = None
     auto_await: bool = True
     initial_call: bool = True
     reactive: bool = True
@@ -140,26 +138,26 @@ class AutorunOptions(Immutable, Generic[AutorunOriginalReturnType]):
     subscribers_keep_ref: bool = True
 
 
-AutorunOptionsWithDefault = AutorunOptions[AutorunOriginalReturnType]
+AutorunOptionsWithDefault = AutorunOptions[ReturnType]
 AutorunOptionsWithoutDefault = AutorunOptions[Never]
 
 
 class AutorunReturnType(
     Protocol,
-    Generic[AutorunOriginalReturnType, AutorunArgs],
+    Generic[ReturnType, Args],
 ):
     def __call__(
         self: AutorunReturnType,
-        *args: AutorunArgs.args,
-        **kwargs: AutorunArgs.kwargs,
-    ) -> AutorunOriginalReturnType: ...
+        *args: Args.args,
+        **kwargs: Args.kwargs,
+    ) -> ReturnType: ...
 
     @property
-    def value(self: AutorunReturnType) -> AutorunOriginalReturnType: ...
+    def value(self: AutorunReturnType) -> ReturnType: ...
 
     def subscribe(
         self: AutorunReturnType,
-        callback: Callable[[AutorunOriginalReturnType], Any],
+        callback: Callable[[ReturnType], Any],
         *,
         initial_run: bool | None = None,
         keep_ref: bool | None = None,
@@ -172,68 +170,68 @@ class AutorunReturnType(
 
 class AutorunDecorator(
     Protocol,
-    Generic[SelectorOutput, AutorunOriginalReturnType],
+    Generic[SelectorOutput, ReturnType],
 ):
     @overload
     def __call__(
         self: AutorunDecorator,
         func: Callable[
-            Concatenate[SelectorOutput, AutorunArgs],
-            AutorunOriginalReturnType,
+            Concatenate[SelectorOutput, Args],
+            ReturnType,
         ],
-    ) -> AutorunReturnType[AutorunOriginalReturnType, AutorunArgs]: ...
+    ) -> AutorunReturnType[ReturnType, Args]: ...
 
     @overload
     def __call__(
         self: AutorunDecorator,
         func: Callable[
-            Concatenate[SelectorOutput, AutorunArgs],
-            Awaitable[AutorunOriginalReturnType],
+            Concatenate[SelectorOutput, Args],
+            Awaitable[ReturnType],
         ],
-    ) -> AutorunReturnType[Awaitable[AutorunOriginalReturnType], AutorunArgs]: ...
+    ) -> AutorunReturnType[Awaitable[ReturnType], Args]: ...
 
 
 class UnknownAutorunDecorator(Protocol, Generic[SelectorOutput]):
     def __call__(
         self: UnknownAutorunDecorator,
         func: Callable[
-            Concatenate[SelectorOutput, AutorunArgs],
-            AutorunOriginalReturnType,
+            Concatenate[SelectorOutput, Args],
+            ReturnType,
         ],
-    ) -> AutorunReturnType[AutorunOriginalReturnType, AutorunArgs]: ...
+    ) -> AutorunReturnType[ReturnType, Args]: ...
 
 
 # View
 
 
-class ViewOptions(Immutable, Generic[ViewOriginalReturnType]):
-    default_value: ViewOriginalReturnType | None = None
+class ViewOptions(Immutable, Generic[ReturnType]):
+    default_value: ReturnType | None = None
     memoization: bool = True
     keep_ref: bool = True
     subscribers_initial_run: bool = True
     subscribers_keep_ref: bool = True
 
 
-ViewOptionsWithDefault = ViewOptions[ViewOriginalReturnType]
+ViewOptionsWithDefault = ViewOptions[ReturnType]
 ViewOptionsWithoutDefault = ViewOptions[Never]
 
 
 class ViewReturnType(
     Protocol,
-    Generic[ViewOriginalReturnType, ViewArgs],
+    Generic[ReturnType, Args],
 ):
     def __call__(
         self: ViewReturnType,
-        *args: ViewArgs.args,
-        **kwargs: ViewArgs.kwargs,
-    ) -> ViewOriginalReturnType: ...
+        *args: Args.args,
+        **kwargs: Args.kwargs,
+    ) -> ReturnType: ...
 
     @property
-    def value(self: ViewReturnType) -> ViewOriginalReturnType: ...
+    def value(self: ViewReturnType) -> ReturnType: ...
 
     def subscribe(
         self: ViewReturnType,
-        callback: Callable[[ViewOriginalReturnType], Any],
+        callback: Callable[[ReturnType], Any],
         *,
         initial_run: bool | None = None,
         keep_ref: bool | None = None,
@@ -244,35 +242,48 @@ class ViewReturnType(
 
 class ViewDecorator(
     Protocol,
-    Generic[SelectorOutput, ViewOriginalReturnType],
+    Generic[SelectorOutput, ReturnType],
 ):
     @overload
     def __call__(
         self: ViewDecorator,
         func: Callable[
-            Concatenate[SelectorOutput, ViewArgs],
-            ViewOriginalReturnType,
+            Concatenate[SelectorOutput, Args],
+            ReturnType,
         ],
-    ) -> ViewReturnType[ViewOriginalReturnType, ViewArgs]: ...
+    ) -> ViewReturnType[ReturnType, Args]: ...
 
     @overload
     def __call__(
         self: ViewDecorator,
         func: Callable[
-            Concatenate[SelectorOutput, ViewArgs],
-            Awaitable[ViewOriginalReturnType],
+            Concatenate[SelectorOutput, Args],
+            Awaitable[ReturnType],
         ],
-    ) -> ViewReturnType[Awaitable[ViewOriginalReturnType], ViewArgs]: ...
+    ) -> ViewReturnType[Awaitable[ReturnType], Args]: ...
 
 
 class UnknownViewDecorator(Protocol, Generic[SelectorOutput]):
     def __call__(
         self: UnknownViewDecorator,
         func: Callable[
-            Concatenate[SelectorOutput, ViewArgs],
-            ViewOriginalReturnType,
+            Concatenate[SelectorOutput, Args],
+            ReturnType,
         ],
-    ) -> ViewReturnType[ViewOriginalReturnType, ViewArgs]: ...
+    ) -> ViewReturnType[ReturnType, Args]: ...
+
+
+# With Store
+
+
+class WithStateDecorator(
+    Protocol,
+    Generic[SelectorOutput],
+):
+    def __call__(
+        self: WithStateDecorator,
+        func: Callable[Concatenate[SelectorOutput, Args], ReturnType],
+    ) -> Callable[Args, ReturnType]: ...
 
 
 class EventSubscriber(Protocol):
