@@ -1,5 +1,9 @@
 # Changelog
 
+## Upcoming
+
+- fix: avoid using `asdict` in combine-reducers's reducer as it can get too costly for large dataclasses and may even run into errors
+
 ## Version 0.20.0
 
 - feat: add `memoization` option to `autorun`, default is `True`, compatible with old behavior, if set to `False`, calling the function explicitly will always run it regardless of the selector's value

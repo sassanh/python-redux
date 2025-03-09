@@ -5,7 +5,7 @@ import copy
 import functools
 import operator
 import uuid
-from dataclasses import asdict, fields
+from dataclasses import fields
 from typing import TYPE_CHECKING, Any, TypeVar, cast
 
 from immutable import make_immutable
@@ -74,18 +74,16 @@ def combine_reducers(
                 )
                 state = state_class(
                     _id=state._id,  # noqa: SLF001
-                    **(
-                        {
-                            key_: (
-                                reducer_result.state
-                                if is_complete_reducer_result(reducer_result)
-                                else reducer_result
-                            )
-                            if key == key_
-                            else getattr(state, key_)
-                            for key_ in reducers
-                        }
-                    ),
+                    **{
+                        key_: (
+                            reducer_result.state
+                            if is_complete_reducer_result(reducer_result)
+                            else reducer_result
+                        )
+                        if key == key_
+                        else getattr(state, key_)
+                        for key_ in reducers
+                    },
                 )
                 result_actions += (
                     reducer_result.actions or []
@@ -109,11 +107,8 @@ def combine_reducers(
                 cast(Any, state_class).__dataclass_fields__ = fields_copy
 
                 state = state_class(
-                    **{
-                        key_: getattr(state, key_)
-                        for key_ in asdict(state)
-                        if key_ != key
-                    },
+                    _id=state._id,  # noqa: SLF001
+                    **{key_: getattr(state, key_) for key_ in reducers if key_ != key},
                 )
 
         reducers_results = {
