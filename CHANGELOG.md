@@ -1,6 +1,6 @@
 # Changelog
 
-## Upcoming
+## Version 0.20.1
 
 - fix: avoid using `asdict` in combine-reducers's reducer as it can get too costly for large dataclasses and may even run into errors
 
