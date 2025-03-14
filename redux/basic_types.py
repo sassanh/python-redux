@@ -39,7 +39,7 @@ class BaseEvent(Immutable): ...
 State = TypeVar('State', bound=Immutable | None, infer_variance=True)
 Action = TypeVar('Action', bound=BaseAction | None, infer_variance=True)
 Event = TypeVar('Event', bound=BaseEvent | None, infer_variance=True)
-Event2 = TypeVar('Event2', bound=BaseEvent, infer_variance=True)
+StrictEvent = TypeVar('StrictEvent', bound=BaseEvent, infer_variance=True)
 SelectorOutput = TypeVar('SelectorOutput', infer_variance=True)
 ComparatorOutput = TypeVar('ComparatorOutput', infer_variance=True)
 ReturnType = TypeVar('ReturnType', infer_variance=True)
@@ -168,10 +168,7 @@ class AutorunReturnType(
     __name__: str
 
 
-class AutorunDecorator(
-    Protocol,
-    Generic[SelectorOutput, ReturnType],
-):
+class AutorunDecorator(Protocol, Generic[SelectorOutput, ReturnType]):
     @overload
     def __call__(
         self: AutorunDecorator,
@@ -340,3 +337,11 @@ SnapshotAtom = (
     | dict[str, 'SnapshotAtom']
     | list['SnapshotAtom']
 )
+
+
+class SubscribeEventCleanup(Immutable, Generic[StrictEvent]):
+    unsubscribe: Callable[[], None]
+    handler: EventHandler[StrictEvent]
+
+    def __call__(self: SubscribeEventCleanup) -> None:
+        self.unsubscribe()

@@ -161,7 +161,7 @@ def test_general(
 
     # Event Subscription
     # ------------------
-    store.subscribe(lambda _: store_snapshot.take(title='subscription'))
+    store._subscribe(lambda _: store_snapshot.take(title='subscription'))  # noqa: SLF001
 
     def event_handler(event: SleepEvent) -> None:
         time.sleep(event.duration)

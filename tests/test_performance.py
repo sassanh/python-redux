@@ -81,7 +81,7 @@ def test_dispatch_with_subscriptions(store: StoreType) -> None:
         def callback(_: StateType | None) -> None:
             pass
 
-        store.subscribe(callback)
+        store._subscribe(callback)  # noqa: SLF001
 
     count = 400
     for _ in range(count):

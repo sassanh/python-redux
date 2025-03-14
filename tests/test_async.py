@@ -250,7 +250,7 @@ def test_subscription(store: StoreType) -> None:
             await asyncio.sleep(0.1)
             store.dispatch(FinishAction())
 
-    unsubscribe = store.subscribe(render)
+    unsubscribe = store._subscribe(render)  # noqa: SLF001
 
     dispatch_actions(store)
 

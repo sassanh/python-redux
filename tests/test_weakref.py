@@ -244,7 +244,7 @@ def test_subscription(
     def subscription_with_keep_ref(_: StateType) -> None:
         store_snapshot.take()
 
-    store.subscribe(subscription_with_keep_ref)
+    store._subscribe(subscription_with_keep_ref)  # noqa: SLF001
     ref = weakref.ref(subscription_with_keep_ref)
     del subscription_with_keep_ref
     assert ref() is not None
@@ -252,7 +252,7 @@ def test_subscription(
     def subscription_without_keep_ref(_: StateType) -> None:
         pytest.fail('This should never be called')
 
-    store.subscribe(subscription_without_keep_ref, keep_ref=False)
+    store._subscribe(subscription_without_keep_ref, keep_ref=False)  # noqa: SLF001
     ref = weakref.ref(subscription_without_keep_ref)
     del subscription_without_keep_ref
     assert ref() is None
@@ -265,14 +265,14 @@ def test_subscription_method(
     store: StoreType,
 ) -> None:
     instance_with_keep_ref = SubscriptionClass(store_snapshot)
-    store.subscribe(instance_with_keep_ref.method_with_keep_ref)
+    store._subscribe(instance_with_keep_ref.method_with_keep_ref)  # noqa: SLF001
 
     ref = weakref.ref(instance_with_keep_ref)
     del instance_with_keep_ref
     assert ref() is not None
 
     instance_without_keep_ref = SubscriptionClass(store_snapshot)
-    store.subscribe(instance_without_keep_ref.method_without_keep_ref, keep_ref=False)
+    store._subscribe(instance_without_keep_ref.method_without_keep_ref, keep_ref=False)  # noqa: SLF001
 
     ref = weakref.ref(instance_without_keep_ref)
     del instance_without_keep_ref

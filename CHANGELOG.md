@@ -1,5 +1,9 @@
 # Changelog
 
+## Upcoming
+
+- chore(lint): update `ruff` to `0.10.0` and fix linting issues, make `store.subscribe` private
+
 ## Version 0.20.1
 
 - fix: avoid using `asdict` in combine-reducers's reducer as it can get too costly for large dataclasses and may even run into errors

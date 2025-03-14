@@ -137,7 +137,7 @@ def test_scheduler(mocker: MockerFixture) -> None:
         lambda _: time.sleep(0.1) or store.dispatch(IncrementAction()),
     )
 
-    store.subscribe(render)
+    store._subscribe(render)  # noqa: SLF001
     import time
 
     time.sleep(0.1)

@@ -14,7 +14,7 @@ dependencies = ["python-immutable >= 1.1.1", "python-strtobool >= 1.0.0"]
 dev-dependencies = [
   "poethepoet >= 0.24.4",
   "pyright >= 1.1.396",
-  "ruff >= 0.9.10",
+  "ruff >= 0.10.0",
   "pytest >= 8.1.1",
   "pytest-cov >= 4.1.0",
   "pytest-timeout >= 2.3.1",

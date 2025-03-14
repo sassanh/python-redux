@@ -162,7 +162,7 @@ def store_snapshot(
         request.config.getoption(
             '--override-store-snapshots',
             default=cast(
-                Any,
+                'Any',
                 str_to_bool(os.environ.get('REDUX_TEST_OVERRIDE_SNAPSHOTS', 'false'))
                 == 1,
             ),

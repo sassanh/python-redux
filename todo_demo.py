@@ -89,7 +89,7 @@ def main() -> None:
 
     # subscription:
     dummy_render = print
-    store.subscribe(dummy_render)
+    store._subscribe(dummy_render)  # noqa: SLF001
 
     # autorun:
     @store.autorun(

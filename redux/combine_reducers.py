@@ -104,7 +104,7 @@ def combine_reducers(
                 del fields_copy[key]
                 del annotations_copy[key]
                 state_class = make_immutable(state_type.__name__, annotations_copy)
-                cast(Any, state_class).__dataclass_fields__ = fields_copy
+                cast('Any', state_class).__dataclass_fields__ = fields_copy
 
                 state = state_class(
                     _id=state._id,  # noqa: SLF001

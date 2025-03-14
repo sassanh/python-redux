@@ -101,7 +101,7 @@ def store() -> Store:
 def test_todo(store_snapshot: StoreSnapshot, store: Store) -> None:
     # subscription:
     dummy_render = logging.getLogger().info
-    store.subscribe(dummy_render)
+    store._subscribe(dummy_render)  # noqa: SLF001
 
     # autorun:
     @store.autorun(

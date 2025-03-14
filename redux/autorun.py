@@ -102,7 +102,7 @@ class Autorun(
 
         self._last_selector_result: SelectorOutput | None = None
         self._last_comparator_result: ComparatorOutput = cast(
-            ComparatorOutput,
+            'ComparatorOutput',
             object(),
         )
         if iscoroutinefunction(func):
@@ -118,7 +118,7 @@ class Autorun(
             self._call()
 
         if self._options.reactive:
-            self._unsubscribe = store.subscribe(
+            self._unsubscribe = store._subscribe(  # noqa: SLF001
                 lambda state: self._call() if self._check(state) else None,
             )
         else:
@@ -190,7 +190,7 @@ class Autorun(
         except AttributeError:
             return False
         if self._comparator is None:
-            comparator_result = cast(ComparatorOutput, selector_result)
+            comparator_result = cast('ComparatorOutput', selector_result)
         else:
             try:
                 comparator_result = self._comparator(state)
@@ -228,7 +228,7 @@ class Autorun(
             if iscoroutine(value) and create_task:
                 if self._options.auto_await:
                     future = Future()
-                    self._latest_value = cast(ReturnType, future)
+                    self._latest_value = cast('ReturnType', future)
                     create_task(
                         value,
                         callback=functools.partial(
@@ -244,7 +244,7 @@ class Autorun(
                     ):
                         self._latest_value.close()
                     self._latest_value = cast(
-                        ReturnType,
+                        'ReturnType',
                         AwaitableWrapper(value),
                     )
             else:
@@ -268,7 +268,7 @@ class Autorun(
         self._check(state)
         if self._should_be_called or args or kwargs or not self._options.memoization:
             self._call(*args, **kwargs)
-        return cast(ReturnType, self._latest_value)
+        return cast('ReturnType', self._latest_value)
 
     def __repr__(
         self: Autorun[
@@ -298,7 +298,7 @@ class Autorun(
             Args,
         ],
     ) -> ReturnType:
-        return cast(ReturnType, self._latest_value)
+        return cast('ReturnType', self._latest_value)
 
     def subscribe(
         self: Autorun[

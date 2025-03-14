@@ -136,7 +136,7 @@ def main() -> None:
     # -----
 
     # Subscription <
-    store.subscribe(lambda state: print('Subscription state:', state))
+    store._subscribe(lambda state: print('Subscription state:', state))  # noqa: SLF001
     # >
 
     # -----
