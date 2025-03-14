@@ -1,6 +1,6 @@
 # Changelog
 
-## Upcoming
+## Version 0.20.2
 
 - chore(lint): update `ruff` to `0.10.0` and fix linting issues, make `store.subscribe` private
 
