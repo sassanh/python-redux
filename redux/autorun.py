@@ -1,4 +1,5 @@
-# ruff: noqa: D100, D101, D102, D103, D104, D105, D107
+"""Redux autorun module."""
+
 from __future__ import annotations
 
 import asyncio
@@ -36,18 +37,24 @@ T = TypeVar('T')
 
 
 class AwaitableWrapper(Generic[T]):
+    """A wrapper for a coroutine to track if it has been awaited."""
+
     def __init__(self, coro: Coroutine[None, None, T]) -> None:
+        """Initialize the AwaitableWrapper with a coroutine."""
         self.coro = coro
         self.awaited = False
 
     def __await__(self) -> Generator[None, None, T]:
+        """Await the coroutine and set the awaited flag to True."""
         self.awaited = True
         return self.coro.__await__()
 
     def close(self) -> None:
+        """Close the coroutine if it has not been awaited."""
         self.coro.close()
 
     def __repr__(self) -> str:
+        """Return a string representation of the AwaitableWrapper."""
         return f'AwaitableWrapper({self.coro}, awaited={self.awaited})'
 
 
@@ -62,6 +69,8 @@ class Autorun(
         Args,
     ],
 ):
+    """Run a wrapped function in response to specific state changes in the store."""
+
     def __init__(
         self: Autorun,
         *,
@@ -74,6 +83,7 @@ class Autorun(
         ],
         options: AutorunOptions[ReturnType],
     ) -> None:
+        """Initialize the Autorun instance."""
         self.__name__ = func.__name__
         self._store = store
         self._selector = selector
@@ -124,7 +134,19 @@ class Autorun(
         else:
             self._unsubscribe = None
 
-    def unsubscribe(self: Autorun, _: weakref.ref | None = None) -> None:
+    def unsubscribe(
+        self: Autorun[
+            State,
+            Action,
+            Event,
+            SelectorOutput,
+            ComparatorOutput,
+            ReturnType,
+            Args,
+        ],
+        _: weakref.ref | None = None,
+    ) -> None:
+        """Unsubscribe the autorun from the store and clean up resources."""
         if self._unsubscribe:
             self._unsubscribe()
             self._unsubscribe = None
@@ -140,6 +162,7 @@ class Autorun(
             Args,
         ],
     ) -> None:
+        """Inform all subscribers about the latest value."""
         for subscriber_ in self._subscriptions.copy():
             if isinstance(subscriber_, weakref.ref):
                 subscriber = subscriber_()
@@ -264,6 +287,7 @@ class Autorun(
         *args: Args.args,
         **kwargs: Args.kwargs,
     ) -> ReturnType:
+        """Call the wrapped function with the current state of the store."""
         state = self._store._state  # noqa: SLF001
         self._check(state)
         if self._should_be_called or args or kwargs or not self._options.memoization:
@@ -281,6 +305,7 @@ class Autorun(
             Args,
         ],
     ) -> str:
+        """Return a string representation of the Autorun instance."""
         return (
             super().__repr__()
             + f'(func: {self._func}, last_value: {self._latest_value})'
@@ -298,6 +323,7 @@ class Autorun(
             Args,
         ],
     ) -> ReturnType:
+        """Get the latest value of the autorun function."""
         return cast('ReturnType', self._latest_value)
 
     def subscribe(
@@ -315,6 +341,7 @@ class Autorun(
         initial_run: bool | None = None,
         keep_ref: bool | None = None,
     ) -> Callable[[], None]:
+        """Subscribe to the autorun to be notified of changes in the state."""
         if initial_run is None:
             initial_run = self._options.subscribers_initial_run
         if keep_ref is None:
@@ -347,4 +374,5 @@ class Autorun(
             Args,
         ],
     ) -> inspect.Signature:
+        """Get the signature of the wrapped function."""
         return self._signature
