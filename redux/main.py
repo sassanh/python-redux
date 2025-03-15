@@ -59,6 +59,7 @@ from redux.basic_types import (
 )
 from redux.serialization_mixin import SerializationMixin
 from redux.side_effect_runner import SideEffectRunnerThread
+from redux.with_state import WithState
 
 if TYPE_CHECKING:
     from collections.abc import Awaitable, Callable
@@ -439,15 +440,7 @@ class Store(Generic[State, Action, Event], SerializationMixin):
                 ReturnType,
             ],
         ) -> Callable[Args, ReturnType]:
-            def wrapper(*args: Args.args, **kwargs: Args.kwargs) -> ReturnType:
-                if self._state is None:
-                    msg = 'Store has not been initialized yet.'
-                    raise RuntimeError(msg)
-                return func(selector(self._state), *args, **kwargs)
-
-            wrapper.__name__ = f'with_state:{func.__name__}'
-
-            return wrapper
+            return WithState(store=self, selector=selector, func=cast('Callable', func))
 
         return with_state_decorator
 

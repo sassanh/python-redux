@@ -82,8 +82,15 @@ def test_with_state_for_uninitialized_store(
     mocker: MockerFixture,
 ) -> None:
     """Test `with_state` decorator for uninitialized store."""
-    _check = mocker.stub()
-    check = store.with_state(lambda state: state.value)(_check)
+
+    class X:
+        def check(self: X, value: int) -> None:
+            assert value == 0
+
+    instance = X()
+
+    check_spy = mocker.spy(instance, 'check')
+    check = store.with_state(lambda state: state.value)(instance.check)
 
     with pytest.raises(RuntimeError, match=r'^Store has not been initialized yet.$'):
         check()
@@ -94,4 +101,4 @@ def test_with_state_for_uninitialized_store(
 
     store.dispatch(FinishAction())
 
-    _check.assert_called_once_with(0)
+    check_spy.assert_called_once_with(0)

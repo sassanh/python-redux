@@ -1,5 +1,9 @@
 # Changelog
 
+## Upcoming
+
+- refactor: add `WithState` class to be the return value of the `store.with_state` so that it can report correct signature of its `__call__` method
+
 ## Version 0.20.2
 
 - chore(lint): update `ruff` to `0.10.0` and fix linting issues, make `store.subscribe` private
