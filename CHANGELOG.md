@@ -1,6 +1,6 @@
 # Changelog
 
-## Version 0.21.0
+## Version 0.21.1
 
 - refactor: add `WithState` class to be the return value of the `store.with_state` so that it can report correct signature of its `__call__` method
 - chore(docs): add documentation strings for elements defined in `autorun.py`
