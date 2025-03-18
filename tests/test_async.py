@@ -23,8 +23,6 @@ from redux.basic_types import (
 from redux.main import Store
 
 if TYPE_CHECKING:
-    from collections.abc import Generator
-
     from redux_pytest.fixtures.event_loop import LoopThread
 
 INCREMENTS = 20
@@ -70,16 +68,15 @@ StoreType = Store[StateType, Action, FinishEvent]
 
 
 @pytest.fixture
-def store(event_loop: LoopThread) -> Generator[StoreType, None, None]:
-    store = Store(
+def store(event_loop: LoopThread) -> StoreType:
+    return Store(
         reducer,
         options=CreateStoreOptions(
             auto_init=True,
             task_creator=event_loop.create_task,
+            on_finish=event_loop.stop,
         ),
     )
-    yield store
-    store.subscribe_event(FinishEvent, lambda: event_loop.stop())
 
 
 def dispatch_actions(store: StoreType) -> None:

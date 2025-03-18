@@ -1,5 +1,9 @@
 # Changelog
 
+## Upcoming
+
+- test: make sure pytest exits completely after running async tests
+
 ## Version 0.21.1
 
 - refactor: add `WithState` class to be the return value of the `store.with_state` so that it can report correct signature of its `__call__` method
