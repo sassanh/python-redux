@@ -1,4 +1,4 @@
-"""Redux store for managing state and side effects."""
+"""Side effect runner thread for Redux."""
 
 from __future__ import annotations
 
@@ -28,6 +28,7 @@ class SideEffectRunnerThread(threading.Thread, Generic[Event]):
     ) -> None:
         """Initialize the side effect runner thread."""
         super().__init__()
+        self.name = 'Side Effect Runner'
         self.task_queue = task_queue
         self.loop = asyncio.get_event_loop()
         self._handles: set[Handle] = set()

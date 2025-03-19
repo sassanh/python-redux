@@ -89,8 +89,8 @@ class Scheduler(threading.Thread):
         if self.stopped:
             return
         self.tasks.add(self.loop.create_task(asyncio.to_thread(callback)))
-        await asyncio.sleep(0.01)
         if interval:
+            await asyncio.sleep(0.01)
             self.tasks.add(
                 self.loop.create_task(self.call_callback(callback, interval=interval)),
             )

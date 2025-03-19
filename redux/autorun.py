@@ -128,11 +128,17 @@ class Autorun(
             self._call()
 
         if self._options.reactive:
-            self._unsubscribe = store._subscribe(  # noqa: SLF001
-                lambda state: self._call() if self._check(state) else None,
-            )
+            self._unsubscribe = store._subscribe(self._react)  # noqa: SLF001
         else:
             self._unsubscribe = None
+
+    def _react(
+        self: Autorun,
+        state: State,
+    ) -> None:
+        """React to state changes in the store."""
+        if self._options.reactive and self._check(state):
+            self._call()
 
     def unsubscribe(
         self: Autorun[
