@@ -108,8 +108,6 @@ class Store(Generic[State, Action, Event], SerializationMixin):
 
         self._is_running = Lock()
 
-        self.subscribe_event(FinishEvent, self._handle_finish_event)
-
         if self.store_options.auto_init:
             if self.store_options.scheduler:
                 self.store_options.scheduler(
@@ -155,6 +153,8 @@ class Store(Generic[State, Action, Event], SerializationMixin):
         while len(self._events) > 0:
             event = self._events.pop(0)
             if event is not None:
+                if isinstance(event, FinishEvent):
+                    self._handle_finish_event()
                 for event_handler in self._event_handlers[type(event)].copy():
                     self._event_handlers_queue.put_nowait((event_handler, event))
 
@@ -245,15 +245,20 @@ class Store(Generic[State, Action, Event], SerializationMixin):
         keep_ref: bool = True,
     ) -> Callable[[], None]:
         """Subscribe to state changes."""
+
+        def unsubscribe(_: weakref.ref | None = None) -> None:
+            return self._listeners.remove(listener_ref)
+
         if keep_ref:
             listener_ref = listener
         elif inspect.ismethod(listener):
-            listener_ref = weakref.WeakMethod(listener)
+            listener_ref = weakref.WeakMethod(listener, unsubscribe)
         else:
-            listener_ref = weakref.ref(listener)
+            listener_ref = weakref.ref(listener, unsubscribe)
 
         self._listeners.add(listener_ref)
-        return lambda: self._listeners.remove(listener_ref)
+
+        return unsubscribe
 
     def subscribe_event(
         self: Store[State, Action, Event],
@@ -292,7 +297,7 @@ class Store(Generic[State, Action, Event], SerializationMixin):
                 if self.store_options.on_finish:
                     self.store_options.on_finish()
                 break
-            time.sleep(0.1)
+            self.run()
 
     def _handle_finish_event(self: Store[State, Action, Event]) -> None:
         Thread(target=self._wait_for_store_to_finish).start()

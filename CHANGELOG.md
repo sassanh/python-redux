@@ -4,6 +4,7 @@
 
 - test: make sure pytest exits completely after running async tests
 - refactor: in `_wait_for_store_to_finish`, instead of waiting with `asyncio.sleep`, run the store event loop when conditions are not satisfied
+- refactor: directly run `_handle_finish_event` in the store event loop when `FinishEvent` is dispatched, previously it used to be a normal `subscribe_event`, events registered in `subscribe_event` run in `SideEffectRunnerThread` and it runs them with the `task_runner`, and there is no guarantee `task_runner` runs tasks after `FinishEvent` is dispatched
 
 ## Version 0.21.1
 
