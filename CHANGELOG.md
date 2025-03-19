@@ -1,6 +1,6 @@
 # Changelog
 
-## Upcoming
+## Version 0.22.0
 
 - test: make sure pytest exits completely after running async tests
 - refactor: in `_wait_for_store_to_finish`, instead of waiting with `asyncio.sleep`, run the store event loop when conditions are not satisfied
