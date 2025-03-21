@@ -124,9 +124,7 @@ class Store(Generic[State, Action, Event], SerializationMixin):
         for listener_ in self._listeners.copy():
             if isinstance(listener_, weakref.ref):
                 listener = listener_()
-                if listener is None:
-                    self._listeners.discard(listener_)
-                    continue
+                assert listener is not None  # noqa: S101
             else:
                 listener = listener_
             result = listener(state)
@@ -297,7 +295,6 @@ class Store(Generic[State, Action, Event], SerializationMixin):
                 if self.store_options.on_finish:
                     self.store_options.on_finish()
                 break
-            self.run()
 
     def _handle_finish_event(self: Store[State, Action, Event]) -> None:
         Thread(target=self._wait_for_store_to_finish).start()

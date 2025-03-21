@@ -65,8 +65,8 @@ class Autorun(
         Event,
         SelectorOutput,
         ComparatorOutput,
-        ReturnType,
         Args,
+        ReturnType,
     ],
 ):
     """Run a wrapped function in response to specific state changes in the store."""
@@ -84,7 +84,10 @@ class Autorun(
         options: AutorunOptions[ReturnType],
     ) -> None:
         """Initialize the Autorun instance."""
-        self.__name__ = func.__name__
+        if hasattr(func, '__name__'):
+            self.__name__ = f'Autorun:{func.__name__}'
+        else:
+            self.__name__ = f'Autorun:{func}'
         self._store = store
         self._selector = selector
         self._comparator = comparator
@@ -147,8 +150,8 @@ class Autorun(
             Event,
             SelectorOutput,
             ComparatorOutput,
-            ReturnType,
             Args,
+            ReturnType,
         ],
         _: weakref.ref | None = None,
     ) -> None:
@@ -164,8 +167,8 @@ class Autorun(
             Event,
             SelectorOutput,
             ComparatorOutput,
-            ReturnType,
             Args,
+            ReturnType,
         ],
     ) -> None:
         """Inform all subscribers about the latest value."""
@@ -186,8 +189,8 @@ class Autorun(
             Event,
             SelectorOutput,
             ComparatorOutput,
-            ReturnType,
             Args,
+            ReturnType,
         ],
         task: Task,
         *,
@@ -207,8 +210,8 @@ class Autorun(
             Event,
             SelectorOutput,
             ComparatorOutput,
-            ReturnType,
             Args,
+            ReturnType,
         ],
         state: State | None,
     ) -> bool:
@@ -239,8 +242,8 @@ class Autorun(
             Event,
             SelectorOutput,
             ComparatorOutput,
-            ReturnType,
             Args,
+            ReturnType,
         ],
         *args: Args.args,
         **kwargs: Args.kwargs,
@@ -287,8 +290,8 @@ class Autorun(
             Event,
             SelectorOutput,
             ComparatorOutput,
-            ReturnType,
             Args,
+            ReturnType,
         ],
         *args: Args.args,
         **kwargs: Args.kwargs,
@@ -307,8 +310,8 @@ class Autorun(
             Event,
             SelectorOutput,
             ComparatorOutput,
-            ReturnType,
             Args,
+            ReturnType,
         ],
     ) -> str:
         """Return a string representation of the Autorun instance."""
@@ -325,8 +328,8 @@ class Autorun(
             Event,
             SelectorOutput,
             ComparatorOutput,
-            ReturnType,
             Args,
+            ReturnType,
         ],
     ) -> ReturnType:
         """Get the latest value of the autorun function."""
@@ -339,8 +342,8 @@ class Autorun(
             Event,
             SelectorOutput,
             ComparatorOutput,
-            ReturnType,
             Args,
+            ReturnType,
         ],
         callback: Callable[[ReturnType], Any],
         *,
@@ -376,8 +379,8 @@ class Autorun(
             Event,
             SelectorOutput,
             ComparatorOutput,
-            ReturnType,
             Args,
+            ReturnType,
         ],
     ) -> inspect.Signature:
         """Get the signature of the wrapped function."""

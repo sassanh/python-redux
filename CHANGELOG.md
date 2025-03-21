@@ -1,5 +1,9 @@
 # Changelog
 
+## Upcoming
+
+- fix: add `__name__` to `WithStore` instances so that they play nice when passed as a function to something assuming they are functions and have a `__name__` attribute
+
 ## Version 0.22.0
 
 - test: make sure pytest exits completely after running async tests

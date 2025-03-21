@@ -27,6 +27,10 @@ class WithState(Generic[State, Action, Event, SelectorOutput, ReturnType, Args])
         ],
     ) -> None:
         """Initialize the WithState instance."""
+        if hasattr(func, '__name__'):
+            self.__name__ = f'WithState:{func.__name__}'
+        else:
+            self.__name__ = f'WithState:{func}'
         self._store = store
         self._selector = selector
         self._func = func

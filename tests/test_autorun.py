@@ -88,7 +88,7 @@ def test_general(store_snapshot: StoreSnapshot, store: StoreType) -> None:
         store_snapshot.take()
         return value
 
-    assert decorated.__name__ == 'decorated'
+    assert decorated.__name__ == 'Autorun:decorated'
 
 
 def test_ignore_attribute_error_in_selector(store: StoreType) -> None:
