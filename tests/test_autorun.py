@@ -84,16 +84,41 @@ def store() -> Generator[StoreType, None, None]:
 
 def test_general(store_snapshot: StoreSnapshot, store: StoreType) -> None:
     @store.autorun(lambda state: state.value)
-    def decorated(value: int) -> int:
+    def _(value: int) -> int:
         store_snapshot.take()
+        return value
+
+
+def test_name(store: StoreType) -> None:
+    """Test `autorun` decorator name attribute."""
+
+    @store.autorun(lambda state: state.value)
+    def decorated(value: int) -> int:
         return value
 
     assert decorated.__name__ == 'Autorun:decorated'
 
+    inline_decorated = store.autorun(lambda state: state.value)(
+        lambda value: value,
+    )
+
+    assert inline_decorated.__name__ == 'Autorun:<lambda>'
+
+    class Decorated:
+        def __call__(self, value: int) -> int:
+            return value
+
+        def __repr__(self) -> str:
+            return 'Decorated'
+
+    decorated_instance = store.autorun(lambda state: state.value)(Decorated())
+
+    assert decorated_instance.__name__ == 'Autorun:Decorated'
+
 
 def test_ignore_attribute_error_in_selector(store: StoreType) -> None:
     @store.autorun(lambda state: cast('Any', state).non_existing)
-    def _(_: int) -> int:
+    def _(_: int) -> None:
         pytest.fail('This should never be called')
 
 
@@ -102,7 +127,7 @@ def test_ignore_attribute_error_in_comparator(store: StoreType) -> None:
         lambda state: state.value,
         lambda state: cast('Any', state).non_existing,
     )
-    def _(_: int) -> int:
+    def _(_: int) -> None:
         pytest.fail('This should never be called')
 
 

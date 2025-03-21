@@ -3,6 +3,7 @@
 ## Upcoming
 
 - fix: add `__name__` to `WithStore` instances so that they play nice when passed as a function to something assuming they are functions and have a `__name__` attribute
+- test: add/modify tests to bring back coverage to 100%
 
 ## Version 0.22.0
 

@@ -237,27 +237,35 @@ def test_autorun_method_subscription(
     store.dispatch(IncrementAction())
 
 
-def test_subscription(
-    store_snapshot: StoreSnapshot,
-    store: StoreType,
-) -> None:
+def test_subscription(store: StoreType) -> None:
+    with_ref_counter = []
+
     def subscription_with_keep_ref(_: StateType) -> None:
-        store_snapshot.take()
+        with_ref_counter.append(None)
 
     store._subscribe(subscription_with_keep_ref)  # noqa: SLF001
+
     ref = weakref.ref(subscription_with_keep_ref)
     del subscription_with_keep_ref
     assert ref() is not None
 
+    without_ref_counter = []
+
     def subscription_without_keep_ref(_: StateType) -> None:
-        pytest.fail('This should never be called')
+        without_ref_counter.append(None)
 
     store._subscribe(subscription_without_keep_ref, keep_ref=False)  # noqa: SLF001
+
+    store.dispatch(IncrementAction())
+
     ref = weakref.ref(subscription_without_keep_ref)
     del subscription_without_keep_ref
     assert ref() is None
 
     store.dispatch(IncrementAction())
+
+    assert len(with_ref_counter) == 2
+    assert len(without_ref_counter) == 1
 
 
 def test_subscription_method(

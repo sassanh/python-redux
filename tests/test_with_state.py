@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import inspect
+import re
 from dataclasses import replace
 from typing import TYPE_CHECKING
 
@@ -52,6 +54,110 @@ def _reducer(
 @pytest.fixture(name='store')
 def _() -> StoreType:
     return Store(_reducer, options=CreateStoreOptions(auto_init=False))
+
+
+def test_name_attr(store: StoreType) -> None:
+    """Test `with_state` decorator name attribute."""
+
+    @store.with_state(lambda state: state.value)
+    def decorated(value: int) -> int:
+        return value
+
+    assert decorated.__name__ == 'WithState:decorated'
+
+    inline_decorated = store.with_state(lambda state: state.value)(
+        lambda value: value,
+    )
+
+    assert inline_decorated.__name__ == 'WithState:<lambda>'
+
+    class Decorated:
+        def __call__(self, value: int) -> int:
+            return value
+
+        def __repr__(self) -> str:
+            return 'Decorated'
+
+    decorated_instance = store.with_state(lambda state: state.value)(Decorated())
+
+    assert decorated_instance.__name__ == 'WithState:Decorated'
+
+    store.dispatch(InitAction())
+    store.dispatch(FinishAction())
+
+
+def test_repr(store: StoreType) -> None:
+    """Test `with_state` decorator `__repr__` method."""
+
+    @store.with_state(lambda state: state.value)
+    def func(value: int) -> int:
+        return value
+
+    assert re.match(
+        r'.*\(func: <function test_repr\.<locals>\.func at .*>\)$',
+        repr(func),
+    )
+
+    store.dispatch(InitAction())
+    store.dispatch(FinishAction())
+
+
+def test_signature(store: StoreType) -> None:
+    """Test `with_state` decorator `__signature__` attribute."""
+
+    @store.with_state(lambda state: state.value)
+    def func(
+        value: int,
+        some_positional_parameter: str,
+        some_positional_parameter_with_default: int = 0,
+        *,
+        some_keyword_parameter: bool,
+        some_keyword_parameter_with_default: int = 1,
+    ) -> int:
+        _ = (
+            some_positional_parameter,
+            some_positional_parameter_with_default,
+            some_keyword_parameter,
+            some_keyword_parameter_with_default,
+        )
+        return value
+
+    signature = inspect.signature(func)
+    assert len(signature.parameters) == 4
+
+    assert 'some_positional_parameter' in signature.parameters
+    assert (
+        signature.parameters['some_positional_parameter'].default
+        is inspect.Parameter.empty
+    )
+    assert signature.parameters['some_positional_parameter'].annotation == 'str'
+
+    assert 'some_positional_parameter_with_default' in signature.parameters
+    assert signature.parameters['some_positional_parameter_with_default'].default == 0
+    assert (
+        signature.parameters['some_positional_parameter_with_default'].annotation
+        == 'int'
+    )
+
+    assert 'some_keyword_parameter' in signature.parameters
+    assert (
+        signature.parameters['some_keyword_parameter'].default
+        is inspect.Parameter.empty
+    )
+    assert signature.parameters['some_keyword_parameter'].annotation == 'bool'
+
+    assert 'some_keyword_parameter_with_default' in signature.parameters
+    assert signature.parameters['some_keyword_parameter_with_default'].default == 1
+    assert (
+        signature.parameters['some_keyword_parameter_with_default'].annotation == 'int'
+    )
+
+    assert 'value' not in signature.parameters
+
+    assert signature.return_annotation == 'int'
+
+    store.dispatch(InitAction())
+    store.dispatch(FinishAction())
 
 
 def test_with_state(store: StoreType) -> None:
