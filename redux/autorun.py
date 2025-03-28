@@ -71,7 +71,7 @@ class Autorun(
 ):
     """Run a wrapped function in response to specific state changes in the store."""
 
-    def __init__(
+    def __init__(  # noqa: C901, PLR0912
         self: Autorun,
         *,
         store: Store[State, Action, Event],
@@ -88,10 +88,10 @@ class Autorun(
             self.__name__ = f'Autorun:{func.__name__}'
         else:
             self.__name__ = f'Autorun:{func}'
-        self._store = store
-        self._selector = selector
-        self._comparator = comparator
-        self._should_be_called = False
+        if hasattr(func, '__qualname__'):
+            self.__qualname__ = f'Autorun:{func.__qualname__}'
+        else:
+            self.__qualname__ = f'Autorun:{func}'
         signature = inspect.signature(func)
         parameters = list(signature.parameters.values())
         if parameters and parameters[0].kind in [
@@ -99,7 +99,20 @@ class Autorun(
             inspect.Parameter.POSITIONAL_OR_KEYWORD,
         ]:
             parameters = parameters[1:]
-        self._signature = signature.replace(parameters=parameters)
+        self.__signature__ = signature.replace(parameters=parameters)
+        self.__module__ = func.__module__
+        if (annotations := getattr(func, '__annotations__', None)) is not None:
+            self.__annotations__ = annotations
+        if (defaults := getattr(func, '__defaults__', None)) is not None:
+            self.__defaults__ = defaults
+        if (kwdefaults := getattr(func, '__kwdefaults__', None)) is not None:
+            self.__kwdefaults__ = kwdefaults
+
+        self._store = store
+        self._selector = selector
+        self._comparator = comparator
+        self._should_be_called = False
+
         if options.keep_ref:
             self._func = func
         elif inspect.ismethod(func):
@@ -370,18 +383,3 @@ class Autorun(
             self._subscriptions.discard(callback_ref)
 
         return unsubscribe
-
-    @property
-    def __signature__(
-        self: Autorun[
-            State,
-            Action,
-            Event,
-            SelectorOutput,
-            ComparatorOutput,
-            Args,
-            ReturnType,
-        ],
-    ) -> inspect.Signature:
-        """Get the signature of the wrapped function."""
-        return self._signature

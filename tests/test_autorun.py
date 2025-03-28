@@ -1,6 +1,7 @@
 # ruff: noqa: D100, D101, D102, D103, D104, D107
 from __future__ import annotations
 
+import inspect
 import re
 from dataclasses import replace
 from typing import TYPE_CHECKING, Any, cast
@@ -89,7 +90,7 @@ def test_general(store_snapshot: StoreSnapshot, store: StoreType) -> None:
         return value
 
 
-def test_name(store: StoreType) -> None:
+def test_name_attr(store: StoreType) -> None:
     """Test `autorun` decorator name attribute."""
 
     @store.autorun(lambda state: state.value)
@@ -97,6 +98,7 @@ def test_name(store: StoreType) -> None:
         return value
 
     assert decorated.__name__ == 'Autorun:decorated'
+    assert decorated.__qualname__ == 'Autorun:test_name_attr.<locals>.decorated'
 
     inline_decorated = store.autorun(lambda state: state.value)(
         lambda value: value,
@@ -114,6 +116,67 @@ def test_name(store: StoreType) -> None:
     decorated_instance = store.autorun(lambda state: state.value)(Decorated())
 
     assert decorated_instance.__name__ == 'Autorun:Decorated'
+
+
+def test_signature(store: StoreType) -> None:
+    """Test `with_state` decorator `__signature__` attribute."""
+
+    @store.autorun(
+        lambda state: state.value,
+        options=AutorunOptions(
+            initial_call=False,
+            reactive=False,
+        ),
+    )
+    def func(
+        value: int,
+        some_positional_parameter: str,
+        some_positional_parameter_with_default: int = 0,
+        *,
+        some_keyword_parameter: bool,
+        some_keyword_parameter_with_default: int = 1,
+    ) -> int:
+        _ = (
+            some_positional_parameter,
+            some_positional_parameter_with_default,
+            some_keyword_parameter,
+            some_keyword_parameter_with_default,
+        )
+        return value
+
+    signature = inspect.signature(func)
+    assert len(signature.parameters) == 4
+
+    assert 'some_positional_parameter' in signature.parameters
+    assert (
+        signature.parameters['some_positional_parameter'].default
+        is inspect.Parameter.empty
+    )
+    assert signature.parameters['some_positional_parameter'].annotation == 'str'
+
+    assert 'some_positional_parameter_with_default' in signature.parameters
+    assert signature.parameters['some_positional_parameter_with_default'].default == 0
+    assert (
+        signature.parameters['some_positional_parameter_with_default'].annotation
+        == 'int'
+    )
+
+    assert 'some_keyword_parameter' in signature.parameters
+    assert (
+        signature.parameters['some_keyword_parameter'].default
+        is inspect.Parameter.empty
+    )
+    assert signature.parameters['some_keyword_parameter'].annotation == 'bool'
+
+    assert 'some_keyword_parameter_with_default' in signature.parameters
+    assert signature.parameters['some_keyword_parameter_with_default'].default == 1
+    assert (
+        signature.parameters['some_keyword_parameter_with_default'].annotation == 'int'
+    )
+
+    assert 'value' not in signature.parameters
+
+    assert signature.return_annotation == 'int'
 
 
 def test_ignore_attribute_error_in_selector(store: StoreType) -> None:

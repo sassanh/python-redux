@@ -31,9 +31,10 @@ class WithState(Generic[State, Action, Event, SelectorOutput, ReturnType, Args])
             self.__name__ = f'WithState:{func.__name__}'
         else:
             self.__name__ = f'WithState:{func}'
-        self._store = store
-        self._selector = selector
-        self._func = func
+        if hasattr(func, '__qualname__'):
+            self.__qualname__ = f'WithState:{func.__qualname__}'
+        else:
+            self.__qualname__ = f'WithState:{func}'
         signature = inspect.signature(func)
         parameters = list(signature.parameters.values())
         if parameters and parameters[0].kind in [
@@ -41,7 +42,18 @@ class WithState(Generic[State, Action, Event, SelectorOutput, ReturnType, Args])
             inspect.Parameter.POSITIONAL_OR_KEYWORD,
         ]:
             parameters = parameters[1:]
-        self._signature = signature.replace(parameters=parameters)
+        self.__signature__ = signature.replace(parameters=parameters)
+        self.__module__ = func.__module__
+        if (annotations := getattr(func, '__annotations__', None)) is not None:
+            self.__annotations__ = annotations
+        if (defaults := getattr(func, '__defaults__', None)) is not None:
+            self.__defaults__ = defaults
+        if (kwdefaults := getattr(func, '__kwdefaults__', None)) is not None:
+            self.__kwdefaults__ = kwdefaults
+
+        self._store = store
+        self._selector = selector
+        self._func = func
 
     def __call__(
         self: WithState[
@@ -73,17 +85,3 @@ class WithState(Generic[State, Action, Event, SelectorOutput, ReturnType, Args])
     ) -> str:
         """Return the string representation of the WithState instance."""
         return super().__repr__() + f'(func: {self._func})'
-
-    @property
-    def __signature__(
-        self: WithState[
-            State,
-            Action,
-            Event,
-            SelectorOutput,
-            ReturnType,
-            Args,
-        ],
-    ) -> inspect.Signature:
-        """Get the signature of the wrapped function."""
-        return self._signature

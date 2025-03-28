@@ -1,5 +1,9 @@
 # Changelog
 
+## Upcoming
+
+- fix: add `__qualname__`, `__annotations__`, `__module__`, `__defaults__` and `__kwdefaults__` to `Autorun` and `WithStore` instances so that they play nice when passed as a function to something assuming they are normal function having these properties.
+
 ## Version 0.22.1
 
 - fix: add `__name__` to `WithStore` instances so that they play nice when passed as a function to something assuming they are functions and have a `__name__` attribute

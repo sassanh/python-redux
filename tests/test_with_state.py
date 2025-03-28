@@ -64,6 +64,7 @@ def test_name_attr(store: StoreType) -> None:
         return value
 
     assert decorated.__name__ == 'WithState:decorated'
+    assert decorated.__qualname__ == 'WithState:test_name_attr.<locals>.decorated'
 
     inline_decorated = store.with_state(lambda state: state.value)(
         lambda value: value,
