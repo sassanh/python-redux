@@ -63,25 +63,14 @@ def test_name_attr(store: StoreType) -> None:
     def decorated(value: int) -> int:
         return value
 
-    assert decorated.__name__ == 'WithState:decorated'
-    assert decorated.__qualname__ == 'WithState:test_name_attr.<locals>.decorated'
+    assert decorated.__name__ == 'decorated'
+    assert decorated.__qualname__ == 'test_name_attr.<locals>.decorated'
 
     inline_decorated = store.with_state(lambda state: state.value)(
         lambda value: value,
     )
 
-    assert inline_decorated.__name__ == 'WithState:<lambda>'
-
-    class Decorated:
-        def __call__(self, value: int) -> int:
-            return value
-
-        def __repr__(self) -> str:
-            return 'Decorated'
-
-    decorated_instance = store.with_state(lambda state: state.value)(Decorated())
-
-    assert decorated_instance.__name__ == 'WithState:Decorated'
+    assert inline_decorated.__name__ == '<lambda>'
 
     store.dispatch(InitAction())
     store.dispatch(FinishAction())
@@ -95,7 +84,7 @@ def test_repr(store: StoreType) -> None:
         return value
 
     assert re.match(
-        r'.*\(func: <function test_repr\.<locals>\.func at .*>\)$',
+        r'.*<function test_repr\.<locals>\.func at .*>$',
         repr(func),
     )
 

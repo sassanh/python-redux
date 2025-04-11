@@ -1,6 +1,5 @@
 # ruff: noqa: D100, D101, D102, D103, D104, D107
 import pytest
-from _pytest.outcomes import Failed
 from tenacity import RetryError, stop_after_delay
 from tenacity.wait import wait_fixed
 
@@ -15,9 +14,9 @@ def test_asyncheonous(
     async def runner() -> None:
         @wait_for(run_async=True, timeout=1)
         def check() -> None:
-            pytest.fail('Never')
+            raise RuntimeError
 
-        with pytest.raises(Failed, match=r'^Never$'):
+        with pytest.raises(RetryError):
             await check()
 
         event_loop.stop()
@@ -50,16 +49,16 @@ def test_arguments(wait_for: WaitFor) -> None:
 def test_with_stop(wait_for: WaitFor) -> None:
     @wait_for(stop=stop_after_delay(0.1))
     def check() -> None:
-        pytest.fail('Never')
+        raise RuntimeError
 
-    with pytest.raises(Failed, match=r'^Never$'):
+    with pytest.raises(RetryError):
         check()
 
 
 def test_with_timeout(wait_for: WaitFor) -> None:
     @wait_for(timeout=0.1)
     def check() -> None:
-        pytest.fail('Never')
+        raise RuntimeError
 
-    with pytest.raises(Failed, match=r'^Never$'):
+    with pytest.raises(RetryError):
         check()

@@ -7,6 +7,7 @@ import inspect
 import queue
 import weakref
 from collections import defaultdict
+from functools import wraps
 from threading import Lock, Thread
 from typing import (
     TYPE_CHECKING,
@@ -59,7 +60,6 @@ from redux.basic_types import (
 )
 from redux.serialization_mixin import SerializationMixin
 from redux.side_effect_runner import SideEffectRunnerThread
-from redux.with_state import WithState
 
 if TYPE_CHECKING:
     from collections.abc import Awaitable, Callable
@@ -442,7 +442,26 @@ class Store(Generic[State, Action, Event], SerializationMixin):
                 ReturnType,
             ],
         ) -> Callable[Args, ReturnType]:
-            return WithState(store=self, selector=selector, func=cast('Callable', func))
+            def wrapper(*args: Args.args, **kwargs: Args.kwargs) -> ReturnType:
+                if self._state is None:
+                    msg = 'Store has not been initialized yet.'
+                    raise RuntimeError(msg)
+                return func(selector(self._state), *args, **kwargs)
+
+            signature = inspect.signature(func)
+            parameters = list(signature.parameters.values())
+            if parameters and parameters[0].kind in [
+                inspect.Parameter.POSITIONAL_ONLY,
+                inspect.Parameter.POSITIONAL_OR_KEYWORD,
+            ]:
+                parameters = parameters[1:]
+
+            wrapped = wraps(func)(wrapper)
+            wrapped.__signature__ = signature.replace(  # pyright: ignore [reportAttributeAccessIssue]
+                parameters=parameters,
+            )
+
+            return wrapped
 
         return with_state_decorator
 

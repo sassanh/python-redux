@@ -17,7 +17,7 @@ from redux.basic_types import FinishEvent, State
 if TYPE_CHECKING:
     from collections.abc import Callable
 
-    from _pytest.fixtures import SubRequest
+    from _pytest.fixtures import SubRequest  # pyright: ignore[reportPrivateImportUsage]
 
     from redux.main import Store
 
