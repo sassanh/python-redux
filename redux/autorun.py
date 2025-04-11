@@ -270,6 +270,7 @@ class Autorun(
                 **kwargs,
             )
             create_task = self._store._create_task  # noqa: SLF001
+            previous_value = self._latest_value
             if iscoroutine(value) and create_task:
                 if self._options.auto_await:
                     future = Future()
@@ -294,7 +295,8 @@ class Autorun(
                     )
             else:
                 self._latest_value = value
-            self.inform_subscribers()
+            if self._latest_value is not previous_value:
+                self.inform_subscribers()
 
     def __call__(
         self: Autorun[
