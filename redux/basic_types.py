@@ -9,11 +9,12 @@ from typing import (
     Any,
     Concatenate,
     Generic,
-    Never,
+    Literal,
     ParamSpec,
     Protocol,
     TypeAlias,
     TypeGuard,
+    cast,
     overload,
 )
 
@@ -144,10 +145,75 @@ class StoreOptions(Immutable, Generic[Action, Event]):
 
 # Autorun
 
+AutoAwait = TypeVar('AutoAwait', bound=Literal[True, False, None], infer_variance=True)
 
-class AutorunOptions(Immutable, Generic[ReturnType]):
+
+class AutorunOptionsType(Immutable, Generic[ReturnType, AutoAwait]):
     default_value: ReturnType | None = None
-    auto_await: bool = True
+    auto_await: AutoAwait = cast('AutoAwait', val=None)
+    initial_call: bool = True
+    reactive: bool = True
+    memoization: bool = True
+    keep_ref: bool = True
+    subscribers_initial_run: bool = True
+    subscribers_keep_ref: bool = True
+
+    @overload
+    def __init__(
+        self: AutorunOptionsType[ReturnType, Literal[None]],  # type: ignore[reportInvalidTypeVar]
+        *,
+        default_value: ReturnType | None = None,
+        auto_await: Literal[None] | None = None,
+        initial_call: bool = True,
+        reactive: bool = True,
+        memoization: bool = True,
+        keep_ref: bool = True,
+        subscribers_initial_run: bool = True,
+        subscribers_keep_ref: bool = True,
+    ) -> None: ...
+    @overload
+    def __init__(
+        self: AutorunOptionsType[ReturnType, Literal[True]],  # type: ignore[reportInvalidTypeVar]
+        *,
+        default_value: ReturnType | None = None,
+        auto_await: Literal[True],
+        initial_call: bool = True,
+        reactive: bool = True,
+        memoization: bool = True,
+        keep_ref: bool = True,
+        subscribers_initial_run: bool = True,
+        subscribers_keep_ref: bool = True,
+    ) -> None: ...
+    @overload
+    def __init__(
+        self: AutorunOptionsType[ReturnType, Literal[False]],  # type: ignore[reportInvalidTypeVar]
+        *,
+        default_value: ReturnType | None = None,
+        auto_await: Literal[False],
+        initial_call: bool = True,
+        reactive: bool = True,
+        memoization: bool = True,
+        keep_ref: bool = True,
+        subscribers_initial_run: bool = True,
+        subscribers_keep_ref: bool = True,
+    ) -> None: ...
+    def __init__(  # noqa: PLR0913
+        self: AutorunOptionsType,
+        *,
+        default_value: ReturnType | None = None,
+        auto_await: bool | None = None,
+        initial_call: bool = True,
+        reactive: bool = True,
+        memoization: bool = True,
+        keep_ref: bool = True,
+        subscribers_initial_run: bool = True,
+        subscribers_keep_ref: bool = True,
+    ) -> None: ...
+
+
+class AutorunOptionsImplementation(Immutable, Generic[ReturnType, AutoAwait]):
+    default_value: ReturnType | None = None
+    auto_await: AutoAwait = cast('AutoAwait', val=None)
     initial_call: bool = True
     reactive: bool = True
     memoization: bool = True
@@ -156,8 +222,7 @@ class AutorunOptions(Immutable, Generic[ReturnType]):
     subscribers_keep_ref: bool = True
 
 
-AutorunOptionsWithDefault = AutorunOptions[ReturnType]
-AutorunOptionsWithoutDefault = AutorunOptions[Never]
+AutorunOptions = cast('type[AutorunOptionsType]', AutorunOptionsImplementation)
 
 
 class AutorunReturnType(
@@ -186,34 +251,39 @@ class AutorunReturnType(
     __name__: str
 
 
-class AutorunDecorator(Protocol, Generic[SelectorOutput, ReturnType]):
+class AutorunDecorator(Protocol, Generic[ReturnType, SelectorOutput, AutoAwait]):
     @overload
     def __call__(
-        self: AutorunDecorator,
+        self: AutorunDecorator[ReturnType, SelectorOutput, Literal[None]],
+        func: Callable[
+            Concatenate[SelectorOutput, Args],
+            Awaitable[ReturnType],
+        ],
+    ) -> AutorunReturnType[None, Args]: ...
+    @overload
+    def __call__(
+        self: AutorunDecorator[ReturnType, SelectorOutput, Literal[None]],
         func: Callable[
             Concatenate[SelectorOutput, Args],
             ReturnType,
         ],
     ) -> AutorunReturnType[ReturnType, Args]: ...
-
     @overload
     def __call__(
-        self: AutorunDecorator,
+        self: AutorunDecorator[ReturnType, SelectorOutput, Literal[True]],
+        func: Callable[
+            Concatenate[SelectorOutput, Args],
+            Awaitable[ReturnType],
+        ],
+    ) -> AutorunReturnType[None, Args]: ...
+    @overload
+    def __call__(
+        self: AutorunDecorator[ReturnType, SelectorOutput, Literal[False]],
         func: Callable[
             Concatenate[SelectorOutput, Args],
             Awaitable[ReturnType],
         ],
     ) -> AutorunReturnType[Awaitable[ReturnType], Args]: ...
-
-
-class UnknownAutorunDecorator(Protocol, Generic[SelectorOutput]):
-    def __call__(
-        self: UnknownAutorunDecorator,
-        func: Callable[
-            Concatenate[SelectorOutput, Args],
-            ReturnType,
-        ],
-    ) -> AutorunReturnType[ReturnType, Args]: ...
 
 
 # View
@@ -225,10 +295,6 @@ class ViewOptions(Immutable, Generic[ReturnType]):
     keep_ref: bool = True
     subscribers_initial_run: bool = True
     subscribers_keep_ref: bool = True
-
-
-ViewOptionsWithDefault = ViewOptions[ReturnType]
-ViewOptionsWithoutDefault = ViewOptions[Never]
 
 
 class ViewReturnType(
@@ -257,17 +323,8 @@ class ViewReturnType(
 
 class ViewDecorator(
     Protocol,
-    Generic[SelectorOutput, ReturnType],
+    Generic[ReturnType, SelectorOutput],
 ):
-    @overload
-    def __call__(
-        self: ViewDecorator,
-        func: Callable[
-            Concatenate[SelectorOutput, Args],
-            ReturnType,
-        ],
-    ) -> ViewReturnType[ReturnType, Args]: ...
-
     @overload
     def __call__(
         self: ViewDecorator,
@@ -277,10 +334,9 @@ class ViewDecorator(
         ],
     ) -> ViewReturnType[Awaitable[ReturnType], Args]: ...
 
-
-class UnknownViewDecorator(Protocol, Generic[SelectorOutput]):
+    @overload
     def __call__(
-        self: UnknownViewDecorator,
+        self: ViewDecorator,
         func: Callable[
             Concatenate[SelectorOutput, Args],
             ReturnType,

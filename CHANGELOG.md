@@ -5,6 +5,7 @@
 - refactor: remove `WithState` as it wasn't doing anything beyond `functools.wraps`
 - refactor: autorun doesn't inform subscribers when the output value is not changed
 - refactor: add `autorun_class` and `side_effect_runner_class` to improve extensibility
+- refactor: setting `auto_await` for async autorun functions will make them return `None`, setting it to `False` will make them return the awaitable, the awaitable can be `await`ed multiple times, as it cashes the result if comparator is not changed, it can't be set for sync functions
 
 ## Version 0.22.2
 

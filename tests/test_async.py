@@ -92,7 +92,7 @@ def test_autorun(
         store.dispatch(SetMirroredValueAction(value=value))
         return value
 
-    assert asyncio.iscoroutinefunction(sync_mirror)
+    assert not asyncio.iscoroutinefunction(sync_mirror)
 
     @store.autorun(
         lambda state: state.mirrored_value,
@@ -108,7 +108,31 @@ def test_autorun(
 
 
 def test_autorun_autoawait(store: StoreType) -> None:
-    @store.autorun(lambda state: state.value, options=AutorunOptions(auto_await=False))
+    @store.autorun(lambda state: state.value, options=AutorunOptions(auto_await=True))
+    async def sync_mirror(value: int) -> int:
+        store.dispatch(SetMirroredValueAction(value=value))
+        return value * 2
+
+    assert not asyncio.iscoroutinefunction(sync_mirror)
+
+    @store.autorun(lambda state: (state.value, state.mirrored_value))
+    async def _(values: tuple[int, int]) -> None:
+        value, mirrored_value = values
+        if mirrored_value != value:
+            sync_mirror()
+            sync_mirror()
+        elif value < INCREMENTS:
+            store.dispatch(IncrementAction())
+        else:
+            await asyncio.sleep(0.1)
+            store.dispatch(FinishAction())
+
+
+def test_autorun_non_autoawait(store: StoreType) -> None:
+    @store.autorun(
+        lambda state: state.value,
+        options=AutorunOptions(auto_await=False),
+    )
     async def sync_mirror(value: int) -> int:
         store.dispatch(SetMirroredValueAction(value=value))
         return value * 2
@@ -122,11 +146,7 @@ def test_autorun_autoawait(store: StoreType) -> None:
             assert 'awaited=False' in str(sync_mirror())
             await sync_mirror()
             assert 'awaited=True' in str(sync_mirror())
-            with pytest.raises(
-                RuntimeError,
-                match=r'^cannot reuse already awaited coroutine$',
-            ):
-                await sync_mirror()
+            await sync_mirror()
         elif value < INCREMENTS:
             store.dispatch(IncrementAction())
         else:
@@ -166,12 +186,14 @@ def test_view(store: StoreType) -> None:
         assert await doubled() == value * 2
         for _ in range(10):
             await doubled()
+        await asyncio.sleep(0.01)
         if value < INCREMENTS:
             store.dispatch(IncrementAction())
         else:
             assert calls == list(range(INCREMENTS + 1))
-            await asyncio.sleep(0.1)
             store.dispatch(FinishAction())
+
+    store.dispatch(InitAction())
 
 
 def test_view_await(store: StoreType) -> None:
@@ -189,12 +211,12 @@ def test_view_await(store: StoreType) -> None:
         calls_length = len(calls)
         assert await doubled() == value * 2
         assert len(calls) == calls_length + 1
+        await asyncio.sleep(0.01)
 
         if value < INCREMENTS:
             store.dispatch(IncrementAction())
         else:
             assert calls == list(range(INCREMENTS + 1))
-            await asyncio.sleep(0.1)
             store.dispatch(FinishAction())
 
 
@@ -210,12 +232,14 @@ def test_view_with_args(store: StoreType) -> None:
     async def _(value: int) -> None:
         assert await multiplied(factor=2) == value * 2
         assert await multiplied(factor=3) == value * 3
+        await asyncio.sleep(0.01)
         if value < INCREMENTS:
             store.dispatch(IncrementAction())
         else:
             assert calls == [j for i in list(range(INCREMENTS + 1)) for j in [i] * 2]
-            await asyncio.sleep(0.1)
             store.dispatch(FinishAction())
+
+    store.dispatch(InitAction())
 
 
 def test_view_with_default_value(store: StoreType) -> None:
@@ -229,11 +253,11 @@ def test_view_with_default_value(store: StoreType) -> None:
     @store.autorun(lambda state: state.value)
     async def _(value: int) -> None:
         assert await doubled() == value * 2
+        await asyncio.sleep(0.01)
         if value < INCREMENTS:
             store.dispatch(IncrementAction())
         else:
             assert calls == list(range(INCREMENTS + 1))
-            await asyncio.sleep(0.1)
             store.dispatch(FinishAction())
 
     store.dispatch(InitAction())

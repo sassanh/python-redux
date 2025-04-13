@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import asyncio
-import functools
 import inspect
 import weakref
 from asyncio import Future, Task, iscoroutine, iscoroutinefunction
@@ -12,19 +11,21 @@ from typing import (
     Any,
     Concatenate,
     Generic,
-    TypeVar,
+    Literal,
     cast,
 )
 
 from redux.basic_types import (
     Action,
     Args,
-    AutorunOptions,
+    AutoAwait,
+    AutorunOptionsType,
     ComparatorOutput,
     Event,
     ReturnType,
     SelectorOutput,
     State,
+    T,
 )
 
 if TYPE_CHECKING:
@@ -33,25 +34,36 @@ if TYPE_CHECKING:
     from redux.main import Store
 
 
-T = TypeVar('T')
-
-
 class AwaitableWrapper(Generic[T]):
     """A wrapper for a coroutine to track if it has been awaited."""
+
+    _unawaited = object()
+    value: tuple[Literal[False], None] | tuple[Literal[True], T]
 
     def __init__(self, coro: Coroutine[None, None, T]) -> None:
         """Initialize the AwaitableWrapper with a coroutine."""
         self.coro = coro
-        self.awaited = False
+        self.value = (False, None)
 
     def __await__(self) -> Generator[None, None, T]:
         """Await the coroutine and set the awaited flag to True."""
-        self.awaited = True
-        return self.coro.__await__()
+        return self._wrap().__await__()
+
+    async def _wrap(self) -> T:
+        """Wrap the coroutine and set the awaited flag to True."""
+        if self.value[0] is True:
+            return self.value[1]
+        self.value = (True, await self.coro)
+        return self.value[1]
 
     def close(self) -> None:
         """Close the coroutine if it has not been awaited."""
         self.coro.close()
+
+    @property
+    def awaited(self) -> bool:
+        """Check if the coroutine has been awaited."""
+        return self.value[0] is True
 
     def __repr__(self) -> str:
         """Return a string representation of the AwaitableWrapper."""
@@ -71,7 +83,7 @@ class Autorun(
 ):
     """Run a wrapped function in response to specific state changes in the store."""
 
-    def __init__(  # noqa: C901, PLR0912
+    def __init__(  # noqa: C901, PLR0912, PLR0915
         self: Autorun,
         *,
         store: Store[State, Action, Event],
@@ -81,7 +93,7 @@ class Autorun(
             Concatenate[SelectorOutput, Args],
             ReturnType,
         ],
-        options: AutorunOptions[ReturnType],
+        options: AutorunOptionsType[ReturnType, AutoAwait],
     ) -> None:
         """Initialize the Autorun instance."""
         if hasattr(func, '__name__'):
@@ -121,7 +133,7 @@ class Autorun(
             self._func = weakref.ref(func, self.unsubscribe)
         self._is_coroutine = (
             asyncio.coroutines._is_coroutine  # pyright: ignore [reportAttributeAccessIssue]  # noqa: SLF001
-            if asyncio.iscoroutinefunction(func)
+            if asyncio.iscoroutinefunction(func) and options.auto_await is False
             else None
         )
         self._options = options
@@ -132,8 +144,16 @@ class Autorun(
             object(),
         )
         if iscoroutinefunction(func):
-            self._latest_value = Future()
-            self._latest_value.set_result(options.default_value)
+
+            async def default_value_wrapper() -> ReturnType | None:
+                return options.default_value
+
+            create_task = self._store._create_task  # noqa: SLF001
+            default_value = default_value_wrapper()
+
+            if create_task:
+                create_task(default_value)
+            self._latest_value: ReturnType = default_value
         else:
             self._latest_value: ReturnType = options.default_value
         self._subscriptions: set[
@@ -145,11 +165,11 @@ class Autorun(
             self.call()
 
         if self._options.reactive:
-            self._unsubscribe = store._subscribe(self._react)  # noqa: SLF001
+            self._unsubscribe = store._subscribe(self.react)  # noqa: SLF001
         else:
             self._unsubscribe = None
 
-    def _react(
+    def react(
         self: Autorun,
         state: State,
     ) -> None:
@@ -275,27 +295,17 @@ class Autorun(
             create_task = self._store._create_task  # noqa: SLF001
             previous_value = self._latest_value
             if iscoroutine(value) and create_task:
-                if self._options.auto_await:
-                    future = Future()
-                    self._latest_value = cast('ReturnType', future)
-                    create_task(
-                        value,
-                        callback=functools.partial(
-                            self._task_callback,
-                            future=future,
-                        ),
-                    )
-                else:
+                if self._options.auto_await is False:
                     if (
                         self._latest_value is not None
                         and isinstance(self._latest_value, AwaitableWrapper)
                         and not self._latest_value.awaited
                     ):
                         self._latest_value.close()
-                    self._latest_value = cast(
-                        'ReturnType',
-                        AwaitableWrapper(value),
-                    )
+                    self._latest_value = cast('ReturnType', AwaitableWrapper(value))
+                else:
+                    self._latest_value = cast('ReturnType', None)
+                    create_task(value)
             else:
                 self._latest_value = value
             if self._latest_value is not previous_value:
