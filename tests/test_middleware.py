@@ -11,12 +11,12 @@ from redux.basic_types import (
     BaseAction,
     BaseEvent,
     CompleteReducerResult,
-    CreateStoreOptions,
     FinishAction,
     FinishEvent,
     InitAction,
     InitializationActionError,
     ReducerResult,
+    StoreOptions,
 )
 from redux.main import Store
 
@@ -66,7 +66,7 @@ class StoreType(Store[StateType, Action, FinishEvent | SomeEvent]):
 
 @pytest.fixture
 def store() -> StoreType:
-    return StoreType(reducer, options=CreateStoreOptions(auto_init=True))
+    return StoreType(reducer, options=StoreOptions(auto_init=True))
 
 
 def test_identity_action_middleware(store: StoreType) -> None:

@@ -12,11 +12,11 @@ from redux.basic_types import (
     AutorunOptions,
     BaseAction,
     BaseEvent,
-    CreateStoreOptions,
     FinishAction,
     FinishEvent,
     InitAction,
     InitializationActionError,
+    StoreOptions,
 )
 from redux.main import Store
 
@@ -98,7 +98,7 @@ class EventSubscriptionClass:
 def store(event_loop: LoopThread) -> Generator[StoreType, None, None]:
     store = Store(
         reducer,
-        options=CreateStoreOptions(
+        options=StoreOptions(
             auto_init=True,
             task_creator=event_loop.create_task,
         ),

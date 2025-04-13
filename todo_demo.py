@@ -21,14 +21,14 @@ if TYPE_CHECKING:
 
 
 # state:
-class ToDoItem(Immutable):
+class TodoItem(Immutable):
     id: str
     content: str
     timestamp: float
 
 
-class ToDoState(Immutable):
-    items: Sequence[ToDoItem]
+class TodoState(Immutable):
+    items: Sequence[TodoItem]
 
 
 # actions:
@@ -42,19 +42,19 @@ class RemoveTodoItemAction(BaseAction):
 
 
 # events:
-class CallApi(BaseEvent):
+class CallApiEvent(BaseEvent):
     parameters: object
 
 
 # reducer:
 def reducer(
-    state: ToDoState | None,
+    state: TodoState | None,
     action: BaseAction,
-) -> ReducerResult[ToDoState, BaseAction, BaseEvent]:
+) -> ReducerResult[TodoState, BaseAction, BaseEvent]:
     if state is None:
-        return ToDoState(
+        return TodoState(
             items=[
-                ToDoItem(
+                TodoItem(
                     id=uuid.uuid4().hex,
                     content='Initial Item',
                     timestamp=time.time(),
@@ -66,7 +66,7 @@ def reducer(
             state,
             items=[
                 *state.items,
-                ToDoItem(
+                TodoItem(
                     id=uuid.uuid4().hex,
                     content=action.content,
                     timestamp=action.timestamp,
@@ -79,7 +79,7 @@ def reducer(
                 state,
                 actions=[item for item in state.items if item.id != action.id],
             ),
-            events=[CallApi(parameters={})],
+            events=[CallApiEvent(parameters={})],
         )
     return state
 
@@ -103,7 +103,7 @@ def main() -> None:
     # event listener, note that this will run async in a separate thread, so it can
     # include async operations like API calls, etc:
     dummy_api_call = print
-    store.subscribe_event(CallApi, lambda event: dummy_api_call(event.parameters))
+    store.subscribe_event(CallApiEvent, lambda event: dummy_api_call(event.parameters))
 
     # dispatch:
     store.dispatch(AddTodoItemAction(content='New Item', timestamp=time.time()))

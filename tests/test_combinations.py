@@ -10,11 +10,11 @@ from immutable import Immutable
 from redux.basic_types import (
     BaseAction,
     CompleteReducerResult,
-    CreateStoreOptions,
     FinishAction,
     FinishEvent,
     InitAction,
     InitializationActionError,
+    StoreOptions,
 )
 from redux.main import Store
 
@@ -55,7 +55,7 @@ StoreType = Store[StateType, Action, FinishEvent]
 
 @pytest.fixture
 def store() -> StoreType:
-    return Store(reducer, options=CreateStoreOptions(auto_init=True))
+    return Store(reducer, options=StoreOptions(auto_init=True))
 
 
 def test_autorun_of_view(store: StoreType) -> None:

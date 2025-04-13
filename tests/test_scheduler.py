@@ -13,12 +13,12 @@ from redux.basic_types import (
     BaseAction,
     BaseEvent,
     CompleteReducerResult,
-    CreateStoreOptions,
     FinishAction,
     FinishEvent,
     InitAction,
     InitializationActionError,
     ReducerResult,
+    StoreOptions,
 )
 from redux.main import Store
 
@@ -121,7 +121,7 @@ def test_scheduler(mocker: MockerFixture) -> None:
 
     store = Store(
         reducer,
-        options=CreateStoreOptions(
+        options=StoreOptions(
             auto_init=True,
             scheduler=scheduler.set,
             task_creator=_create_task_with_callback,

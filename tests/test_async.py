@@ -13,11 +13,10 @@ from redux.basic_types import (
     BaseAction,
     BaseEvent,
     CompleteReducerResult,
-    CreateStoreOptions,
     FinishAction,
-    FinishEvent,
     InitAction,
     InitializationActionError,
+    StoreOptions,
     ViewOptions,
 )
 from redux.main import Store
@@ -64,14 +63,14 @@ def reducer(
 
 
 Action = IncrementAction | SetMirroredValueAction | InitAction | FinishAction
-StoreType = Store[StateType, Action, FinishEvent]
+StoreType = Store[StateType, Action, IncrementEvent]
 
 
 @pytest.fixture
 def store(event_loop: LoopThread) -> StoreType:
     return Store(
         reducer,
-        options=CreateStoreOptions(
+        options=StoreOptions(
             auto_init=True,
             task_creator=event_loop.create_task,
             on_finish=event_loop.stop,
@@ -267,6 +266,6 @@ def test_event_subscription(store: StoreType) -> None:
 def test_event_subscription_with_no_task_creator() -> None:
     store = Store(
         reducer,
-        options=CreateStoreOptions(auto_init=True),
+        options=StoreOptions(auto_init=True),
     )
     store.dispatch(FinishAction())

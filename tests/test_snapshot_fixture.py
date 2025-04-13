@@ -10,12 +10,12 @@ from immutable import Immutable
 from redux.basic_types import (
     BaseAction,
     BaseEvent,
-    CompleteReducerResult,
-    CreateStoreOptions,
     FinishAction,
     FinishEvent,
     InitAction,
     InitializationActionError,
+    ReducerResult,
+    StoreOptions,
 )
 from redux.main import Store
 
@@ -33,13 +33,13 @@ class IncrementAction(BaseAction): ...
 class DummyEvent(BaseEvent): ...
 
 
-Action = IncrementAction | InitAction | FinishAction
+Action = InitAction | IncrementAction | FinishAction
 
 
 def reducer(
     state: StateType | None,
     action: Action,
-) -> StateType | CompleteReducerResult[StateType, Action, DummyEvent | FinishEvent]:
+) -> ReducerResult[StateType, Action, DummyEvent | FinishEvent]:
     if state is None:
         if isinstance(action, InitAction):
             return StateType(value=0)
@@ -52,12 +52,7 @@ def reducer(
 
 @pytest.fixture
 def store() -> Store:
-    return Store(
-        reducer,
-        options=CreateStoreOptions(
-            auto_init=True,
-        ),
-    )
+    return Store(reducer, options=StoreOptions(auto_init=True))
 
 
 def test_monitor(

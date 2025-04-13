@@ -14,13 +14,14 @@ from redux import (
     BaseAction,
     BaseEvent,
     CompleteReducerResult,
-    CreateStoreOptions,
     FinishAction,
     InitAction,
     InitializationActionError,
     ReducerResult,
     Store,
+    StoreOptions,
 )
+from redux.basic_types import AutorunOptions
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
@@ -29,14 +30,14 @@ if TYPE_CHECKING:
 
 
 # state:
-class ToDoItem(Immutable):
+class TodoItem(Immutable):
     id: str
     content: str
     timestamp: float
 
 
-class ToDoState(Immutable):
-    items: Sequence[ToDoItem]
+class TodoState(Immutable):
+    items: Sequence[TodoItem]
 
 
 # actions:
@@ -50,7 +51,7 @@ class RemoveTodoItemAction(BaseAction):
 
 
 # events:
-class CallApi(BaseEvent):
+class CallApiEvent(BaseEvent):
     parameters: object
 
 
@@ -58,14 +59,14 @@ class CallApi(BaseEvent):
 def store() -> Store:
     # reducer:
     def reducer(
-        state: ToDoState | None,
+        state: TodoState | None,
         action: BaseAction,
-    ) -> ReducerResult[ToDoState, BaseAction, BaseEvent]:
+    ) -> ReducerResult[TodoState, BaseAction, CallApiEvent]:
         if state is None:
             if isinstance(action, InitAction):
-                return ToDoState(
+                return TodoState(
                     items=[
-                        ToDoItem(
+                        TodoItem(
                             id=uuid.uuid4().hex,
                             content='Initial Item',
                             timestamp=time.time(),
@@ -78,7 +79,7 @@ def store() -> Store:
                 state,
                 items=[
                     *state.items,
-                    ToDoItem(
+                    TodoItem(
                         id=uuid.uuid4().hex,
                         content=action.content,
                         timestamp=action.timestamp,
@@ -91,11 +92,11 @@ def store() -> Store:
                     state,
                     actions=[item for item in state.items if item.id != action.id],
                 ),
-                events=[CallApi(parameters={})],
+                events=[CallApiEvent(parameters={})],
             )
         return state
 
-    return Store(reducer, options=CreateStoreOptions(auto_init=True))
+    return Store(reducer, options=StoreOptions(auto_init=True))
 
 
 def test_todo(store_snapshot: StoreSnapshot, store: Store) -> None:
@@ -106,6 +107,7 @@ def test_todo(store_snapshot: StoreSnapshot, store: Store) -> None:
     # autorun:
     @store.autorun(
         lambda state: state.items[0].content if len(state.items) > 0 else None,
+        options=AutorunOptions(initial_call=False),
     )
     def reaction(_: str | None) -> None:
         store_snapshot.take()
@@ -115,7 +117,7 @@ def test_todo(store_snapshot: StoreSnapshot, store: Store) -> None:
     # event listener, note that this will run async in a separate thread, so it can
     # include async operations like API calls, etc:
     dummy_api_call = logging.getLogger().info
-    store.subscribe_event(CallApi, lambda event: dummy_api_call(event.parameters))
+    store.subscribe_event(CallApiEvent, lambda event: dummy_api_call(event.parameters))
 
     # dispatch:
     store.dispatch(AddTodoItemAction(content='New Item', timestamp=time.time()))

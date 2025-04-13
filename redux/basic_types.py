@@ -23,6 +23,8 @@ from typing_extensions import TypeVar
 if TYPE_CHECKING:
     from asyncio import Task
 
+    from redux.autorun import Autorun
+    from redux.side_effect_runner import SideEffectRunner
 
 T = TypeVar('T')
 
@@ -113,15 +115,31 @@ class EventMiddleware(Protocol, Generic[Event]):
     def __call__(self: EventMiddleware, event: Event) -> Event | None: ...
 
 
-class CreateStoreOptions(Immutable, Generic[Action, Event]):
+def default_autorun() -> type[Autorun]:
+    from redux.autorun import Autorun
+
+    return Autorun
+
+
+def default_side_effect_runner() -> type[SideEffectRunner]:
+    from redux.side_effect_runner import SideEffectRunner
+
+    return SideEffectRunner
+
+
+class StoreOptions(Immutable, Generic[Action, Event]):
     auto_init: bool = False
-    threads: int = 5
+    side_effect_threads: int = 1
     scheduler: Scheduler | None = None
     action_middlewares: Sequence[ActionMiddleware[Action]] = field(default_factory=list)
     event_middlewares: Sequence[EventMiddleware[Event]] = field(default_factory=list)
     task_creator: TaskCreator | None = None
     on_finish: Callable[[], Any] | None = None
     grace_time_in_seconds: float = 1
+    autorun_class: type[Autorun] = field(default_factory=default_autorun)
+    side_effect_runner_class: type[SideEffectRunner] = field(
+        default_factory=default_side_effect_runner,
+    )
 
 
 # Autorun

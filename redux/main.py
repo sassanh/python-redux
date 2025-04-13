@@ -18,7 +18,6 @@ from typing import (
     overload,
 )
 
-from redux.autorun import Autorun
 from redux.basic_types import (
     Action,
     ActionMiddleware,
@@ -32,7 +31,6 @@ from redux.basic_types import (
     BaseAction,
     BaseEvent,
     ComparatorOutput,
-    CreateStoreOptions,
     DispatchParameters,
     Event,
     EventHandler,
@@ -45,6 +43,7 @@ from redux.basic_types import (
     SelectorOutput,
     SnapshotAtom,
     State,
+    StoreOptions,
     StrictEvent,
     SubscribeEventCleanup,
     UnknownAutorunDecorator,
@@ -59,7 +58,6 @@ from redux.basic_types import (
     is_state_reducer_result,
 )
 from redux.serialization_mixin import SerializationMixin
-from redux.side_effect_runner import SideEffectRunnerThread
 
 if TYPE_CHECKING:
     from collections.abc import Awaitable, Callable
@@ -69,12 +67,12 @@ class Store(Generic[State, Action, Event], SerializationMixin):
     """Redux store for managing state and side effects."""
 
     def __init__(
-        self: Store,
+        self,
         reducer: ReducerType[State, Action, Event],
-        options: CreateStoreOptions[Action, Event] | None = None,
+        options: StoreOptions[Action, Event] | None = None,
     ) -> None:
         """Create a new store."""
-        self.store_options = options or CreateStoreOptions()
+        self.store_options = options or StoreOptions()
         self.reducer = reducer
         self._create_task = self.store_options.task_creator
 
@@ -97,11 +95,11 @@ class Store(Generic[State, Action, Event], SerializationMixin):
             tuple[EventHandler[Event], Event] | None
         ]()
         self._workers = [
-            SideEffectRunnerThread(
+            self.store_options.side_effect_runner_class(
                 task_queue=self._event_handlers_queue,
                 create_task=self._create_task,
             )
-            for _ in range(self.store_options.threads)
+            for _ in range(self.store_options.side_effect_threads)
         ]
         for worker in self._workers:
             worker.start()
@@ -169,7 +167,7 @@ class Store(Generic[State, Action, Event], SerializationMixin):
     def clean_up(self: Store[State, Action, Event]) -> None:
         """Clean up the store."""
         self.wait_for_event_handlers()
-        for _ in range(self.store_options.threads):
+        for _ in range(self.store_options.side_effect_threads):
             self._event_handlers_queue.put_nowait(None)
         self.wait_for_event_handlers()
         for worker in self._workers:
@@ -347,7 +345,7 @@ class Store(Generic[State, Action, Event], SerializationMixin):
                 AwaitableOrNot[ReturnType],
             ],
         ) -> AutorunReturnType[AwaitableOrNot[ReturnType], Args]:
-            return Autorun(
+            return self.store_options.autorun_class(
                 store=self,
                 selector=selector,
                 comparator=comparator,
@@ -403,7 +401,7 @@ class Store(Generic[State, Action, Event], SerializationMixin):
             ],
         ) -> ViewReturnType[AwaitableOrNot[ReturnType], Args]:
             _options = options or ViewOptions()
-            return Autorun(
+            return self.store_options.autorun_class(
                 store=self,
                 selector=selector,
                 comparator=None,

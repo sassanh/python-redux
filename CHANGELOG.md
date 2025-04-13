@@ -4,6 +4,7 @@
 
 - refactor: remove `WithState` as it wasn't doing anything beyond `functools.wraps`
 - refactor: autorun doesn't inform subscribers when the output value is not changed
+- refactor: add `autorun_class` and `side_effect_runner_class` to improve extensibility
 
 ## Version 0.22.2
 

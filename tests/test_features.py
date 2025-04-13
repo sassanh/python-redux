@@ -9,7 +9,7 @@ from immutable import Immutable
 
 from redux import CombineReducerRegisterAction, CombineReducerUnregisterAction, Store
 from redux.combine_reducers import combine_reducers
-from redux.main import CreateStoreOptions
+from redux.main import StoreOptions
 
 if TYPE_CHECKING:
     from redux_pytest.fixtures import StoreMonitor, StoreSnapshot
@@ -96,7 +96,7 @@ def base10_reducer(
 def inverse_reducer(
     state: CountStateType | None,
     action: ActionType,
-) -> ReducerResult[CountStateType, ActionType, SleepEvent]:
+) -> ReducerResult[CountStateType, IncrementAction, SleepEvent]:
     if state is None:
         if isinstance(action, InitAction):
             return CountStateType(count=0)
@@ -135,8 +135,8 @@ def reducer() -> Reducer:
 def store(reducer: Reducer) -> Store:
     return Store(
         reducer[0],
-        CreateStoreOptions(
-            threads=2,
+        StoreOptions(
+            side_effect_threads=2,
             action_middlewares=[lambda action: print(action) or action],
             event_middlewares=[lambda event: print(event) or event],
         ),

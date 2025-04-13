@@ -140,8 +140,9 @@ class Autorun(
             Callable[[ReturnType], Any] | weakref.ref[Callable[[ReturnType], Any]]
         ] = set()
 
-        if self._check(store._state) and self._options.initial_call:  # noqa: SLF001
-            self._call()
+        if self.check(store._state) and self._options.initial_call:  # noqa: SLF001
+            self._should_be_called = False
+            self.call()
 
         if self._options.reactive:
             self._unsubscribe = store._subscribe(self._react)  # noqa: SLF001
@@ -153,8 +154,9 @@ class Autorun(
         state: State,
     ) -> None:
         """React to state changes in the store."""
-        if self._options.reactive and self._check(state):
-            self._call()
+        if self._options.reactive and self.check(state):
+            self._should_be_called = False
+            self.call()
 
     def unsubscribe(
         self: Autorun[
@@ -216,7 +218,7 @@ class Autorun(
             ),
         )
 
-    def _check(
+    def check(
         self: Autorun[
             State,
             Action,
@@ -228,6 +230,7 @@ class Autorun(
         ],
         state: State | None,
     ) -> bool:
+        """Check if the autorun should be called based on the current state."""
         if state is None:
             return False
         try:
@@ -248,7 +251,7 @@ class Autorun(
         self._last_comparator_result = comparator_result
         return self._should_be_called
 
-    def _call(
+    def call(
         self: Autorun[
             State,
             Action,
@@ -261,7 +264,7 @@ class Autorun(
         *args: Args.args,
         **kwargs: Args.kwargs,
     ) -> None:
-        self._should_be_called = False
+        """Call the wrapped function with the current state of the store."""
         func = self._func() if isinstance(self._func, weakref.ref) else self._func
         if func and self._last_selector_result is not None:
             value: ReturnType = func(
@@ -313,9 +316,10 @@ class Autorun(
     ) -> ReturnType:
         """Call the wrapped function with the current state of the store."""
         state = self._store._state  # noqa: SLF001
-        self._check(state)
+        self.check(state)
         if self._should_be_called or args or kwargs or not self._options.memoization:
-            self._call(*args, **kwargs)
+            self._should_be_called = False
+            self.call(*args, **kwargs)
         return cast('ReturnType', self._latest_value)
 
     def __repr__(

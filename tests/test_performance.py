@@ -11,11 +11,11 @@ from immutable import Immutable
 from redux.basic_types import (
     BaseAction,
     CompleteReducerResult,
-    CreateStoreOptions,
     FinishAction,
     FinishEvent,
     InitAction,
     InitializationActionError,
+    StoreOptions,
 )
 from redux.main import Store
 
@@ -56,7 +56,7 @@ class StoreType(Store[StateType, Action, FinishEvent]):
 
 @pytest.fixture
 def store() -> Generator[StoreType, None, None]:
-    store = StoreType(reducer, options=CreateStoreOptions(auto_init=True))
+    store = StoreType(reducer, options=StoreOptions(auto_init=True))
     yield store
 
     store.dispatch(FinishAction())

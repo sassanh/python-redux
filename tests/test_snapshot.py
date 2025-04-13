@@ -5,9 +5,9 @@ from immutable import Immutable
 
 from redux.basic_types import (
     BaseAction,
-    CreateStoreOptions,
     FinishAction,
     FinishEvent,
+    StoreOptions,
 )
 from redux.main import Store
 
@@ -24,7 +24,7 @@ def test_snapshot() -> None:
 
     store = Store(
         lambda state, _: state or initial_state,
-        options=CreateStoreOptions(auto_init=True),
+        options=StoreOptions(auto_init=True),
     )
 
     assert store.snapshot == {'_type': 'StateType', 'value': 0}

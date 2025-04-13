@@ -11,11 +11,11 @@ from redux.basic_types import (
     BaseAction,
     BaseEvent,
     CompleteReducerResult,
-    CreateStoreOptions,
     FinishAction,
     FinishEvent,
     InitAction,
     InitializationActionError,
+    StoreOptions,
 )
 from redux.main import Store
 
@@ -60,12 +60,7 @@ def reducer(
 
 @pytest.fixture
 def store() -> Store:
-    return Store(
-        reducer,
-        options=CreateStoreOptions(
-            auto_init=True,
-        ),
-    )
+    return Store(reducer, options=StoreOptions(auto_init=True))
 
 
 def test_monitor_action(
@@ -94,12 +89,7 @@ def test_multiple_stores(
     needs_finish: None,
 ) -> None:
     _ = needs_finish
-    store = Store(
-        reducer,
-        options=CreateStoreOptions(
-            auto_init=True,
-        ),
-    )
+    store = Store(reducer, options=StoreOptions(auto_init=True))
 
     store.dispatch(IncrementAction())
     store_monitor.dispatched_actions.assert_not_called()

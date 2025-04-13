@@ -10,11 +10,11 @@ from immutable import Immutable
 from redux.basic_types import (
     BaseAction,
     CompleteReducerResult,
-    CreateStoreOptions,
     FinishAction,
     FinishEvent,
     InitAction,
     InitializationActionError,
+    StoreOptions,
     ViewOptions,
 )
 from redux.main import Store
@@ -67,7 +67,7 @@ StoreType = Store[StateType, Action, FinishEvent]
 
 @pytest.fixture
 def store() -> Generator[StoreType, None, None]:
-    store = Store(reducer, options=CreateStoreOptions(auto_init=True))
+    store = Store(reducer, options=StoreOptions(auto_init=True))
     yield store
 
     store.dispatch(IncrementAction())
@@ -110,7 +110,7 @@ def test_not_reactive(
 def test_uninitialized_store(
     store: StoreType,
 ) -> None:
-    store = Store(reducer, options=CreateStoreOptions(auto_init=False))
+    store = Store(reducer, options=StoreOptions(auto_init=False))
 
     @store.view(lambda state: state.value)
     def render(value: int) -> int:
@@ -130,7 +130,7 @@ def test_uninitialized_store(
 def test_with_default_value_and_uninitialized_store(
     store: StoreType,
 ) -> None:
-    store = Store(reducer, options=CreateStoreOptions(auto_init=False))
+    store = Store(reducer, options=StoreOptions(auto_init=False))
 
     @store.view(lambda state: state.value, options=ViewOptions(default_value=5))
     def render(value: int) -> int:

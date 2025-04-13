@@ -17,11 +17,11 @@ if TYPE_CHECKING:
     from collections.abc import Callable
 
 
-class SideEffectRunnerThread(threading.Thread, Generic[Event]):
+class SideEffectRunner(threading.Thread, Generic[Event]):
     """Thread for running side effects."""
 
     def __init__(
-        self: SideEffectRunnerThread,
+        self: SideEffectRunner,
         *,
         task_queue: queue.Queue[tuple[EventHandler[Event], Event] | None],
         create_task: TaskCreator | None,
@@ -34,7 +34,7 @@ class SideEffectRunnerThread(threading.Thread, Generic[Event]):
         self._handles: set[Handle] = set()
         self.create_task = create_task
 
-    def run(self: SideEffectRunnerThread[Event]) -> None:
+    def run(self: SideEffectRunner[Event]) -> None:
         """Run the side effect runner thread."""
         while True:
             task = self.task_queue.get()

@@ -22,7 +22,7 @@ from redux.basic_types import (
     FinishAction,
     ReducerResult,
 )
-from redux.main import CreateStoreOptions
+from redux.main import StoreOptions
 
 
 class CountAction(BaseAction): ...
@@ -124,7 +124,7 @@ def main() -> None:
     # Initialization <
     store = Store(
         reducer,
-        CreateStoreOptions(auto_init=True, threads=2),
+        StoreOptions(auto_init=True, side_effect_threads=2),
     )
 
     def event_handler(event: SleepEvent) -> None:

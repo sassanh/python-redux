@@ -12,11 +12,11 @@ from immutable import Immutable
 
 from redux.basic_types import (
     BaseAction,
-    CreateStoreOptions,
     FinishAction,
     FinishEvent,
     InitAction,
     InitializationActionError,
+    StoreOptions,
 )
 from redux.main import Store
 
@@ -53,7 +53,7 @@ def _reducer(
 
 @pytest.fixture(name='store')
 def _() -> StoreType:
-    return Store(_reducer, options=CreateStoreOptions(auto_init=False))
+    return Store(_reducer, options=StoreOptions(auto_init=False))
 
 
 def test_name_attr(store: StoreType) -> None:

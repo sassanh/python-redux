@@ -13,12 +13,12 @@ from immutable import Immutable
 from redux.basic_types import (
     AutorunOptions,
     BaseAction,
-    CompleteReducerResult,
-    CreateStoreOptions,
     FinishAction,
     FinishEvent,
     InitAction,
     InitializationActionError,
+    ReducerResult,
+    StoreOptions,
 )
 from redux.main import Store
 
@@ -51,7 +51,7 @@ Action = (
 def reducer(
     state: StateType | None,
     action: Action,
-) -> StateType | CompleteReducerResult[StateType, Action, FinishEvent]:
+) -> ReducerResult[StateType, Action, FinishEvent]:
     if state is None:
         if isinstance(action, InitAction):
             return StateType(value=0)
@@ -74,7 +74,7 @@ StoreType = Store[StateType, Action, FinishEvent]
 
 @pytest.fixture
 def store() -> Generator[StoreType, None, None]:
-    store = Store(reducer, options=CreateStoreOptions(auto_init=True))
+    store = Store(reducer, options=StoreOptions(auto_init=True))
     yield store
 
     store.dispatch(IncrementAction())
