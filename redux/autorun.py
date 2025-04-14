@@ -5,7 +5,7 @@ from __future__ import annotations
 import asyncio
 import inspect
 import weakref
-from asyncio import Future, Task, iscoroutine, iscoroutinefunction
+from asyncio import iscoroutine, iscoroutinefunction
 from typing import (
     TYPE_CHECKING,
     Any,
@@ -216,27 +216,6 @@ class Autorun(
             else:
                 subscriber = subscriber_
             subscriber(self._latest_value)
-
-    def _task_callback(
-        self: Autorun[
-            State,
-            Action,
-            Event,
-            SelectorOutput,
-            ComparatorOutput,
-            Args,
-            ReturnType,
-        ],
-        task: Task,
-        *,
-        future: Future,
-    ) -> None:
-        task.add_done_callback(
-            lambda result: (
-                future.set_result(result.result()),
-                self.inform_subscribers(),
-            ),
-        )
 
     def check(
         self: Autorun[

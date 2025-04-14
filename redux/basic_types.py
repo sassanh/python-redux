@@ -38,6 +38,15 @@ class BaseAction(Immutable): ...
 class BaseEvent(Immutable): ...
 
 
+class InitAction(BaseAction): ...
+
+
+class FinishAction(BaseAction): ...
+
+
+class FinishEvent(BaseEvent): ...
+
+
 # Type variables
 State = TypeVar('State', bound=Immutable | None, infer_variance=True)
 Action = TypeVar('Action', bound=BaseAction | None, infer_variance=True)
@@ -47,7 +56,7 @@ SelectorOutput = TypeVar('SelectorOutput', infer_variance=True)
 ComparatorOutput = TypeVar('ComparatorOutput', infer_variance=True)
 ReturnType = TypeVar('ReturnType', infer_variance=True)
 Comparator = Callable[[State], ComparatorOutput]
-EventHandler = Callable[[Event], Any] | Callable[[], Any]
+EventHandler: TypeAlias = Callable[[Event], Any] | Callable[[], Any]
 Args = ParamSpec('Args')
 Payload = TypeVar('Payload', bound=Any, default=None)
 
@@ -58,8 +67,11 @@ class CompleteReducerResult(Immutable, Generic[State, Action, Event]):
     events: Sequence[Event] | None = None
 
 
-ReducerResult = CompleteReducerResult[State, Action, Event] | State
-ReducerType = Callable[[State | None, Action], ReducerResult[State, Action, Event]]
+ReducerResult: TypeAlias = CompleteReducerResult[State, Action, Event] | State
+ReducerType: TypeAlias = Callable[
+    [State | None, Action],
+    ReducerResult[State, Action, Event],
+]
 
 
 class InitializationActionError(Exception):
@@ -68,15 +80,6 @@ class InitializationActionError(Exception):
             f"""The only accepted action type when state is None is "InitAction", \
 action "{action}" is not allowed.""",
         )
-
-
-class InitAction(BaseAction): ...
-
-
-class FinishAction(BaseAction): ...
-
-
-class FinishEvent(BaseEvent): ...
 
 
 def is_complete_reducer_result(
@@ -103,8 +106,6 @@ class TaskCreator(Protocol):
     def __call__(
         self: TaskCreator,
         coro: Coroutine,
-        *,
-        callback: TaskCreatorCallback | None = None,
     ) -> None: ...
 
 
@@ -132,8 +133,12 @@ class StoreOptions(Immutable, Generic[Action, Event]):
     auto_init: bool = False
     side_effect_threads: int = 1
     scheduler: Scheduler | None = None
-    action_middlewares: Sequence[ActionMiddleware[Action]] = field(default_factory=list)
-    event_middlewares: Sequence[EventMiddleware[Event]] = field(default_factory=list)
+    action_middlewares: Sequence[ActionMiddleware[Action | InitAction]] = field(
+        default_factory=list,
+    )
+    event_middlewares: Sequence[EventMiddleware[Event | FinishEvent]] = field(
+        default_factory=list,
+    )
     task_creator: TaskCreator | None = None
     on_finish: Callable[[], Any] | None = None
     grace_time_in_seconds: float = 1
@@ -285,6 +290,15 @@ class AutorunDecorator(Protocol, Generic[ReturnType, SelectorOutput, AutoAwait])
         ],
     ) -> AutorunReturnType[Awaitable[ReturnType], Args]: ...
 
+    @overload
+    def __call__(
+        self: AutorunDecorator[ReturnType, SelectorOutput, bool],
+        func: Callable[
+            Concatenate[SelectorOutput, Args],
+            ReturnType,
+        ],
+    ) -> AutorunReturnType[ReturnType, Args]: ...
+
 
 # View
 
@@ -367,7 +381,7 @@ class EventSubscriber(Protocol):
     ) -> Callable[[], None]: ...
 
 
-DispatchParameters: TypeAlias = Action | list[Action]
+DispatchParameters: TypeAlias = Action | InitAction | list[Action | InitAction]
 
 
 class Dispatch(Protocol, Generic[State, Action, Event]):

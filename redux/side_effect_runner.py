@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import asyncio
 import contextlib
 import inspect
 import threading
@@ -15,6 +14,8 @@ from redux.basic_types import Event, EventHandler, TaskCreator
 if TYPE_CHECKING:
     import queue
     from collections.abc import Callable
+
+    from redux.basic_types import EventHandler, TaskCreator
 
 
 class SideEffectRunner(threading.Thread, Generic[Event]):
@@ -30,7 +31,6 @@ class SideEffectRunner(threading.Thread, Generic[Event]):
         super().__init__()
         self.name = 'Side Effect Runner'
         self.task_queue = task_queue
-        self.loop = asyncio.get_event_loop()
         self._handles: set[Handle] = set()
         self.create_task = create_task
 
@@ -38,10 +38,9 @@ class SideEffectRunner(threading.Thread, Generic[Event]):
         """Run the side effect runner thread."""
         while True:
             task = self.task_queue.get()
-            if task is None:
-                self.task_queue.task_done()
-                break
             try:
+                if task is None:
+                    break
                 event_handler_, event = task
                 if isinstance(event_handler_, weakref.ref):
                     event_handler = event_handler_()

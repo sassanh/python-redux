@@ -7,6 +7,7 @@ import inspect
 import queue
 import weakref
 from collections import defaultdict
+from collections.abc import Awaitable, Iterable, Sequence
 from functools import wraps
 from threading import Lock, Thread
 from typing import (
@@ -56,7 +57,7 @@ from redux.basic_types import (
 from redux.serialization_mixin import SerializationMixin
 
 if TYPE_CHECKING:
-    from collections.abc import Awaitable, Callable
+    from collections.abc import Callable
 
 
 class Store(Generic[State, Action, Event], SerializationMixin):
@@ -64,7 +65,7 @@ class Store(Generic[State, Action, Event], SerializationMixin):
 
     def __init__(
         self,
-        reducer: ReducerType[State, Action, Event],
+        reducer: ReducerType[State, Action | InitAction, Event | None],
         options: StoreOptions[Action, Event] | None = None,
     ) -> None:
         """Create a new store."""
@@ -77,18 +78,19 @@ class Store(Generic[State, Action, Event], SerializationMixin):
 
         self._state: State | None = None
         self._listeners: set[
-            Callable[[State], Any] | weakref.ref[Callable[[State], Any]]
+            Callable[[State], AwaitableOrNot[None]]
+            | weakref.ref[Callable[[State], AwaitableOrNot[None]]]
         ] = set()
         self._event_handlers: defaultdict[
-            type[Event],
+            type[Event | FinishEvent],
             set[EventHandler | weakref.ref[EventHandler]],
         ] = defaultdict(set)
 
-        self._actions: list[Action] = []
-        self._events: list[Event] = []
+        self._actions: list[Action | InitAction] = []
+        self._events: list[Event | FinishEvent] = []
 
         self._event_handlers_queue = queue.Queue[
-            tuple[EventHandler[Event], Event] | None
+            tuple[EventHandler[Event | FinishEvent], Event | FinishEvent] | None
         ]()
         self._workers = [
             self.store_options.side_effect_runner_class(
@@ -105,11 +107,11 @@ class Store(Generic[State, Action, Event], SerializationMixin):
         if self.store_options.auto_init:
             if self.store_options.scheduler:
                 self.store_options.scheduler(
-                    lambda: self.dispatch(cast('Action', InitAction())),
+                    lambda: self.dispatch(InitAction()),
                     interval=False,
                 )
             else:
-                self.dispatch(cast('Action', InitAction()))
+                self.dispatch(InitAction())
 
         if self.store_options.scheduler:
             self.store_options.scheduler(self.run, interval=True)
@@ -139,7 +141,7 @@ class Store(Generic[State, Action, Event], SerializationMixin):
                     self._call_listeners(self._state)
 
                 if isinstance(action, FinishAction):
-                    self._dispatch([cast('Event', FinishEvent())])
+                    self._dispatch([FinishEvent()])
 
     def _run_event_handlers(self: Store[State, Action, Event]) -> None:
         while len(self._events) > 0:
@@ -199,17 +201,17 @@ class Store(Generic[State, Action, Event], SerializationMixin):
         actions = [
             action
             for actions in parameters
-            for action in (actions if isinstance(actions, list) else [actions])
+            for action in (actions if isinstance(actions, Iterable) else [actions])
         ]
         self._dispatch(actions)
 
     def _dispatch(
         self: Store[State, Action, Event],
-        items: list[Action | Event],
+        items: Sequence[Action | Event | InitAction | FinishEvent | None],
     ) -> None:
         for item in items:
             if isinstance(item, BaseAction):
-                action = cast('Action', item)
+                action = item
                 for action_middleware in self._action_middlewares:
                     action_ = action_middleware(action)
                     if action_ is None:
@@ -218,7 +220,7 @@ class Store(Generic[State, Action, Event], SerializationMixin):
                 else:
                     self._actions.append(action)
             if isinstance(item, BaseEvent):
-                event = cast('Event', item)
+                event = item
                 for event_middleware in self._event_middlewares:
                     event_ = event_middleware(event)
                     if event_ is None:
@@ -267,10 +269,10 @@ class Store(Generic[State, Action, Event], SerializationMixin):
         else:
             handler_ref = weakref.ref(handler)
 
-        self._event_handlers[cast('Any', event_type)].add(handler_ref)
+        self._event_handlers[cast('Event', event_type)].add(handler_ref)
 
         def unsubscribe() -> None:
-            self._event_handlers[cast('Any', event_type)].discard(handler_ref)
+            self._event_handlers[cast('Event', event_type)].discard(handler_ref)
 
         return SubscribeEventCleanup(unsubscribe=unsubscribe, handler=handler)
 
@@ -305,9 +307,9 @@ class Store(Generic[State, Action, Event], SerializationMixin):
         def autorun_decorator(
             func: Callable[
                 Concatenate[SelectorOutput, Args],
-                ReturnType,
+                AwaitableOrNot[ReturnType],
             ],
-        ) -> AutorunReturnType[ReturnType | None, Args]:
+        ) -> AutorunReturnType[ReturnType, Args]:
             return self.store_options.autorun_class(
                 store=self,
                 selector=selector,

@@ -8,9 +8,7 @@ from typing import TYPE_CHECKING
 import pytest
 
 if TYPE_CHECKING:
-    from collections.abc import Callable, Coroutine
-
-    from redux.basic_types import TaskCreatorCallback
+    from collections.abc import Coroutine
 
 
 class LoopThread(threading.Thread):
@@ -24,21 +22,8 @@ class LoopThread(threading.Thread):
     def stop(self: LoopThread) -> None:
         self.loop.call_soon_threadsafe(self.loop.stop)
 
-    def create_task(
-        self: LoopThread,
-        coro: Coroutine,
-        *,
-        callback: TaskCreatorCallback | None = None,
-    ) -> None:
-        def _(
-            coro: Coroutine,
-            callback: Callable[[asyncio.Task], None] | None = None,
-        ) -> None:
-            task = self.loop.create_task(coro)
-            if callback:
-                task.add_done_callback(callback)
-
-        self.loop.call_soon_threadsafe(_, coro, callback)
+    def create_task(self: LoopThread, coro: Coroutine) -> None:
+        self.loop.call_soon_threadsafe(self.loop.create_task, coro)
 
 
 @pytest.fixture

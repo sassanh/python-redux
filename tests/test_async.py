@@ -129,10 +129,7 @@ def test_autorun_autoawait(store: StoreType) -> None:
 
 
 def test_autorun_non_autoawait(store: StoreType) -> None:
-    @store.autorun(
-        lambda state: state.value,
-        options=AutorunOptions(auto_await=False),
-    )
+    @store.autorun(lambda state: state.value, options=AutorunOptions(auto_await=False))
     async def sync_mirror(value: int) -> int:
         store.dispatch(SetMirroredValueAction(value=value))
         return value * 2
@@ -143,10 +140,11 @@ def test_autorun_non_autoawait(store: StoreType) -> None:
     async def _(values: tuple[int, int]) -> None:
         value, mirrored_value = values
         if mirrored_value != value:
-            assert 'awaited=False' in str(sync_mirror())
-            await sync_mirror()
-            assert 'awaited=True' in str(sync_mirror())
-            await sync_mirror()
+            sync_mirror_returned_value = sync_mirror()
+            assert 'awaited=False' in str(sync_mirror_returned_value)
+            await sync_mirror_returned_value
+            assert 'awaited=True' in str(sync_mirror_returned_value)
+            await sync_mirror_returned_value
         elif value < INCREMENTS:
             store.dispatch(IncrementAction())
         else:
