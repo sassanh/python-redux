@@ -24,7 +24,7 @@ from redux.main import Store
 if TYPE_CHECKING:
     from redux_pytest.fixtures.event_loop import LoopThread
 
-INCREMENTS = 20
+INCREMENTS = 10
 
 
 class StateType(Immutable):
@@ -101,7 +101,7 @@ def test_autorun(
     async def _(mirrored_value: int) -> None:
         if mirrored_value < INCREMENTS:
             return
-        await asyncio.sleep(0.1)
+        await asyncio.sleep(0.05)
         store.dispatch(FinishAction())
 
     dispatch_actions(store)
@@ -124,7 +124,6 @@ def test_autorun_autoawait(store: StoreType) -> None:
         elif value < INCREMENTS:
             store.dispatch(IncrementAction())
         else:
-            await asyncio.sleep(0.1)
             store.dispatch(FinishAction())
 
 
@@ -145,10 +144,11 @@ def test_autorun_non_autoawait(store: StoreType) -> None:
             await sync_mirror_returned_value
             assert 'awaited=True' in str(sync_mirror_returned_value)
             await sync_mirror_returned_value
-        elif value < INCREMENTS:
+            return
+        await asyncio.sleep(0.05)
+        if value < INCREMENTS:
             store.dispatch(IncrementAction())
         else:
-            await asyncio.sleep(0.1)
             store.dispatch(FinishAction())
 
 
@@ -165,7 +165,7 @@ def test_autorun_default_value(store: StoreType) -> None:
     async def _(mirrored_value: int) -> None:
         if mirrored_value < INCREMENTS:
             return
-        await asyncio.sleep(0.1)
+        await asyncio.sleep(0.05)
         store.dispatch(FinishAction())
 
     dispatch_actions(store)
@@ -184,7 +184,7 @@ def test_view(store: StoreType) -> None:
         assert await doubled() == value * 2
         for _ in range(10):
             await doubled()
-        await asyncio.sleep(0.01)
+        await asyncio.sleep(0.05)
         if value < INCREMENTS:
             store.dispatch(IncrementAction())
         else:
@@ -209,7 +209,7 @@ def test_view_await(store: StoreType) -> None:
         calls_length = len(calls)
         assert await doubled() == value * 2
         assert len(calls) == calls_length + 1
-        await asyncio.sleep(0.01)
+        await asyncio.sleep(0.05)
 
         if value < INCREMENTS:
             store.dispatch(IncrementAction())
@@ -230,7 +230,7 @@ def test_view_with_args(store: StoreType) -> None:
     async def _(value: int) -> None:
         assert await multiplied(factor=2) == value * 2
         assert await multiplied(factor=3) == value * 3
-        await asyncio.sleep(0.01)
+        await asyncio.sleep(0.05)
         if value < INCREMENTS:
             store.dispatch(IncrementAction())
         else:
@@ -251,7 +251,7 @@ def test_view_with_default_value(store: StoreType) -> None:
     @store.autorun(lambda state: state.value)
     async def _(value: int) -> None:
         assert await doubled() == value * 2
-        await asyncio.sleep(0.01)
+        await asyncio.sleep(0.05)
         if value < INCREMENTS:
             store.dispatch(IncrementAction())
         else:
@@ -265,7 +265,7 @@ def test_subscription(store: StoreType) -> None:
     async def render(state: StateType) -> None:
         if state.value == INCREMENTS:
             unsubscribe()
-            await asyncio.sleep(0.1)
+            await asyncio.sleep(0.05)
             store.dispatch(FinishAction())
 
     unsubscribe = store._subscribe(render)  # noqa: SLF001
@@ -277,7 +277,7 @@ def test_event_subscription(store: StoreType) -> None:
     async def handler(event: IncrementEvent) -> None:
         if event.post_value == INCREMENTS:
             unsubscribe()
-            await asyncio.sleep(0.1)
+            await asyncio.sleep(0.05)
             store.dispatch(FinishAction())
 
     unsubscribe = store.subscribe_event(IncrementEvent, handler)

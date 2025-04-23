@@ -7,12 +7,12 @@ import json
 import os
 from collections import defaultdict
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Generic, cast
+from typing import TYPE_CHECKING, Any, cast
 
 import pytest
 from str_to_bool import str_to_bool
 
-from redux.basic_types import FinishEvent, State
+from redux.basic_types import FinishEvent
 
 if TYPE_CHECKING:
     from collections.abc import Callable
@@ -22,7 +22,7 @@ if TYPE_CHECKING:
     from redux.main import Store
 
 
-class StoreSnapshot(Generic[State]):
+class StoreSnapshot[State]:
     """Context object for tests taking snapshots of the store."""
 
     def __init__(

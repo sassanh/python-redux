@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 import time
-from typing import TYPE_CHECKING, TypeAlias
+from typing import TYPE_CHECKING
 
 import pytest
 from immutable import Immutable
@@ -50,7 +50,7 @@ class StateType(BaseCombineReducerState):
     inverse: CountStateType
 
 
-ActionType: TypeAlias = InitAction | FinishAction | CountAction | CombineReducerAction
+type ActionType = InitAction | FinishAction | CountAction | CombineReducerAction
 
 
 class SleepEvent(BaseEvent):
@@ -114,8 +114,8 @@ def inverse_reducer(
     return state
 
 
-Reducer: TypeAlias = tuple[
-    ReducerType[StateType, ActionType, SleepEvent | PrintEvent],
+type Reducer = tuple[
+    ReducerType[StateType, ActionType, IncrementAction, SleepEvent | PrintEvent],
     str,
 ]
 

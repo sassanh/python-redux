@@ -2,14 +2,13 @@
 
 from __future__ import annotations
 
-from typing import Generic, cast
+from typing import cast
 
 from immutable import Immutable
 from typing_extensions import override
 
 from redux.autorun import Autorun
 from redux.basic_types import (
-    Args,
     BaseAction,
     BaseEvent,
     FinishAction,
@@ -26,7 +25,7 @@ def test_custom_autorun() -> None:
     class State(Immutable):
         value: int
 
-    class _CounterAutorun(Autorun, Generic[Args]):
+    class _CounterAutorun[**Args](Autorun):
         counter = 0
 
         @override

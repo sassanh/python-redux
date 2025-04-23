@@ -50,18 +50,21 @@ class RemoveTodoItemAction(BaseAction):
     id: str
 
 
+type StoreAction = AddTodoItemAction | RemoveTodoItemAction
+
+
 # events:
 class CallApiEvent(BaseEvent):
     parameters: object
 
 
 @pytest.fixture
-def store() -> Store:
+def store() -> Store[TodoState, StoreAction, CallApiEvent]:
     # reducer:
     def reducer(
         state: TodoState | None,
-        action: BaseAction,
-    ) -> ReducerResult[TodoState, BaseAction, CallApiEvent]:
+        action: StoreAction | InitAction,
+    ) -> ReducerResult[TodoState, None, CallApiEvent]:
         if state is None:
             if isinstance(action, InitAction):
                 return TodoState(

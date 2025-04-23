@@ -10,16 +10,15 @@ from typing import (
     Concatenate,
     Generic,
     Literal,
-    ParamSpec,
+    Never,
     Protocol,
-    TypeAlias,
     TypeGuard,
+    TypeVar,
     cast,
     overload,
 )
 
 from immutable import Immutable
-from typing_extensions import TypeVar
 
 if TYPE_CHECKING:
     from asyncio import Task
@@ -27,9 +26,8 @@ if TYPE_CHECKING:
     from redux.autorun import Autorun
     from redux.side_effect_runner import SideEffectRunner
 
-T = TypeVar('T')
 
-AwaitableOrNot = Awaitable[T] | T
+type AwaitableOrNot[T] = Awaitable[T] | T
 
 
 class BaseAction(Immutable): ...
@@ -47,30 +45,44 @@ class FinishAction(BaseAction): ...
 class FinishEvent(BaseEvent): ...
 
 
-# Type variables
-State = TypeVar('State', bound=Immutable | None, infer_variance=True)
-Action = TypeVar('Action', bound=BaseAction | None, infer_variance=True)
-Event = TypeVar('Event', bound=BaseEvent | None, infer_variance=True)
-StrictEvent = TypeVar('StrictEvent', bound=BaseEvent, infer_variance=True)
-SelectorOutput = TypeVar('SelectorOutput', infer_variance=True)
-ComparatorOutput = TypeVar('ComparatorOutput', infer_variance=True)
-ReturnType = TypeVar('ReturnType', infer_variance=True)
-Comparator = Callable[[State], ComparatorOutput]
-EventHandler: TypeAlias = Callable[[Event], Any] | Callable[[], Any]
-Args = ParamSpec('Args')
-Payload = TypeVar('Payload', bound=Any, default=None)
+type Comparator[State, ComparatorOutput] = Callable[[State], ComparatorOutput]
+type EventHandler[Event] = Callable[[Event], Any] | Callable[[], Any]
 
 
-class CompleteReducerResult(Immutable, Generic[State, Action, Event]):
+Action_co = TypeVar(
+    'Action_co',
+    bound=BaseAction | None,
+    default=None,
+    covariant=True,
+)
+Event_co = TypeVar(
+    'Event_co',
+    bound=BaseEvent | None,
+    default=None,
+    covariant=True,
+)
+State = TypeVar('State', bound=Immutable)
+
+
+class CompleteReducerResult(Immutable, Generic[State, Action_co, Event_co]):
     state: State
-    actions: Sequence[Action] | None = None
-    events: Sequence[Event] | None = None
+    actions: Sequence[Action_co] | None = None
+    events: Sequence[Event_co] | None = None
 
 
-ReducerResult: TypeAlias = CompleteReducerResult[State, Action, Event] | State
-ReducerType: TypeAlias = Callable[
+type ReducerResult[
+    State: Immutable,
+    Action: BaseAction | None = None,
+    Event: BaseEvent | None = None,
+] = CompleteReducerResult[State, Action, Event] | State
+type ReducerType[
+    State: Immutable,
+    Action: BaseAction,
+    ReturnAction: BaseAction | None,
+    ReturnEvent: BaseEvent | None,
+] = Callable[
     [State | None, Action],
-    ReducerResult[State, Action, Event],
+    ReducerResult[State, ReturnAction, ReturnEvent],
 ]
 
 
@@ -82,13 +94,21 @@ action "{action}" is not allowed.""",
         )
 
 
-def is_complete_reducer_result(
+def is_complete_reducer_result[
+    State: Immutable,
+    Action: BaseAction | None,
+    Event: BaseEvent | None,
+](
     result: ReducerResult[State, Action, Event],
 ) -> TypeGuard[CompleteReducerResult[State, Action, Event]]:
     return isinstance(result, CompleteReducerResult)
 
 
-def is_state_reducer_result(
+def is_state_reducer_result[
+    State: Immutable,
+    Action: BaseAction | None,
+    Event: BaseEvent | None,
+](
     result: ReducerResult[State, Action, Event],
 ) -> TypeGuard[State]:
     return not isinstance(result, CompleteReducerResult)
@@ -103,18 +123,21 @@ class TaskCreatorCallback(Protocol):
 
 
 class TaskCreator(Protocol):
+    def __call__(self: TaskCreator, coro: Coroutine) -> None: ...
+
+
+class ActionMiddleware[Action: BaseAction](Protocol):
     def __call__(
-        self: TaskCreator,
-        coro: Coroutine,
-    ) -> None: ...
+        self: ActionMiddleware,
+        action: Action | InitAction | FinishAction,
+    ) -> Action | InitAction | FinishAction | None: ...
 
 
-class ActionMiddleware(Protocol, Generic[Action]):
-    def __call__(self: ActionMiddleware, action: Action) -> Action | None: ...
-
-
-class EventMiddleware(Protocol, Generic[Event]):
-    def __call__(self: EventMiddleware, event: Event) -> Event | None: ...
+class EventMiddleware[Event: BaseEvent | None](Protocol):
+    def __call__(
+        self: EventMiddleware,
+        event: Event | FinishEvent,
+    ) -> Event | FinishEvent | None: ...
 
 
 def default_autorun() -> type[Autorun]:
@@ -129,14 +152,14 @@ def default_side_effect_runner() -> type[SideEffectRunner]:
     return SideEffectRunner
 
 
-class StoreOptions(Immutable, Generic[Action, Event]):
+class StoreOptions[Action: BaseAction, Event: BaseEvent](Immutable):
     auto_init: bool = False
     side_effect_threads: int = 1
     scheduler: Scheduler | None = None
-    action_middlewares: Sequence[ActionMiddleware[Action | InitAction]] = field(
+    action_middlewares: Sequence[ActionMiddleware[Action]] = field(
         default_factory=list,
     )
-    event_middlewares: Sequence[EventMiddleware[Event | FinishEvent]] = field(
+    event_middlewares: Sequence[EventMiddleware[Event]] = field(
         default_factory=list,
     )
     task_creator: TaskCreator | None = None
@@ -150,75 +173,10 @@ class StoreOptions(Immutable, Generic[Action, Event]):
 
 # Autorun
 
-AutoAwait = TypeVar('AutoAwait', bound=Literal[True, False, None], infer_variance=True)
 
-
-class AutorunOptionsType(Immutable, Generic[ReturnType, AutoAwait]):
+class AutorunOptions[ReturnType, AutoAwait: bool](Immutable):
     default_value: ReturnType | None = None
-    auto_await: AutoAwait = cast('AutoAwait', val=None)
-    initial_call: bool = True
-    reactive: bool = True
-    memoization: bool = True
-    keep_ref: bool = True
-    subscribers_initial_run: bool = True
-    subscribers_keep_ref: bool = True
-
-    @overload
-    def __init__(
-        self: AutorunOptionsType[ReturnType, Literal[None]],  # type: ignore[reportInvalidTypeVar]
-        *,
-        default_value: ReturnType | None = None,
-        auto_await: Literal[None] | None = None,
-        initial_call: bool = True,
-        reactive: bool = True,
-        memoization: bool = True,
-        keep_ref: bool = True,
-        subscribers_initial_run: bool = True,
-        subscribers_keep_ref: bool = True,
-    ) -> None: ...
-    @overload
-    def __init__(
-        self: AutorunOptionsType[ReturnType, Literal[True]],  # type: ignore[reportInvalidTypeVar]
-        *,
-        default_value: ReturnType | None = None,
-        auto_await: Literal[True],
-        initial_call: bool = True,
-        reactive: bool = True,
-        memoization: bool = True,
-        keep_ref: bool = True,
-        subscribers_initial_run: bool = True,
-        subscribers_keep_ref: bool = True,
-    ) -> None: ...
-    @overload
-    def __init__(
-        self: AutorunOptionsType[ReturnType, Literal[False]],  # type: ignore[reportInvalidTypeVar]
-        *,
-        default_value: ReturnType | None = None,
-        auto_await: Literal[False],
-        initial_call: bool = True,
-        reactive: bool = True,
-        memoization: bool = True,
-        keep_ref: bool = True,
-        subscribers_initial_run: bool = True,
-        subscribers_keep_ref: bool = True,
-    ) -> None: ...
-    def __init__(  # noqa: PLR0913
-        self: AutorunOptionsType,
-        *,
-        default_value: ReturnType | None = None,
-        auto_await: bool | None = None,
-        initial_call: bool = True,
-        reactive: bool = True,
-        memoization: bool = True,
-        keep_ref: bool = True,
-        subscribers_initial_run: bool = True,
-        subscribers_keep_ref: bool = True,
-    ) -> None: ...
-
-
-class AutorunOptionsImplementation(Immutable, Generic[ReturnType, AutoAwait]):
-    default_value: ReturnType | None = None
-    auto_await: AutoAwait = cast('AutoAwait', val=None)
+    auto_await: AutoAwait = cast('AutoAwait', val=True)
     initial_call: bool = True
     reactive: bool = True
     memoization: bool = True
@@ -227,13 +185,7 @@ class AutorunOptionsImplementation(Immutable, Generic[ReturnType, AutoAwait]):
     subscribers_keep_ref: bool = True
 
 
-AutorunOptions = cast('type[AutorunOptionsType]', AutorunOptionsImplementation)
-
-
-class AutorunReturnType(
-    Protocol,
-    Generic[ReturnType, Args],
-):
+class AutorunReturnType[**Args, ReturnType](Protocol):
     def __call__(
         self: AutorunReturnType,
         *args: Args.args,
@@ -256,54 +208,24 @@ class AutorunReturnType(
     __name__: str
 
 
-class AutorunDecorator(Protocol, Generic[ReturnType, SelectorOutput, AutoAwait]):
+class AutorunDecorator[SelectorOutput, _AutoAwait: bool](Protocol):
     @overload
-    def __call__(
-        self: AutorunDecorator[ReturnType, SelectorOutput, Literal[None]],
-        func: Callable[
-            Concatenate[SelectorOutput, Args],
-            Awaitable[ReturnType],
-        ],
-    ) -> AutorunReturnType[None, Args]: ...
-    @overload
-    def __call__(
-        self: AutorunDecorator[ReturnType, SelectorOutput, Literal[None]],
-        func: Callable[
-            Concatenate[SelectorOutput, Args],
-            ReturnType,
-        ],
-    ) -> AutorunReturnType[ReturnType, Args]: ...
-    @overload
-    def __call__(
-        self: AutorunDecorator[ReturnType, SelectorOutput, Literal[True]],
-        func: Callable[
-            Concatenate[SelectorOutput, Args],
-            Awaitable[ReturnType],
-        ],
-    ) -> AutorunReturnType[None, Args]: ...
-    @overload
-    def __call__(
-        self: AutorunDecorator[ReturnType, SelectorOutput, Literal[False]],
-        func: Callable[
-            Concatenate[SelectorOutput, Args],
-            Awaitable[ReturnType],
-        ],
-    ) -> AutorunReturnType[Awaitable[ReturnType], Args]: ...
+    def __call__[**Args, ReturnType](
+        self: AutorunDecorator[SelectorOutput, Literal[True]],
+        func: Callable[Concatenate[SelectorOutput, Args], Awaitable[ReturnType]],
+    ) -> AutorunReturnType[Args, None]: ...
 
     @overload
-    def __call__(
-        self: AutorunDecorator[ReturnType, SelectorOutput, bool],
-        func: Callable[
-            Concatenate[SelectorOutput, Args],
-            ReturnType,
-        ],
-    ) -> AutorunReturnType[ReturnType, Args]: ...
+    def __call__[**Args, ReturnType](
+        self: AutorunDecorator[SelectorOutput, bool],
+        func: Callable[Concatenate[SelectorOutput, Args], ReturnType],
+    ) -> AutorunReturnType[Args, ReturnType]: ...
 
 
 # View
 
 
-class ViewOptions(Immutable, Generic[ReturnType]):
+class ViewOptions[ReturnType](Immutable):
     default_value: ReturnType | None = None
     memoization: bool = True
     keep_ref: bool = True
@@ -311,10 +233,11 @@ class ViewOptions(Immutable, Generic[ReturnType]):
     subscribers_keep_ref: bool = True
 
 
-class ViewReturnType(
-    Protocol,
-    Generic[ReturnType, Args],
-):
+type ViewOptionsWithDefault[ReturnType] = ViewOptions[ReturnType]
+type ViewOptionsWithoutDefault = ViewOptions[Never]
+
+
+class ViewReturnType[**Args, ReturnType](Protocol):
     def __call__(
         self: ViewReturnType,
         *args: Args.args,
@@ -335,44 +258,48 @@ class ViewReturnType(
     def unsubscribe(self: ViewReturnType) -> None: ...
 
 
-class ViewDecorator(
-    Protocol,
-    Generic[ReturnType, SelectorOutput],
-):
+class ViewDecorator[SelectorOutput, ReturnType](Protocol):
     @overload
-    def __call__(
-        self: ViewDecorator,
-        func: Callable[
-            Concatenate[SelectorOutput, Args],
-            Awaitable[ReturnType],
-        ],
-    ) -> ViewReturnType[Awaitable[ReturnType], Args]: ...
-
-    @overload
-    def __call__(
+    def __call__[**Args](
         self: ViewDecorator,
         func: Callable[
             Concatenate[SelectorOutput, Args],
             ReturnType,
         ],
-    ) -> ViewReturnType[ReturnType, Args]: ...
+    ) -> ViewReturnType[Args, ReturnType]: ...
+
+    @overload
+    def __call__[**Args](
+        self: ViewDecorator,
+        func: Callable[
+            Concatenate[SelectorOutput, Args],
+            Awaitable[ReturnType],
+        ],
+    ) -> ViewReturnType[Args, Awaitable[ReturnType]]: ...
+
+
+class UnknownViewDecorator[SelectorOutput](Protocol):
+    def __call__[**Args, ReturnType](
+        self: UnknownViewDecorator,
+        func: Callable[
+            Concatenate[SelectorOutput, Args],
+            ReturnType,
+        ],
+    ) -> ViewReturnType[Args, ReturnType]: ...
 
 
 # With Store
 
 
-class WithStateDecorator(
-    Protocol,
-    Generic[SelectorOutput],
-):
-    def __call__(
+class WithStateDecorator[SelectorOutput](Protocol):
+    def __call__[**Args, ReturnType](
         self: WithStateDecorator,
         func: Callable[Concatenate[SelectorOutput, Args], ReturnType],
     ) -> Callable[Args, ReturnType]: ...
 
 
 class EventSubscriber(Protocol):
-    def __call__(
+    def __call__[Event](
         self: EventSubscriber,
         event_type: type[Event],
         handler: EventHandler[Event],
@@ -381,10 +308,14 @@ class EventSubscriber(Protocol):
     ) -> Callable[[], None]: ...
 
 
-DispatchParameters: TypeAlias = Action | InitAction | list[Action | InitAction]
+type DispatchParameters[Action: BaseAction] = Action | Sequence[Action]
 
 
-class Dispatch(Protocol, Generic[State, Action, Event]):
+class Dispatch[
+    State: Immutable,
+    Action: BaseAction,
+    Event: BaseEvent | None,
+](Protocol):
     def __call__(
         self: Dispatch,
         *items: Action | Event | list[Action | Event],
@@ -401,12 +332,12 @@ class CombineReducerAction(BaseAction):
     _id: str
 
 
-class CombineReducerInitAction(CombineReducerAction, InitAction, Generic[Payload]):
+class CombineReducerInitAction[Payload](CombineReducerAction, InitAction):
     key: str
     payload: Payload | None = None
 
 
-class CombineReducerRegisterAction(CombineReducerAction, Generic[Payload]):
+class CombineReducerRegisterAction[Payload](CombineReducerAction):
     key: str
     reducer: ReducerType
     payload: Payload | None = None
@@ -427,9 +358,9 @@ SnapshotAtom = (
 )
 
 
-class SubscribeEventCleanup(Immutable, Generic[StrictEvent]):
+class SubscribeEventCleanup[Event: BaseEvent](Immutable):
     unsubscribe: Callable[[], None]
-    handler: EventHandler[StrictEvent]
+    handler: EventHandler[Event]
 
     def __call__(self: SubscribeEventCleanup) -> None:
         self.unsubscribe()

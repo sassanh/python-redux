@@ -4,7 +4,7 @@ from __future__ import annotations
 import asyncio
 import threading
 from dataclasses import replace
-from typing import TYPE_CHECKING, TypeAlias
+from typing import TYPE_CHECKING
 from unittest.mock import call
 
 from immutable import Immutable
@@ -59,7 +59,7 @@ def reducer(
     return state
 
 
-StoreType: TypeAlias = Store[StateType, IncrementAction | InitAction, FinishEvent]
+type StoreType = Store[StateType, IncrementAction | InitAction, FinishEvent]
 
 
 class Scheduler(threading.Thread):

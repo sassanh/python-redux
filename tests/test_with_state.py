@@ -31,9 +31,9 @@ class _StateType(Immutable):
 class _IncrementAction(BaseAction): ...
 
 
-Action = _IncrementAction | InitAction | FinishAction
+Action = _IncrementAction | InitAction
 
-StoreType = Store[_StateType, Action, FinishEvent]
+StoreType = Store[_StateType, _IncrementAction, FinishEvent]
 
 
 def _reducer(

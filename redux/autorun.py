@@ -10,31 +10,22 @@ from typing import (
     TYPE_CHECKING,
     Any,
     Concatenate,
-    Generic,
     Literal,
     cast,
 )
 
-from redux.basic_types import (
-    Action,
-    Args,
-    AutoAwait,
-    AutorunOptionsType,
-    ComparatorOutput,
-    Event,
-    ReturnType,
-    SelectorOutput,
-    State,
-    T,
-)
+from immutable import Immutable
+
+from redux.basic_types import BaseAction, BaseEvent
 
 if TYPE_CHECKING:
     from collections.abc import Callable, Coroutine, Generator
 
+    from redux.basic_types import AutorunOptions
     from redux.main import Store
 
 
-class AwaitableWrapper(Generic[T]):
+class AwaitableWrapper[T]:
     """A wrapper for a coroutine to track if it has been awaited."""
 
     _unawaited = object()
@@ -67,20 +58,18 @@ class AwaitableWrapper(Generic[T]):
 
     def __repr__(self) -> str:
         """Return a string representation of the AwaitableWrapper."""
-        return f'AwaitableWrapper({self.coro}, awaited={self.awaited})'
+        return f'AwaitableWrapper({self.coro}, awaited={self.value[0]})'
 
 
-class Autorun(
-    Generic[
-        State,
-        Action,
-        Event,
-        SelectorOutput,
-        ComparatorOutput,
-        Args,
-        ReturnType,
-    ],
-):
+class Autorun[
+    State: Immutable,
+    Action: BaseAction,
+    Event: BaseEvent,
+    SelectorOutput,
+    ComparatorOutput,
+    **Args,
+    ReturnType,
+]:
     """Run a wrapped function in response to specific state changes in the store."""
 
     def __init__(  # noqa: C901, PLR0912, PLR0915
@@ -93,7 +82,7 @@ class Autorun(
             Concatenate[SelectorOutput, Args],
             ReturnType,
         ],
-        options: AutorunOptionsType[ReturnType, AutoAwait],
+        options: AutorunOptions[ReturnType, bool],
     ) -> None:
         """Initialize the Autorun instance."""
         if hasattr(func, '__name__'):

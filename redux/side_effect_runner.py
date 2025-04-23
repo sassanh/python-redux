@@ -7,18 +7,16 @@ import inspect
 import threading
 import weakref
 from asyncio import Handle, iscoroutine
-from typing import TYPE_CHECKING, Any, Generic, cast
-
-from redux.basic_types import Event, EventHandler, TaskCreator
+from typing import TYPE_CHECKING, Any, cast
 
 if TYPE_CHECKING:
     import queue
     from collections.abc import Callable
 
-    from redux.basic_types import EventHandler, TaskCreator
+    from redux.basic_types import BaseEvent, EventHandler, TaskCreator
 
 
-class SideEffectRunner(threading.Thread, Generic[Event]):
+class SideEffectRunner[Event: BaseEvent](threading.Thread):
     """Thread for running side effects."""
 
     def __init__(

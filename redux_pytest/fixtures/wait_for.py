@@ -6,8 +6,6 @@ from collections.abc import Callable, Coroutine, Generator
 from typing import (
     TYPE_CHECKING,
     Literal,
-    ParamSpec,
-    TypeAlias,
     overload,
 )
 
@@ -20,10 +18,8 @@ if TYPE_CHECKING:
     from tenacity.stop import StopBaseT
     from tenacity.wait import WaitBaseT
 
-WaitForArgs = ParamSpec('WaitForArgs')
-
-Waiter: TypeAlias = Callable[WaitForArgs, None]
-AsyncWaiter: TypeAlias = Callable[WaitForArgs, Coroutine[None, None, None]]
+type Waiter[**WaitForArgs] = Callable[WaitForArgs, None]
+type AsyncWaiter[**WaitForArgs] = Callable[WaitForArgs, Coroutine[None, None, None]]
 
 
 class WaitFor:
@@ -34,7 +30,7 @@ class WaitFor:
         self.tasks: set[Task] = set()
 
     @overload
-    def __call__(
+    def __call__[**WaitForArgs](
         self: WaitFor,
         *,
         stop: StopBaseT | None = None,
@@ -42,7 +38,7 @@ class WaitFor:
     ) -> Callable[[Callable[WaitForArgs, None]], Waiter[WaitForArgs]]: ...
 
     @overload
-    def __call__(
+    def __call__[**WaitForArgs](
         self: WaitFor,
         check: Callable[WaitForArgs, None],
         *,
@@ -51,7 +47,7 @@ class WaitFor:
     ) -> Waiter[WaitForArgs]: ...
 
     @overload
-    def __call__(
+    def __call__[**WaitForArgs](
         self: WaitFor,
         *,
         timeout: float | None = None,
@@ -59,7 +55,7 @@ class WaitFor:
     ) -> Callable[[Callable[WaitForArgs, None]], Waiter[WaitForArgs]]: ...
 
     @overload
-    def __call__(
+    def __call__[**WaitForArgs](
         self: WaitFor,
         check: Callable[WaitForArgs, None],
         *,
@@ -68,7 +64,7 @@ class WaitFor:
     ) -> Waiter[WaitForArgs]: ...
 
     @overload
-    def __call__(
+    def __call__[**WaitForArgs](
         self: WaitFor,
         *,
         stop: StopBaseT | None = None,
@@ -77,7 +73,7 @@ class WaitFor:
     ) -> Callable[[Callable[WaitForArgs, None]], AsyncWaiter[WaitForArgs]]: ...
 
     @overload
-    def __call__(
+    def __call__[**WaitForArgs](
         self: WaitFor,
         check: Callable[WaitForArgs, None],
         *,
@@ -87,7 +83,7 @@ class WaitFor:
     ) -> AsyncWaiter[WaitForArgs]: ...
 
     @overload
-    def __call__(
+    def __call__[**WaitForArgs](
         self: WaitFor,
         *,
         timeout: float | None = None,
@@ -96,7 +92,7 @@ class WaitFor:
     ) -> Callable[[Callable[WaitForArgs, None]], AsyncWaiter[WaitForArgs]]: ...
 
     @overload
-    def __call__(
+    def __call__[**WaitForArgs](
         self: WaitFor,
         check: Callable[WaitForArgs, None],
         *,
@@ -105,7 +101,7 @@ class WaitFor:
         run_async: Literal[True],
     ) -> AsyncWaiter[WaitForArgs]: ...
 
-    def __call__(
+    def __call__[**WaitForArgs](
         self: WaitFor,
         check: Callable[WaitForArgs, None] | None = None,
         *,

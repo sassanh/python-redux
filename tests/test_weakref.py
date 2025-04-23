@@ -3,7 +3,7 @@ from __future__ import annotations
 
 import weakref
 from dataclasses import replace
-from typing import TYPE_CHECKING, TypeAlias
+from typing import TYPE_CHECKING
 
 import pytest
 from immutable import Immutable
@@ -13,7 +13,6 @@ from redux.basic_types import (
     BaseAction,
     BaseEvent,
     FinishAction,
-    FinishEvent,
     InitAction,
     InitializationActionError,
     StoreOptions,
@@ -39,11 +38,7 @@ class IncrementAction(BaseAction): ...
 class DummyEvent(BaseEvent): ...
 
 
-StoreType: TypeAlias = Store[
-    StateType,
-    IncrementAction | InitAction,
-    DummyEvent | FinishEvent,
-]
+type StoreType = Store[StateType, IncrementAction, DummyEvent]
 
 
 def reducer(state: StateType | None, action: IncrementAction | InitAction) -> StateType:
@@ -101,10 +96,10 @@ def store(event_loop: LoopThread) -> Generator[StoreType, None, None]:
         options=StoreOptions(
             auto_init=True,
             task_creator=event_loop.create_task,
+            on_finish=event_loop.stop,
         ),
     )
     yield store
-    store.subscribe_event(FinishEvent, lambda: event_loop.stop())
     store.dispatch(FinishAction())
 
 

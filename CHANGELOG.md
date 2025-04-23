@@ -1,5 +1,9 @@
 # Changelog
 
+## Upcoming
+
+- refactor: upgrade to python 3.13, use the new type hint syntax everywhere
+
 ## Version 0.23.0
 
 - refactor: remove `WithState` as it wasn't doing anything beyond `functools.wraps`

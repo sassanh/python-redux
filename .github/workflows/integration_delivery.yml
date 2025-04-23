@@ -109,7 +109,7 @@ jobs:
 
       - name: Run Tests
         run: |
-          uv run --frozen poe test --verbosity=2 --cov-report=xml --cov-report=html --log-level=DEBUG --log-cli-level=5
+          uv run --frozen poe test:coverage --verbosity=2 --log-level=DEBUG
 
       - name: Collect Store Snapshots
         uses: actions/upload-artifact@v4
@@ -159,9 +159,9 @@ jobs:
         run: |
           git fetch --prune --unshallow
           git fetch --depth=1 origin +refs/tags/*:refs/tags/*
-          echo "VERSION=$(uvx hatch version)" >> "$GITHUB_OUTPUT"
+          echo "VERSION=$(uvx hatch version)" >>"$GITHUB_OUTPUT"
           echo "VERSION=$(uvx hatch version)"
-          echo "NAME=$(uvx hatch project metadata | jq -r .name)" >> "$GITHUB_OUTPUT"
+          echo "NAME=$(uvx hatch project metadata | jq -r .name)" >>"$GITHUB_OUTPUT"
           echo "NAME=$(uvx hatch project metadata | jq -r .name)"
 
       - name: Extract Version from CHANGELOG.md
@@ -275,12 +275,12 @@ jobs:
       - name: Extract Changelog
         id: changelog
         run: |
-          perl -0777 -ne 'while (/## Version ${{ needs.build.outputs.version }}\n(\s*\n)*(.*?)(\s*\n)*## Version \d+\.\d+\.\d+\n/sg) {print "$2\n"}' CHANGELOG.md > CURRENT_CHANGELOG.md
+          perl -0777 -ne 'while (/## Version ${{ needs.build.outputs.version }}\n(\s*\n)*(.*?)(\s*\n)*## Version \d+\.\d+\.\d+\n/sg) {print "$2\n"}' CHANGELOG.md >CURRENT_CHANGELOG.md
           {
             echo "CONTENT<<EOF"
             cat CURRENT_CHANGELOG.md
             echo "EOF"
-          } >> "$GITHUB_OUTPUT"
+          } >>"$GITHUB_OUTPUT"
 
       - name: Release
         uses: softprops/action-gh-release@v2

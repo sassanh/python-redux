@@ -6,7 +6,7 @@ license = { text = "Apache-2.0" }
 authors = [{ name = "Sassan Haradji", email = "me@sassanh.com" }]
 maintainers = [{ name = "Sassan Haradji", email = "me@sassanh.com" }]
 readme = "README.md"
-requires-python = ">=3.11"
+requires-python = ">=3.13"
 keywords = ['python', 'store', 'redux', 'reactive', 'autorun', 'view']
 dependencies = ["python-immutable >= 1.1.1", "python-strtobool >= 1.0.0"]
 
@@ -54,7 +54,8 @@ todo_demo = "todo_demo:main"
 [tool.poe.tasks]
 lint = "ruff check . --unsafe-fixes"
 typecheck = "pyright -p pyproject.toml ."
-test = "pytest --cov --cov-report=term-missing --cov-report=html --cov-report=xml"
+test = "pytest"
+"test:coverage" = "pytest --cov --cov-report=term-missing --cov-report=html --cov-report=xml"
 sanity = ["typecheck", "lint", "test"]
 
 [tool.ruff]
@@ -94,7 +95,7 @@ exclude_also = ["if TYPE_CHECKING:"]
 
 [tool.coverage.run]
 source = ['redux', 'redux_pytest']
-omit = ['redux_pytest/plugin.py', 'redux/_version.py', "setup_scm_schemes.py"]
+omit = ['redux_pytest/plugin.py', 'redux/_version.py']
 
 [project.entry-points.pytest11]
 redux = "redux_pytest.plugin"

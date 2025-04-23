@@ -127,7 +127,7 @@ def test_cancelling_action_middleware(store: StoreType) -> None:
 def test_identity_event_middlewares(store: StoreType) -> None:
     calls = []
 
-    def middleware(event: SomeEvent) -> SomeEvent | FinishEvent:
+    def middleware(event: SomeEvent | FinishEvent) -> SomeEvent | FinishEvent:
         calls.append(event)
         if len(calls) == 2:
             return FinishEvent()

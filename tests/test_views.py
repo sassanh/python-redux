@@ -67,7 +67,7 @@ StoreType = Store[StateType, Action, FinishEvent]
 
 @pytest.fixture
 def store() -> Generator[StoreType, None, None]:
-    store: StoreType = Store(reducer, options=StoreOptions(auto_init=True))
+    store = Store(reducer, options=StoreOptions(auto_init=True))
     yield store
 
     store.dispatch(IncrementAction())

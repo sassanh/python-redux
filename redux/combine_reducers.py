@@ -6,12 +6,11 @@ import functools
 import operator
 import uuid
 from dataclasses import fields
-from typing import TYPE_CHECKING, TypeVar
+from typing import TYPE_CHECKING
 
 from immutable import make_immutable
 
 from .basic_types import (
-    Action,
     BaseAction,
     BaseCombineReducerState,
     BaseEvent,
@@ -20,7 +19,6 @@ from .basic_types import (
     CombineReducerRegisterAction,
     CombineReducerUnregisterAction,
     CompleteReducerResult,
-    Event,
     InitAction,
     is_complete_reducer_result,
 )
@@ -29,19 +27,16 @@ if TYPE_CHECKING:
     from redux import ReducerType
 
 
-CombineReducerState = TypeVar(
-    'CombineReducerState',
-    bound=BaseCombineReducerState,
-)
-AnyAction = TypeVar('AnyAction', bound=BaseAction)
-
-
-def combine_reducers(
+def combine_reducers[
+    Action: BaseAction,
+    Event: BaseEvent | None,
+    CombineReducerState: BaseCombineReducerState,
+](
     state_type: type[CombineReducerState],
     action_type: type[Action] = BaseAction,
     event_type: type[Event] = BaseEvent,
     **reducers: ReducerType,
-) -> tuple[ReducerType[CombineReducerState, Action, Event], str]:
+) -> tuple[ReducerType[CombineReducerState, Action, Action, Event], str]:
     _ = action_type, event_type
     reducers = reducers.copy()
     _id = uuid.uuid4().hex

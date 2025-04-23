@@ -7,48 +7,44 @@ import inspect
 import queue
 import weakref
 from collections import defaultdict
-from collections.abc import Awaitable, Iterable, Sequence
+from collections.abc import Iterable, Sequence
 from functools import wraps
 from threading import Lock, Thread
 from typing import (
     TYPE_CHECKING,
     Any,
     Concatenate,
-    Generic,
+    Literal,
+    TypeGuard,
     cast,
     overload,
 )
 
+from immutable import Immutable
+
 from redux.basic_types import (
-    Action,
     ActionMiddleware,
-    Args,
-    AutoAwait,
     AutorunDecorator,
     AutorunOptions,
-    AutorunOptionsType,
     AutorunReturnType,
     AwaitableOrNot,
     BaseAction,
     BaseEvent,
-    ComparatorOutput,
     DispatchParameters,
-    Event,
     EventHandler,
     EventMiddleware,
     FinishAction,
     FinishEvent,
     InitAction,
     ReducerType,
-    ReturnType,
-    SelectorOutput,
     SnapshotAtom,
-    State,
     StoreOptions,
-    StrictEvent,
     SubscribeEventCleanup,
+    UnknownViewDecorator,
     ViewDecorator,
     ViewOptions,
+    ViewOptionsWithDefault,
+    ViewOptionsWithoutDefault,
     ViewReturnType,
     WithStateDecorator,
     is_complete_reducer_result,
@@ -57,15 +53,23 @@ from redux.basic_types import (
 from redux.serialization_mixin import SerializationMixin
 
 if TYPE_CHECKING:
-    from collections.abc import Callable
+    from collections.abc import Awaitable, Callable
 
 
-class Store(Generic[State, Action, Event], SerializationMixin):
+class Store[State: Immutable, Action: BaseAction, Event: BaseEvent](SerializationMixin):
     """Redux store for managing state and side effects."""
+
+    type FullAction = Action | InitAction
+    type FullEvent = Event | FinishEvent
 
     def __init__(
         self,
-        reducer: ReducerType[State, Action | InitAction, Event | None],
+        reducer: ReducerType[
+            State,
+            FullAction,
+            Action | None,
+            Event | None,
+        ],
         options: StoreOptions[Action, Event] | None = None,
     ) -> None:
         """Create a new store."""
@@ -78,15 +82,14 @@ class Store(Generic[State, Action, Event], SerializationMixin):
 
         self._state: State | None = None
         self._listeners: set[
-            Callable[[State], AwaitableOrNot[None]]
-            | weakref.ref[Callable[[State], AwaitableOrNot[None]]]
+            Callable[[State], Any] | weakref.ref[Callable[[State], Any]]
         ] = set()
         self._event_handlers: defaultdict[
             type[Event | FinishEvent],
             set[EventHandler | weakref.ref[EventHandler]],
         ] = defaultdict(set)
 
-        self._actions: list[Action | InitAction] = []
+        self._actions: list[Action | InitAction | FinishAction] = []
         self._events: list[Event | FinishEvent] = []
 
         self._event_handlers_queue = queue.Queue[
@@ -131,7 +134,7 @@ class Store(Generic[State, Action, Event], SerializationMixin):
         while len(self._actions) > 0:
             action = self._actions.pop(0)
             if action is not None:
-                result = self.reducer(self._state, action)
+                result = self.reducer(self._state, cast('Action | InitAction', action))
                 if is_complete_reducer_result(result):
                     self._state = result.state
                     self._call_listeners(self._state)
@@ -181,18 +184,26 @@ class Store(Generic[State, Action, Event], SerializationMixin):
     @overload
     def dispatch(
         self: Store[State, Action, Event],
-        *parameters: DispatchParameters[Action],
+        *parameters: DispatchParameters[FullAction | FinishAction],
     ) -> None: ...
     @overload
     def dispatch(
         self: Store[State, Action, Event],
         *,
-        with_state: Callable[[State | None], DispatchParameters[Action]] | None = None,
+        with_state: Callable[
+            [State | None],
+            DispatchParameters[FullAction | FinishAction],
+        ]
+        | None = None,
     ) -> None: ...
     def dispatch(
         self: Store[State, Action, Event],
-        *parameters: DispatchParameters[Action],
-        with_state: Callable[[State | None], DispatchParameters[Action]] | None = None,
+        *parameters: DispatchParameters[FullAction | FinishAction],
+        with_state: Callable[
+            [State | None],
+            DispatchParameters[FullAction | FinishAction],
+        ]
+        | None = None,
     ) -> None:
         """Dispatch actions."""
         if with_state is not None:
@@ -205,12 +216,19 @@ class Store(Generic[State, Action, Event], SerializationMixin):
         ]
         self._dispatch(actions)
 
+    def is_action(
+        self: Store[State, Action, Event],
+        item: object,
+    ) -> TypeGuard[FullAction]:
+        """Check if the item is an action."""
+        return isinstance(item, BaseAction)
+
     def _dispatch(
         self: Store[State, Action, Event],
-        items: Sequence[Action | Event | InitAction | FinishEvent | None],
+        items: Sequence[FullAction | FinishAction | FullEvent | None],
     ) -> None:
         for item in items:
-            if isinstance(item, BaseAction):
+            if self.is_action(item):
                 action = item
                 for action_middleware in self._action_middlewares:
                     action_ = action_middleware(action)
@@ -220,7 +238,7 @@ class Store(Generic[State, Action, Event], SerializationMixin):
                 else:
                     self._actions.append(action)
             if isinstance(item, BaseEvent):
-                event = item
+                event: Event | FinishEvent = item
                 for event_middleware in self._event_middlewares:
                     event_ = event_middleware(event)
                     if event_ is None:
@@ -254,10 +272,10 @@ class Store(Generic[State, Action, Event], SerializationMixin):
 
         return unsubscribe
 
-    def subscribe_event(
+    def subscribe_event[SubscribingEvent: BaseEvent](
         self: Store[State, Action, Event],
-        event_type: type[StrictEvent],
-        handler: EventHandler[StrictEvent],
+        event_type: type[SubscribingEvent],
+        handler: EventHandler[SubscribingEvent],
         *,
         keep_ref: bool = True,
     ) -> SubscribeEventCleanup:
@@ -269,10 +287,10 @@ class Store(Generic[State, Action, Event], SerializationMixin):
         else:
             handler_ref = weakref.ref(handler)
 
-        self._event_handlers[cast('Event', event_type)].add(handler_ref)
+        self._event_handlers[cast('type[Event]', event_type)].add(handler_ref)
 
         def unsubscribe() -> None:
-            self._event_handlers[cast('Event', event_type)].discard(handler_ref)
+            self._event_handlers[cast('type[Event]', event_type)].discard(handler_ref)
 
         return SubscribeEventCleanup(unsubscribe=unsubscribe, handler=handler)
 
@@ -295,66 +313,112 @@ class Store(Generic[State, Action, Event], SerializationMixin):
     def _handle_finish_event(self: Store[State, Action, Event]) -> None:
         Thread(target=self._wait_for_store_to_finish).start()
 
-    def autorun(
+    @overload
+    def autorun[SelectorOutput, ComparatorOutput, ReturnType](
         self: Store[State, Action, Event],
         selector: Callable[[State], SelectorOutput],
         comparator: Callable[[State], ComparatorOutput] | None = None,
         *,
-        options: AutorunOptionsType[ReturnType, AutoAwait] | None = None,
-    ) -> AutorunDecorator[ReturnType, SelectorOutput, AutoAwait]:
+        options: AutorunOptions[ReturnType, Literal[True]] | None = None,
+    ) -> AutorunDecorator[SelectorOutput, Literal[True]]: ...
+    @overload
+    def autorun[SelectorOutput, ComparatorOutput, ReturnType](
+        self: Store[State, Action, Event],
+        selector: Callable[[State], SelectorOutput],
+        comparator: Callable[[State], ComparatorOutput] | None = None,
+        *,
+        options: AutorunOptions[ReturnType, Literal[False]],
+    ) -> AutorunDecorator[SelectorOutput, Literal[False]]: ...
+    def autorun[SelectorOutput, ComparatorOutput](
+        self: Store[State, Action, Event],
+        selector: Callable[[State], SelectorOutput],
+        comparator: Callable[[State], ComparatorOutput] | None = None,
+        *,
+        options: AutorunOptions | None = None,
+    ) -> AutorunDecorator[SelectorOutput, Any]:
         """Create a new autorun, reflecting on state changes."""
 
-        def autorun_decorator(
+        @overload
+        def autorun_decorator[**Args, ReturnType_](
             func: Callable[
                 Concatenate[SelectorOutput, Args],
-                AwaitableOrNot[ReturnType],
+                Awaitable[ReturnType_],
             ],
-        ) -> AutorunReturnType[ReturnType, Args]:
+        ) -> AutorunReturnType[Args, None]: ...
+        @overload
+        def autorun_decorator[**Args, ReturnType_](
+            func: Callable[
+                Concatenate[SelectorOutput, Args],
+                ReturnType_,
+            ],
+        ) -> AutorunReturnType[Args, ReturnType_]: ...
+        def autorun_decorator[**Args, ReturnType_](
+            func: Callable[
+                Concatenate[SelectorOutput, Args],
+                AwaitableOrNot[ReturnType_],
+            ],
+        ) -> AutorunReturnType[Args, AwaitableOrNot[ReturnType_] | None]:
             return self.store_options.autorun_class(
                 store=self,
                 selector=selector,
                 comparator=comparator,
-                func=cast('Callable', func),
+                func=func,
                 options=options or AutorunOptions(),
             )
 
-        return cast('AutorunDecorator', autorun_decorator)
+        return autorun_decorator
 
-    def view(
+    @overload
+    def view[SelectorOutput](
+        self: Store[State, Action, Event],
+        selector: Callable[[State], SelectorOutput],
+        *,
+        options: ViewOptionsWithoutDefault | None = None,
+    ) -> UnknownViewDecorator[SelectorOutput]: ...
+    @overload
+    def view[SelectorOutput, ReturnType](
+        self: Store[State, Action, Event],
+        selector: Callable[[State], SelectorOutput],
+        *,
+        options: ViewOptionsWithDefault[ReturnType],
+    ) -> ViewDecorator[SelectorOutput, ReturnType]: ...
+    def view[SelectorOutput, ReturnType](
         self: Store[State, Action, Event],
         selector: Callable[[State], SelectorOutput],
         *,
         options: ViewOptions[ReturnType] | None = None,
-    ) -> ViewDecorator[ReturnType, SelectorOutput]:
+    ) -> (
+        ViewDecorator[SelectorOutput, ReturnType] | UnknownViewDecorator[SelectorOutput]
+    ):
         """Create a new view, throttling calls for unchanged selector results."""
 
         @overload
-        def view_decorator(
+        def view_decorator[**Args](
             func: Callable[
                 Concatenate[SelectorOutput, Args],
                 ReturnType,
             ],
-        ) -> ViewReturnType[ReturnType, Args]: ...
+        ) -> ViewReturnType[Args, ReturnType]: ...
         @overload
-        def view_decorator(
+        def view_decorator[**Args](
             func: Callable[
                 Concatenate[SelectorOutput, Args],
                 Awaitable[ReturnType],
             ],
-        ) -> ViewReturnType[Awaitable[ReturnType], Args]: ...
+        ) -> ViewReturnType[Args, Awaitable[ReturnType]]: ...
 
-        def view_decorator(
+        def view_decorator[**Args](
             func: Callable[
                 Concatenate[SelectorOutput, Args],
                 AwaitableOrNot[ReturnType],
             ],
-        ) -> ViewReturnType[AwaitableOrNot[ReturnType], Args]:
+        ) -> ViewReturnType[Args, AwaitableOrNot[ReturnType]]:
             _options = options or ViewOptions()
             return self.store_options.autorun_class(
                 store=self,
                 selector=selector,
                 comparator=None,
-                func=cast('Callable', func),
+                func=func,
                 options=AutorunOptions(
                     default_value=_options.default_value,
                     auto_await=False,
@@ -369,7 +433,7 @@ class Store(Generic[State, Action, Event], SerializationMixin):
 
         return view_decorator
 
-    def with_state(
+    def with_state[SelectorOutput](
         self: Store[State, Action, Event],
         selector: Callable[[State], SelectorOutput],
     ) -> WithStateDecorator[SelectorOutput]:
@@ -383,7 +447,7 @@ class Store(Generic[State, Action, Event], SerializationMixin):
         `store._state` is also possible.
         """
 
-        def with_state_decorator(
+        def with_state_decorator[**Args, ReturnType](
             func: Callable[
                 Concatenate[SelectorOutput, Args],
                 ReturnType,
