@@ -1,6 +1,6 @@
 # Changelog
 
-## Upcoming
+## Version 0.23.0
 
 - refactor: remove `WithState` as it wasn't doing anything beyond `functools.wraps`
 - refactor: autorun doesn't inform subscribers when the output value is not changed
