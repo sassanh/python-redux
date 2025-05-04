@@ -27,6 +27,7 @@ from redux.basic_types import (
     State,
     T,
 )
+from redux.utils import drop_with_store_parameter
 
 if TYPE_CHECKING:
     from collections.abc import Callable, Coroutine, Generator
@@ -83,7 +84,7 @@ class Autorun(
 ):
     """Run a wrapped function in response to specific state changes in the store."""
 
-    def __init__(  # noqa: C901, PLR0912, PLR0915
+    def __init__(  # noqa: C901, PLR0912
         self: Autorun,
         *,
         store: Store[State, Action, Event],
@@ -104,14 +105,7 @@ class Autorun(
             self.__qualname__ = f'Autorun:{func.__qualname__}'
         else:
             self.__qualname__ = f'Autorun:{func}'
-        signature = inspect.signature(func)
-        parameters = list(signature.parameters.values())
-        if parameters and parameters[0].kind in [
-            inspect.Parameter.POSITIONAL_ONLY,
-            inspect.Parameter.POSITIONAL_OR_KEYWORD,
-        ]:
-            parameters = parameters[1:]
-        self.__signature__ = signature.replace(parameters=parameters)
+        self.__signature__ = drop_with_store_parameter(func)
         self.__module__ = func.__module__
         if (annotations := getattr(func, '__annotations__', None)) is not None:
             self.__annotations__ = annotations

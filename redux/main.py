@@ -55,6 +55,7 @@ from redux.basic_types import (
     is_state_reducer_result,
 )
 from redux.serialization_mixin import SerializationMixin
+from redux.utils import drop_with_store_parameter
 
 if TYPE_CHECKING:
     from collections.abc import Callable
@@ -395,18 +396,8 @@ class Store(Generic[State, Action, Event], SerializationMixin):
                     raise RuntimeError(msg)
                 return func(selector(self._state), *args, **kwargs)
 
-            signature = inspect.signature(func)
-            parameters = list(signature.parameters.values())
-            if parameters and parameters[0].kind in [
-                inspect.Parameter.POSITIONAL_ONLY,
-                inspect.Parameter.POSITIONAL_OR_KEYWORD,
-            ]:
-                parameters = parameters[1:]
-
             wrapped = wraps(func)(wrapper)
-            wrapped.__signature__ = signature.replace(  # pyright: ignore [reportAttributeAccessIssue]
-                parameters=parameters,
-            )
+            wrapped.__signature__ = drop_with_store_parameter(func)  # pyright: ignore [reportAttributeAccessIssue]
 
             return wrapped
 

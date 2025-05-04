@@ -23,8 +23,6 @@ from redux.basic_types import (
 from redux.main import Store
 
 if TYPE_CHECKING:
-    from collections.abc import Generator
-
     from pytest_mock import MockerFixture
 
     from redux_pytest.fixtures import StoreSnapshot
@@ -73,10 +71,12 @@ StoreType = Store[StateType, Action, FinishEvent]
 
 
 @pytest.fixture
-def store() -> Generator[StoreType, None, None]:
+def store() -> StoreType:
     store: StoreType = Store(reducer, options=StoreOptions(auto_init=True))
-    yield store
+    return store
 
+
+def dispatch_actions(store: StoreType) -> None:
     store.dispatch(IncrementAction())
     store.dispatch(IncrementByTwoAction())
     store.dispatch(IncrementAction())
@@ -88,6 +88,8 @@ def test_general(store_snapshot: StoreSnapshot, store: StoreType) -> None:
     def _(value: int) -> int:
         store_snapshot.take()
         return value
+
+    dispatch_actions(store)
 
 
 def test_name_attr(store: StoreType) -> None:
@@ -116,6 +118,8 @@ def test_name_attr(store: StoreType) -> None:
     decorated_instance = store.autorun(lambda state: state.value)(Decorated())
 
     assert decorated_instance.__name__ == 'Autorun:Decorated'
+
+    dispatch_actions(store)
 
 
 def test_signature(store: StoreType) -> None:
@@ -178,11 +182,15 @@ def test_signature(store: StoreType) -> None:
 
     assert signature.return_annotation == 'int'
 
+    dispatch_actions(store)
+
 
 def test_ignore_attribute_error_in_selector(store: StoreType) -> None:
     @store.autorun(lambda state: cast('Any', state).non_existing)
     def _(_: int) -> None:
         pytest.fail('This should never be called')
+
+    dispatch_actions(store)
 
 
 def test_ignore_attribute_error_in_comparator(store: StoreType) -> None:
@@ -192,6 +200,8 @@ def test_ignore_attribute_error_in_comparator(store: StoreType) -> None:
     )
     def _(_: int) -> None:
         pytest.fail('This should never be called')
+
+    dispatch_actions(store)
 
 
 def test_with_comparator(
@@ -205,6 +215,8 @@ def test_with_comparator(
     def _(value: int) -> int:
         store_snapshot.take()
         return value
+
+    dispatch_actions(store)
 
 
 def test_value_property(store_snapshot: StoreSnapshot, store: StoreType) -> None:
@@ -221,6 +233,8 @@ def test_value_property(store_snapshot: StoreSnapshot, store: StoreType) -> None
 
     render.subscribe(check)
 
+    dispatch_actions(store)
+
 
 def test_callability(store_snapshot: StoreSnapshot, store: StoreType) -> None:
     @store.autorun(lambda state: state.value)
@@ -233,6 +247,8 @@ def test_callability(store_snapshot: StoreSnapshot, store: StoreType) -> None:
 
     store._subscribe(check)  # noqa: SLF001
 
+    dispatch_actions(store)
+
 
 def test_subscription(store_snapshot: StoreSnapshot, store: StoreType) -> None:
     @store.autorun(lambda state: state.value)
@@ -243,6 +259,8 @@ def test_subscription(store_snapshot: StoreSnapshot, store: StoreType) -> None:
         store_snapshot.take()
 
     render.subscribe(reaction, initial_run=True)
+
+    dispatch_actions(store)
 
 
 def test_unsubscription(store: StoreType) -> None:
@@ -255,6 +273,8 @@ def test_unsubscription(store: StoreType) -> None:
 
     unsubscribe = render.subscribe(reaction, initial_run=False)
     unsubscribe()
+
+    dispatch_actions(store)
 
 
 def test_repr(store: StoreType) -> None:
@@ -273,6 +293,8 @@ def test_repr(store: StoreType) -> None:
         r'.*\(func: <function test_repr\.<locals>\.render at .*>, last_value: 1\)$',
         repr(render),
     )
+
+    store.dispatch(FinishAction())
 
 
 call_sequence = [
@@ -317,6 +339,8 @@ def test_no_auto_call_with_initial_call_and_reactive_set(
 
     assert render.mock_calls == [call(0), call(1), call(3), call(1)]
 
+    store.dispatch(FinishAction())
+
 
 def test_no_auto_call_and_no_initial_call_with_reactive_set(
     store: StoreType,
@@ -337,6 +361,8 @@ def test_no_auto_call_and_no_initial_call_with_reactive_set(
         render_autorun()
 
     assert render.mock_calls == [call(1), call(3), call(1)]
+
+    store.dispatch(FinishAction())
 
 
 def test_with_auto_call_and_initial_call_and_reactive_set(
@@ -369,6 +395,8 @@ def test_with_auto_call_and_initial_call_and_reactive_set(
         call(1),
     ]
 
+    store.dispatch(FinishAction())
+
 
 def test_task_mode_without_arguments(
     store: StoreType,
@@ -392,6 +420,8 @@ def test_task_mode_without_arguments(
 
     store.subscribe_event(FinishEvent, check)
 
+    dispatch_actions(store)
+
 
 def test_view_mode_with_arguments_autorun(
     store: StoreType,
@@ -409,3 +439,20 @@ def test_view_mode_with_arguments_autorun(
         return some_other_value
 
     assert render(some_other_value=12345) == 12345
+
+    store.dispatch(FinishAction())
+
+
+def test_methods(store: StoreType) -> None:
+    calls = []
+
+    class SomeClass:
+        def render(self, value: int) -> None:
+            calls.append(value)
+
+    instance = SomeClass()
+    store.autorun(lambda state: state.value)(instance.render)
+
+    dispatch_actions(store)
+
+    assert calls == [0, 1, 3, 4]
