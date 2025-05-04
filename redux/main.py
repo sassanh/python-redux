@@ -42,6 +42,7 @@ from redux.basic_types import (
     ReducerType,
     ReturnType,
     SelectorOutput,
+    Self,
     SnapshotAtom,
     State,
     StoreOptions,
@@ -384,20 +385,67 @@ class Store(Generic[State, Action, Event], SerializationMixin):
         `store._state` is also possible.
         """
 
+        @overload
         def with_state_decorator(
             func: Callable[
                 Concatenate[SelectorOutput, Args],
                 ReturnType,
             ],
-        ) -> Callable[Args, ReturnType]:
+        ) -> Callable[Args, ReturnType]: ...
+        @overload
+        def with_state_decorator(
+            func: Callable[
+                Concatenate[Self, SelectorOutput, Args],
+                ReturnType,
+            ],
+        ) -> Callable[Concatenate[Self, Args], ReturnType]: ...
+        def with_state_decorator(
+            func: Callable[
+                Concatenate[SelectorOutput, Args],
+                ReturnType,
+            ]
+            | Callable[
+                Concatenate[Self, SelectorOutput, Args],
+                ReturnType,
+            ],
+        ) -> Callable[Args, ReturnType] | Callable[Concatenate[Self, Args], ReturnType]:
+            signature = drop_with_store_parameter(func)
+
+            if (
+                signature.parameters
+                and next(iter(signature.parameters.values())).name == 'self'
+            ):
+                func_ = cast(
+                    'Callable[Concatenate[Self, SelectorOutput, Args], ReturnType]',
+                    func,
+                )
+
+                def wrapper(*args: Args.args, **kwargs: Args.kwargs) -> ReturnType:
+                    if self._state is None:
+                        msg = 'Store has not been initialized yet.'
+                        raise RuntimeError(msg)
+                    self_ = cast('Self', args[0])
+                    args_ = cast('Any', args[1:])
+                    return func_(self_, selector(self._state), *args_, **kwargs)
+
+                wrapped = wraps(func_)(wrapper)
+                wrapped.__signature__ = signature  # pyright: ignore [reportAttributeAccessIssue]
+
+                return wrapped
+
+            func_ = cast(
+                'Callable[Concatenate[SelectorOutput, Args], ReturnType]',
+                func,
+            )
+
             def wrapper(*args: Args.args, **kwargs: Args.kwargs) -> ReturnType:
                 if self._state is None:
                     msg = 'Store has not been initialized yet.'
                     raise RuntimeError(msg)
-                return func(selector(self._state), *args, **kwargs)
+                return func_(selector(self._state), *args, **kwargs)
 
-            wrapped = wraps(func)(wrapper)
-            wrapped.__signature__ = drop_with_store_parameter(func)  # pyright: ignore [reportAttributeAccessIssue]
+            wrapped = wraps(func_)(wrapper)
+            wrapped.__signature__ = signature  # pyright: ignore [reportAttributeAccessIssue]
 
             return wrapped
 

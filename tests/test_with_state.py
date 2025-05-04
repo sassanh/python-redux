@@ -198,3 +198,24 @@ def test_with_state_for_uninitialized_store(
     store.dispatch(FinishAction())
 
     check_spy.assert_called_once_with(0)
+
+
+def test_methods(store: StoreType) -> None:
+    """Test `with_state` decorator with methods."""
+
+    class SomeClass:
+        @store.with_state(lambda state: state.value)
+        def some_method(self, value: int) -> int:
+            return value
+
+    instance = SomeClass()
+
+    store.dispatch(InitAction())
+
+    assert instance.some_method() == 0
+
+    store.dispatch(_IncrementAction())
+
+    assert instance.some_method() == 1
+
+    store.dispatch(FinishAction())

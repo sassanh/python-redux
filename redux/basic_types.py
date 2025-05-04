@@ -361,14 +361,24 @@ class ViewDecorator(
 # With Store
 
 
+Self = TypeVar('Self', bound=object, infer_variance=True)
+
+
 class WithStateDecorator(
     Protocol,
     Generic[SelectorOutput],
 ):
+    @overload
     def __call__(
         self: WithStateDecorator,
         func: Callable[Concatenate[SelectorOutput, Args], ReturnType],
     ) -> Callable[Args, ReturnType]: ...
+
+    @overload
+    def __call__(
+        self: WithStateDecorator,
+        func: Callable[Concatenate[Self, SelectorOutput, Args], ReturnType],
+    ) -> Callable[Concatenate[Self, Args], ReturnType]: ...
 
 
 class EventSubscriber(Protocol):
