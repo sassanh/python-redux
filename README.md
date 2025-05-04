@@ -1,5 +1,11 @@
 # 🎛️ Python Redux
 
+[![codecov](https://codecov.io/gh/sassanh/python-redux/graph/badge.svg?token=4F3EWZRLCL)](https://codecov.io/gh/sassanh/python-redux)
+[![PyPI - Python Version](https://img.shields.io/pypi/pyversions/python-redux.svg)](https://pypi.org/project/python-redux/)
+[![PyPI](https://img.shields.io/pypi/v/python-redux.svg)](https://pypi.org/project/python-redux/)
+[![PyPI - License](https://img.shields.io/pypi/l/python-redux.svg)](https://pypi.org/project/python-redux/)
+[![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/sassanh/python-redux/integration_delivery.yml?label=CI%2FCD&logo=github)]()
+
 ## 🌟 Overview
 
 Python Redux is a Redux implementation for Python, bringing Redux's state management

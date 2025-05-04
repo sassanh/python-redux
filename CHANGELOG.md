@@ -1,5 +1,9 @@
 # Changelog
 
+## Upcoming
+
+- chore: add badges in `README.md` and classifiers in `pyproject.toml`
+
 ## Version 0.23.0
 
 - refactor: remove `WithState` as it wasn't doing anything beyond `functools.wraps`
