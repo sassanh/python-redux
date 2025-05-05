@@ -59,6 +59,7 @@ Comparator = Callable[[State], ComparatorOutput]
 EventHandler: TypeAlias = Callable[[Event], Any] | Callable[[], Any]
 Args = ParamSpec('Args')
 Payload = TypeVar('Payload', bound=Any, default=None)
+MethodSelf = TypeVar('MethodSelf', bound=object, infer_variance=True)
 
 
 class CompleteReducerResult(Immutable, Generic[State, Action, Event]):
@@ -232,7 +233,7 @@ AutorunOptions = cast('type[AutorunOptionsType]', AutorunOptionsImplementation)
 
 class AutorunReturnType(
     Protocol,
-    Generic[ReturnType, Args],
+    Generic[Args, ReturnType],
 ):
     def __call__(
         self: AutorunReturnType,
@@ -256,15 +257,34 @@ class AutorunReturnType(
     __name__: str
 
 
+class MethodAutorunReturnType(
+    AutorunReturnType,
+    Protocol,
+    Generic[MethodSelf, Args, ReturnType],
+):
+    def __call__(
+        self: AutorunReturnType,
+        self_: MethodSelf,
+        *args: Args.args,
+        **kwargs: Args.kwargs,
+    ) -> ReturnType: ...
+
+
 class AutorunDecorator(Protocol, Generic[ReturnType, SelectorOutput, AutoAwait]):
     @overload
     def __call__(
         self: AutorunDecorator[ReturnType, SelectorOutput, Literal[None]],
+        func: Callable[Concatenate[SelectorOutput, Args], Awaitable[ReturnType]],
+    ) -> AutorunReturnType[Args, None]: ...
+    @overload
+    def __call__(
+        self: AutorunDecorator[ReturnType, SelectorOutput, Literal[None]],
         func: Callable[
-            Concatenate[SelectorOutput, Args],
+            Concatenate[MethodSelf, SelectorOutput, Args],
             Awaitable[ReturnType],
         ],
-    ) -> AutorunReturnType[None, Args]: ...
+    ) -> MethodAutorunReturnType[MethodSelf, Args, None]: ...
+
     @overload
     def __call__(
         self: AutorunDecorator[ReturnType, SelectorOutput, Literal[None]],
@@ -272,7 +292,16 @@ class AutorunDecorator(Protocol, Generic[ReturnType, SelectorOutput, AutoAwait])
             Concatenate[SelectorOutput, Args],
             ReturnType,
         ],
-    ) -> AutorunReturnType[ReturnType, Args]: ...
+    ) -> AutorunReturnType[Args, ReturnType]: ...
+    @overload
+    def __call__(
+        self: AutorunDecorator[ReturnType, SelectorOutput, Literal[None]],
+        func: Callable[
+            Concatenate[MethodSelf, SelectorOutput, Args],
+            ReturnType,
+        ],
+    ) -> MethodAutorunReturnType[MethodSelf, Args, ReturnType]: ...
+
     @overload
     def __call__(
         self: AutorunDecorator[ReturnType, SelectorOutput, Literal[True]],
@@ -280,7 +309,16 @@ class AutorunDecorator(Protocol, Generic[ReturnType, SelectorOutput, AutoAwait])
             Concatenate[SelectorOutput, Args],
             Awaitable[ReturnType],
         ],
-    ) -> AutorunReturnType[None, Args]: ...
+    ) -> AutorunReturnType[Args, None]: ...
+    @overload
+    def __call__(
+        self: AutorunDecorator[ReturnType, SelectorOutput, Literal[True]],
+        func: Callable[
+            Concatenate[MethodSelf, SelectorOutput, Args],
+            Awaitable[ReturnType],
+        ],
+    ) -> MethodAutorunReturnType[MethodSelf, Args, None]: ...
+
     @overload
     def __call__(
         self: AutorunDecorator[ReturnType, SelectorOutput, Literal[False]],
@@ -288,7 +326,15 @@ class AutorunDecorator(Protocol, Generic[ReturnType, SelectorOutput, AutoAwait])
             Concatenate[SelectorOutput, Args],
             Awaitable[ReturnType],
         ],
-    ) -> AutorunReturnType[Awaitable[ReturnType], Args]: ...
+    ) -> AutorunReturnType[Args, Awaitable[ReturnType]]: ...
+    @overload
+    def __call__(
+        self: AutorunDecorator[ReturnType, SelectorOutput, Literal[False]],
+        func: Callable[
+            Concatenate[MethodSelf, SelectorOutput, Args],
+            Awaitable[ReturnType],
+        ],
+    ) -> MethodAutorunReturnType[MethodSelf, Args, Awaitable[ReturnType]]: ...
 
     @overload
     def __call__(
@@ -297,7 +343,15 @@ class AutorunDecorator(Protocol, Generic[ReturnType, SelectorOutput, AutoAwait])
             Concatenate[SelectorOutput, Args],
             ReturnType,
         ],
-    ) -> AutorunReturnType[ReturnType, Args]: ...
+    ) -> AutorunReturnType[Args, ReturnType]: ...
+    @overload
+    def __call__(
+        self: AutorunDecorator[ReturnType, SelectorOutput, bool],
+        func: Callable[
+            Concatenate[MethodSelf, SelectorOutput, Args],
+            ReturnType,
+        ],
+    ) -> MethodAutorunReturnType[MethodSelf, Args, ReturnType]: ...
 
 
 # View
@@ -347,6 +401,14 @@ class ViewDecorator(
             Awaitable[ReturnType],
         ],
     ) -> ViewReturnType[Awaitable[ReturnType], Args]: ...
+    @overload
+    def __call__(
+        self: ViewDecorator,
+        func: Callable[
+            Concatenate[MethodSelf, SelectorOutput, Args],
+            Awaitable[ReturnType],
+        ],
+    ) -> ViewReturnType[Awaitable[ReturnType], Args]: ...
 
     @overload
     def __call__(
@@ -356,12 +418,17 @@ class ViewDecorator(
             ReturnType,
         ],
     ) -> ViewReturnType[ReturnType, Args]: ...
+    @overload
+    def __call__(
+        self: ViewDecorator,
+        func: Callable[
+            Concatenate[MethodSelf, SelectorOutput, Args],
+            ReturnType,
+        ],
+    ) -> ViewReturnType[ReturnType, Args]: ...
 
 
 # With Store
-
-
-Self = TypeVar('Self', bound=object, infer_variance=True)
 
 
 class WithStateDecorator(
@@ -377,8 +444,8 @@ class WithStateDecorator(
     @overload
     def __call__(
         self: WithStateDecorator,
-        func: Callable[Concatenate[Self, SelectorOutput, Args], ReturnType],
-    ) -> Callable[Concatenate[Self, Args], ReturnType]: ...
+        func: Callable[Concatenate[MethodSelf, SelectorOutput, Args], ReturnType],
+    ) -> Callable[Concatenate[MethodSelf, Args], ReturnType]: ...
 
 
 class EventSubscriber(Protocol):

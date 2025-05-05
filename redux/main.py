@@ -39,10 +39,10 @@ from redux.basic_types import (
     FinishAction,
     FinishEvent,
     InitAction,
+    MethodSelf,
     ReducerType,
     ReturnType,
     SelectorOutput,
-    Self,
     SnapshotAtom,
     State,
     StoreOptions,
@@ -56,7 +56,7 @@ from redux.basic_types import (
     is_state_reducer_result,
 )
 from redux.serialization_mixin import SerializationMixin
-from redux.utils import drop_with_store_parameter
+from redux.utils import call_func, signature_without_selector
 
 if TYPE_CHECKING:
     from collections.abc import Callable
@@ -311,7 +311,7 @@ class Store(Generic[State, Action, Event], SerializationMixin):
                 Concatenate[SelectorOutput, Args],
                 AwaitableOrNot[ReturnType],
             ],
-        ) -> AutorunReturnType[ReturnType, Args]:
+        ) -> AutorunReturnType[Args, ReturnType]:
             return self.store_options.autorun_class(
                 store=self,
                 selector=selector,
@@ -335,6 +335,10 @@ class Store(Generic[State, Action, Event], SerializationMixin):
             func: Callable[
                 Concatenate[SelectorOutput, Args],
                 ReturnType,
+            ]
+            | Callable[
+                Concatenate[MethodSelf, SelectorOutput, Args],
+                ReturnType,
             ],
         ) -> ViewReturnType[ReturnType, Args]: ...
         @overload
@@ -342,12 +346,19 @@ class Store(Generic[State, Action, Event], SerializationMixin):
             func: Callable[
                 Concatenate[SelectorOutput, Args],
                 Awaitable[ReturnType],
+            ]
+            | Callable[
+                Concatenate[MethodSelf, SelectorOutput, Args],
+                Awaitable[ReturnType],
             ],
         ) -> ViewReturnType[Awaitable[ReturnType], Args]: ...
-
         def view_decorator(
             func: Callable[
                 Concatenate[SelectorOutput, Args],
+                AwaitableOrNot[ReturnType],
+            ]
+            | Callable[
+                Concatenate[MethodSelf, SelectorOutput, Args],
                 AwaitableOrNot[ReturnType],
             ],
         ) -> ViewReturnType[AwaitableOrNot[ReturnType], Args]:
@@ -395,56 +406,31 @@ class Store(Generic[State, Action, Event], SerializationMixin):
         @overload
         def with_state_decorator(
             func: Callable[
-                Concatenate[Self, SelectorOutput, Args],
+                Concatenate[MethodSelf, SelectorOutput, Args],
                 ReturnType,
             ],
-        ) -> Callable[Concatenate[Self, Args], ReturnType]: ...
+        ) -> Callable[Concatenate[MethodSelf, Args], ReturnType]: ...
         def with_state_decorator(
             func: Callable[
                 Concatenate[SelectorOutput, Args],
                 ReturnType,
             ]
             | Callable[
-                Concatenate[Self, SelectorOutput, Args],
+                Concatenate[MethodSelf, SelectorOutput, Args],
                 ReturnType,
             ],
-        ) -> Callable[Args, ReturnType] | Callable[Concatenate[Self, Args], ReturnType]:
-            signature = drop_with_store_parameter(func)
-
-            if (
-                signature.parameters
-                and next(iter(signature.parameters.values())).name == 'self'
-            ):
-                func_ = cast(
-                    'Callable[Concatenate[Self, SelectorOutput, Args], ReturnType]',
-                    func,
-                )
-
-                def wrapper(*args: Args.args, **kwargs: Args.kwargs) -> ReturnType:
-                    if self._state is None:
-                        msg = 'Store has not been initialized yet.'
-                        raise RuntimeError(msg)
-                    self_ = cast('Self', args[0])
-                    args_ = cast('Any', args[1:])
-                    return func_(self_, selector(self._state), *args_, **kwargs)
-
-                wrapped = wraps(func_)(wrapper)
-                wrapped.__signature__ = signature  # pyright: ignore [reportAttributeAccessIssue]
-
-                return wrapped
-
-            func_ = cast(
-                'Callable[Concatenate[SelectorOutput, Args], ReturnType]',
-                func,
-            )
-
+        ) -> (
+            Callable[Args, ReturnType]
+            | Callable[Concatenate[MethodSelf, Args], ReturnType]
+        ):
             def wrapper(*args: Args.args, **kwargs: Args.kwargs) -> ReturnType:
                 if self._state is None:
                     msg = 'Store has not been initialized yet.'
                     raise RuntimeError(msg)
-                return func_(selector(self._state), *args, **kwargs)
+                return call_func(func, [selector(self._state)], *args, **kwargs)
 
-            wrapped = wraps(func_)(wrapper)
+            signature = signature_without_selector(func)
+            wrapped = wraps(cast('Any', func))(wrapper)
             wrapped.__signature__ = signature  # pyright: ignore [reportAttributeAccessIssue]
 
             return wrapped

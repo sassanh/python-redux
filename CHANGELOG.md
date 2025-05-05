@@ -5,6 +5,7 @@
 - chore: add badges in `README.md` and classifiers in `pyproject.toml`
 - refactor: move the common code for manipulating the signature of the wrapped functions in `WithStore` and `Autorun` to a utility function
 - feat: support `with_state` to be applied to methods of classes, not just functions
+- feat: support `view` to be applied to methods of classes, not just functions, it works for `autorun` too, but only when it is being called directly like a view
 
 ## Version 0.23.0
 

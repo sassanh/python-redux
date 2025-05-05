@@ -157,3 +157,18 @@ def test_with_arguments(
     store.dispatch(IncrementAction())
 
     assert render(some_other_value=12345) == 12345
+
+
+def test_methods(store: StoreType) -> None:
+    class SomeClass:
+        @store.view(lambda state: state.value)
+        def render(self, value: int) -> int:
+            return value
+
+    instance = SomeClass()
+
+    assert instance.render() == 0
+
+    store.dispatch(IncrementAction())
+
+    assert instance.render() == 1

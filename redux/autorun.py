@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import asyncio
+import functools
 import inspect
 import weakref
 from asyncio import iscoroutine, iscoroutinefunction
@@ -27,7 +28,7 @@ from redux.basic_types import (
     State,
     T,
 )
-from redux.utils import drop_with_store_parameter
+from redux.utils import call_func, signature_without_selector
 
 if TYPE_CHECKING:
     from collections.abc import Callable, Coroutine, Generator
@@ -105,7 +106,7 @@ class Autorun(
             self.__qualname__ = f'Autorun:{func.__qualname__}'
         else:
             self.__qualname__ = f'Autorun:{func}'
-        self.__signature__ = drop_with_store_parameter(func)
+        self.__signature__ = signature_without_selector(func)
         self.__module__ = func.__module__
         if (annotations := getattr(func, '__annotations__', None)) is not None:
             self.__annotations__ = annotations
@@ -260,8 +261,9 @@ class Autorun(
         """Call the wrapped function with the current state of the store."""
         func = self._func() if isinstance(self._func, weakref.ref) else self._func
         if func and self._last_selector_result is not None:
-            value: ReturnType = func(
-                self._last_selector_result,
+            value: ReturnType = call_func(
+                func,
+                [self._last_selector_result],
                 *args,
                 **kwargs,
             )
@@ -372,3 +374,27 @@ class Autorun(
             self._subscriptions.discard(callback_ref)
 
         return unsubscribe
+
+    def __get__(
+        self: Autorun[
+            State,
+            Action,
+            Event,
+            SelectorOutput,
+            ComparatorOutput,
+            Args,
+            ReturnType,
+        ],
+        obj: object | None,
+        type_: type | None = None,
+    ) -> Autorun[
+        State,
+        Action,
+        Event,
+        SelectorOutput,
+        ComparatorOutput,
+        Args,
+        ReturnType,
+    ]:
+        """Get the autorun instance."""
+        return cast('Autorun', functools.partial(self, obj))
