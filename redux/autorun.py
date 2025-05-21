@@ -143,11 +143,9 @@ class Autorun(
             async def default_value_wrapper() -> ReturnType | None:
                 return options.default_value
 
-            create_task = self._store._create_task  # noqa: SLF001
             default_value = default_value_wrapper()
 
-            if create_task:
-                create_task(default_value)
+            self._create_task(default_value)
             self._latest_value: ReturnType = default_value
         else:
             self._latest_value: ReturnType = options.default_value
@@ -155,7 +153,12 @@ class Autorun(
             Callable[[ReturnType], Any] | weakref.ref[Callable[[ReturnType], Any]]
         ] = set()
 
-        if self.check(store._state) and self._options.initial_call:  # noqa: SLF001
+        if (
+            store.with_state(lambda state: state, ignore_uninitialized_store=True)(
+                self.check,
+            )()
+            and self._options.initial_call
+        ):
             self._should_be_called = False
             self.call()
 
@@ -163,6 +166,11 @@ class Autorun(
             self._unsubscribe = store._subscribe(self.react)  # noqa: SLF001
         else:
             self._unsubscribe = None
+
+    def _create_task(self: Autorun, coro: Coroutine[None, None, Any]) -> None:
+        """Create a task for the coroutine."""
+        if self._store.store_options.task_creator:
+            self._store.store_options.task_creator(coro)
 
     def react(
         self: Autorun,
@@ -267,10 +275,12 @@ class Autorun(
                 *args,
                 **kwargs,
             )
-            create_task = self._store._create_task  # noqa: SLF001
             previous_value = self._latest_value
-            if iscoroutine(value) and create_task:
-                if self._options.auto_await is False:
+            if iscoroutine(value):
+                if (
+                    self._options.auto_await
+                    is False  # only explicit `False` disables auto-await, not `None`
+                ):
                     if (
                         self._latest_value is not None
                         and isinstance(self._latest_value, AwaitableWrapper)
@@ -280,7 +290,7 @@ class Autorun(
                     self._latest_value = cast('ReturnType', AwaitableWrapper(value))
                 else:
                     self._latest_value = cast('ReturnType', None)
-                    create_task(value)
+                    self._create_task(value)
             else:
                 self._latest_value = value
             if self._latest_value is not previous_value:
@@ -300,8 +310,9 @@ class Autorun(
         **kwargs: Args.kwargs,
     ) -> ReturnType:
         """Call the wrapped function with the current state of the store."""
-        state = self._store._state  # noqa: SLF001
-        self.check(state)
+        self._store.with_state(lambda state: state, ignore_uninitialized_store=True)(
+            self.check,
+        )()
         if self._should_be_called or args or kwargs or not self._options.memoization:
             self._should_be_called = False
             self.call(*args, **kwargs)
@@ -386,7 +397,7 @@ class Autorun(
             ReturnType,
         ],
         obj: object | None,
-        type_: type | None = None,
+        _: type | None = None,
     ) -> Autorun[
         State,
         Action,

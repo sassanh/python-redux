@@ -73,7 +73,6 @@ class Store(Generic[State, Action, Event], SerializationMixin):
         """Create a new store."""
         self.store_options = options or StoreOptions()
         self.reducer = reducer
-        self._create_task = self.store_options.task_creator
 
         self._action_middlewares = list(self.store_options.action_middlewares)
         self._event_middlewares = list(self.store_options.event_middlewares)
@@ -97,7 +96,7 @@ class Store(Generic[State, Action, Event], SerializationMixin):
         self._workers = [
             self.store_options.side_effect_runner_class(
                 task_queue=self._event_handlers_queue,
-                create_task=self._create_task,
+                create_task=self.store_options.task_creator,
             )
             for _ in range(self.store_options.side_effect_threads)
         ]
@@ -122,12 +121,17 @@ class Store(Generic[State, Action, Event], SerializationMixin):
         for listener_ in self._listeners.copy():
             if isinstance(listener_, weakref.ref):
                 listener = listener_()
-                assert listener is not None  # noqa: S101
+                if listener is None:
+                    msg = (
+                        'Listener has been garbage collected. '
+                        'Consider using `keep_ref=True` if it suits your use case.'
+                    )
+                    raise RuntimeError(msg)
             else:
                 listener = listener_
             result = listener(state)
-            if asyncio.iscoroutine(result) and self._create_task:
-                self._create_task(result)
+            if asyncio.iscoroutine(result) and self.store_options.task_creator:
+                self.store_options.task_creator(result)
 
     def _run_actions(self: Store[State, Action, Event]) -> None:
         while len(self._actions) > 0:
@@ -385,6 +389,8 @@ class Store(Generic[State, Action, Event], SerializationMixin):
     def with_state(
         self: Store[State, Action, Event],
         selector: Callable[[State], SelectorOutput],
+        *,
+        ignore_uninitialized_store: bool = False,
     ) -> WithStateDecorator[SelectorOutput]:
         """Wrap a function, passing the result of the selector as its first argument.
 
@@ -425,6 +431,8 @@ class Store(Generic[State, Action, Event], SerializationMixin):
         ):
             def wrapper(*args: Args.args, **kwargs: Args.kwargs) -> ReturnType:
                 if self._state is None:
+                    if ignore_uninitialized_store:
+                        return cast('ReturnType', None)
                     msg = 'Store has not been initialized yet.'
                     raise RuntimeError(msg)
                 return call_func(func, [selector(self._state)], *args, **kwargs)
