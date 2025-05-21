@@ -156,7 +156,7 @@ def main() -> None:
 
     store.dispatch(
         CombineReducerRegisterAction(
-            _id=reducer_id,
+            combine_reducers_id=reducer_id,
             key='inverse',
             reducer=inverse_reducer,
         ),
@@ -167,7 +167,7 @@ def main() -> None:
 
     store.dispatch(
         CombineReducerUnregisterAction(
-            _id=reducer_id,
+            combine_reducers_id=reducer_id,
             key='straight',
         ),
     )

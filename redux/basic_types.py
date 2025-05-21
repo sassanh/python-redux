@@ -471,11 +471,11 @@ class Dispatch(Protocol, Generic[State, Action, Event]):
 
 
 class BaseCombineReducerState(Immutable):
-    _id: str
+    combine_reducers_id: str
 
 
 class CombineReducerAction(BaseAction):
-    _id: str
+    combine_reducers_id: str
 
 
 class CombineReducerInitAction(CombineReducerAction, InitAction, Generic[Payload]):

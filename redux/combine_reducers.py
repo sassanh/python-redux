@@ -44,9 +44,12 @@ def combine_reducers(
 ) -> tuple[ReducerType[CombineReducerState, Action, Event], str]:
     _ = action_type, event_type
     reducers = reducers.copy()
-    _id = uuid.uuid4().hex
+    id_ = uuid.uuid4().hex
 
-    state_class = make_immutable(state_type.__name__, (('_id', str), *reducers.keys()))
+    state_class = make_immutable(
+        state_type.__name__,
+        (('combine_reducers_id', str), *reducers.keys()),
+    )
 
     def combined_reducer(
         state: CombineReducerState | None,
@@ -58,7 +61,7 @@ def combine_reducers(
         if (
             state is not None
             and isinstance(action, CombineReducerAction)
-            and action._id == _id  # noqa: SLF001
+            and action.combine_reducers_id == id_
         ):
             if isinstance(action, CombineReducerRegisterAction):
                 key = action.key
@@ -66,14 +69,18 @@ def combine_reducers(
                 reducers[key] = reducer
                 state_class = make_immutable(
                     state_type.__name__,
-                    (('_id', str), *reducers.keys()),
+                    (('combine_reducers_id', str), *reducers.keys()),
                 )
                 reducer_result = reducer(
                     None,
-                    CombineReducerInitAction(_id=_id, key=key, payload=action.payload),
+                    CombineReducerInitAction(
+                        combine_reducers_id=id_,
+                        key=key,
+                        payload=action.payload,
+                    ),
                 )
                 state = state_class(
-                    _id=state._id,  # noqa: SLF001
+                    combine_reducers_id=state.combine_reducers_id,
                     **{
                         key_: (
                             reducer_result.state
@@ -107,21 +114,21 @@ def combine_reducers(
                 state_class.__dataclass_fields__ = fields_copy
 
                 state = state_class(
-                    _id=state._id,  # noqa: SLF001
+                    combine_reducers_id=state.combine_reducers_id,
                     **{key_: getattr(state, key_) for key_ in reducers if key_ != key},
                 )
 
         reducers_results = {
             key: reducer(
                 None if state is None else getattr(state, key),
-                CombineReducerInitAction(key=key, _id=_id)
+                CombineReducerInitAction(key=key, combine_reducers_id=id_)
                 if isinstance(action, InitAction)
                 else action,
             )
             for key, reducer in reducers.items()
         }
         result_state = state_class(
-            _id=_id,
+            combine_reducers_id=id_,
             **{
                 key: result.state if is_complete_reducer_result(result) else result
                 for key, result in reducers_results.items()
@@ -150,4 +157,4 @@ def combine_reducers(
             events=result_events,
         )
 
-    return combined_reducer, _id
+    return combined_reducer, id_

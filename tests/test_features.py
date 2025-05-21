@@ -199,7 +199,7 @@ def test_general(
 
     store.dispatch(
         CombineReducerRegisterAction(
-            _id=reducer_id,
+            combine_reducers_id=reducer_id,
             key='inverse',
             reducer=inverse_reducer,
         ),
@@ -210,7 +210,7 @@ def test_general(
 
     store.dispatch(
         CombineReducerUnregisterAction(
-            _id=reducer_id,
+            combine_reducers_id=reducer_id,
             key='straight',
         ),
     )

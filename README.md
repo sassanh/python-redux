@@ -275,7 +275,7 @@ You can then add a new reducer to it using the `reducer_id` like this:
 ```python
 store.dispatch(
     CombineReducerRegisterAction(
-        _id=reducer_id,
+        combine_reducers_id=reducer_id,
         key='third',
         third=third_reducer,
     ),
@@ -287,7 +287,7 @@ You can also remove a reducer from it like this:
 ```python
 store.dispatch(
     CombineReducerRegisterAction(
-        _id=reducer_id,
+        combine_reducers_id=reducer_id,
         key='second',
     ),
 )

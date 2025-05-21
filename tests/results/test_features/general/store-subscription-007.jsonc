@@ -1,11 +1,11 @@
 // store-subscription-007
 {
-  "_id": "e3e70682c2094cac629f6fbed82c07cd",
   "_type": "StateType",
   "base10": {
     "_type": "CountStateType",
     "count": 8
   },
+  "combine_reducers_id": "e3e70682c2094cac629f6fbed82c07cd",
   "inverse": {
     "_type": "CountStateType",
     "count": 3
