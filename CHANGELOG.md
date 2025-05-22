@@ -1,6 +1,6 @@
 # Changelog
 
-## Upcoming
+## Version 0.24.0
 
 - chore: add badges in `README.md` and classifiers in `pyproject.toml`
 - refactor: move the common code for manipulating the signature of the wrapped functions in `WithStore` and `Autorun` to a utility function
