@@ -17,6 +17,7 @@ from typing import (
 )
 
 from redux.basic_types import (
+    NOT_SET,
     Action,
     Args,
     AutoAwait,
@@ -133,7 +134,7 @@ class Autorun(
         )
         self._options = options
 
-        self._last_selector_result: SelectorOutput | None = None
+        self._last_selector_result: SelectorOutput | None = NOT_SET
         self._last_comparator_result: ComparatorOutput = cast(
             'ComparatorOutput',
             object(),
@@ -268,7 +269,7 @@ class Autorun(
     ) -> None:
         """Call the wrapped function with the current state of the store."""
         func = self._func() if isinstance(self._func, weakref.ref) else self._func
-        if func and self._last_selector_result is not None:
+        if func and self._last_selector_result is not NOT_SET:
             value: ReturnType = call_func(
                 func,
                 [self._last_selector_result],
@@ -282,7 +283,7 @@ class Autorun(
                     is False  # only explicit `False` disables auto-await, not `None`
                 ):
                     if (
-                        self._latest_value is not None
+                        self._latest_value is not NOT_SET
                         and isinstance(self._latest_value, AwaitableWrapper)
                         and not self._latest_value.awaited
                     ):

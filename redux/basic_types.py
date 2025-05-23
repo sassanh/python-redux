@@ -153,6 +153,8 @@ class StoreOptions(Immutable, Generic[Action, Event]):
 
 AutoAwait = TypeVar('AutoAwait', bound=Literal[True, False, None], infer_variance=True)
 
+NOT_SET = object()
+
 
 class AutorunOptionsType(Immutable, Generic[ReturnType, AutoAwait]):
     default_value: ReturnType | None = None
@@ -218,7 +220,7 @@ class AutorunOptionsType(Immutable, Generic[ReturnType, AutoAwait]):
 
 
 class AutorunOptionsImplementation(Immutable, Generic[ReturnType, AutoAwait]):
-    default_value: ReturnType | None = None
+    default_value: ReturnType | None = cast('None', NOT_SET)
     auto_await: AutoAwait = cast('AutoAwait', val=None)
     initial_call: bool = True
     reactive: bool = True

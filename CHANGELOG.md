@@ -1,5 +1,9 @@
 # Changelog
 
+## Upcoming
+
+- refactor: use custom value `NOT_SET = object()` instead of `None` to signal the absence of a value for the `default_value` parameter in `AutorunOptions` and internally in `Autorun` class for properties storing last selector result and last call result
+
 ## Version 0.24.0
 
 - chore: add badges in `README.md` and classifiers in `pyproject.toml`
