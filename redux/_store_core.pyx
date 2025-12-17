@@ -22,7 +22,10 @@ from redux.basic_types import (
     StoreOptions,
     AutorunOptions,
     ViewOptions,
-    is_complete_reducer_result,
+    StoreOptions,
+    AutorunOptions,
+    ViewOptions,
+    CompleteReducerResult,
     is_state_reducer_result,
 )
 from redux.utils import call_func, signature_without_selector
@@ -111,7 +114,7 @@ cdef class Store:
 
             result = listener(state)
 
-            if asyncio.iscoroutine(result) and task_creator is not None:
+            if result is not None and asyncio.iscoroutine(result) and task_creator is not None:
                 task_creator(result)
 
     cpdef void _run_actions(self) except *:
@@ -124,7 +127,7 @@ cdef class Store:
             if action is not None:
                 result = self.reducer(self._state, action)
                 
-                if is_complete_reducer_result(result):
+                if isinstance(result, CompleteReducerResult):
                     self._state = result.state
                     self._call_listeners(self._state)
                     # Dispatch actions/events from result
@@ -133,7 +136,7 @@ cdef class Store:
                     if result.events:
                         self._dispatch_list(result.events)
                 
-                elif is_state_reducer_result(result):
+                else:
                     self._state = result
                     self._call_listeners(self._state)
 
