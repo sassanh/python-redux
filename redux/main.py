@@ -58,6 +58,14 @@ from redux.basic_types import (
 from redux.serialization_mixin import SerializationMixin
 from redux.utils import call_func, signature_without_selector
 
+# Try to import Cython-optimized functions, fall back to None if not available
+try:
+    from redux._store_core import call_listeners_fast as _call_listeners_fast
+    _USE_CYTHON = True
+except ImportError:
+    _call_listeners_fast = None
+    _USE_CYTHON = False
+
 if TYPE_CHECKING:
     from collections.abc import Callable
 
@@ -118,6 +126,16 @@ class Store(Generic[State, Action, Event], SerializationMixin):
             self.store_options.scheduler(self.run, interval=True)
 
     def _call_listeners(self: Store[State, Action, Event], state: State) -> None:
+        # Use Cython-optimized version if available
+        if _USE_CYTHON and _call_listeners_fast is not None:
+            _call_listeners_fast(
+                self._listeners,
+                state,
+                self.store_options.task_creator,
+            )
+            return
+
+        # Pure Python fallback
         for listener_ in self._listeners.copy():
             if isinstance(listener_, weakref.ref):
                 listener = listener_()
