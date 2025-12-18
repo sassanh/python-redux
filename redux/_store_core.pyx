@@ -27,10 +27,50 @@ from redux.basic_types import (
     ViewOptions,
     CompleteReducerResult,
     is_state_reducer_result,
+    NOT_SET,
 )
 from redux.utils import call_func, signature_without_selector
 from immutable import is_immutable
 from redux.serialization_mixin import SerializationMixin
+
+
+cdef class AwaitableWrapper:
+    """A wrapper for a coroutine to track if it has been awaited."""
+    
+    cdef object coro
+    cdef tuple value
+
+    def __init__(self, coro):
+        self.coro = coro
+        self.value = (False, None)
+
+    def __await__(self):
+        return self._wrap().__await__()
+
+    async def _wrap(self):
+        if self.value[0] is True:
+            return self.value[1]
+        self.value = (True, await self.coro)
+        return self.value[1]
+
+    def close(self):
+        self.coro.close()
+
+    @property
+    def awaited(self):
+        return self.value[0]
+
+class SubscribeEventCleanup:
+    def __init__(self, unsubscribe, handler):
+        self.unsubscribe = unsubscribe
+        self.handler = handler
+
+    def __call__(self):
+        return self.unsubscribe()
+    
+    def __repr__(self):
+        return f'AwaitableWrapper({self.coro}, awaited={self.awaited})'
+from libc.stdlib cimport malloc, free
 
 cdef class Store:
     """Cython-optimized Redux store."""
@@ -292,8 +332,7 @@ cdef class Store:
             except KeyError:
                 pass
 
-        # Return object with unsubscribe method and handler attribute
-        return type('SubscribeEventCleanup', (), {'unsubscribe': unsubscribe, 'handler': handler})
+        return SubscribeEventCleanup(unsubscribe, handler)
 
     def _wait_for_store_to_finish(self):
         """Wait for the store to finish."""
@@ -356,6 +395,19 @@ cdef class Store:
 
             signature = signature_without_selector(func)
             wrapper.__signature__ = signature
+            
+            # Mimic functools.wraps / standard decorator behavior
+            if hasattr(func, '__name__'):
+                wrapper.__name__ = func.__name__
+            if hasattr(func, '__qualname__'):
+                wrapper.__qualname__ = func.__qualname__
+            if hasattr(func, '__doc__'):
+                wrapper.__doc__ = func.__doc__
+            if hasattr(func, '__module__'):
+                wrapper.__module__ = func.__module__
+            if hasattr(func, '__annotations__'):
+                wrapper.__annotations__ = func.__annotations__
+                
             return wrapper
         return with_state_decorator
 
@@ -379,8 +431,262 @@ cdef class Store:
     # and preserve standard RecursionError behavior.
     @classmethod
     def serialize_value(cls, obj):
-        return SerializationMixin.serialize_value.__func__(cls, obj)
+        return SerializationMixin.serialize_value.__func__(SerializationMixin, obj)
 
     @classmethod
     def _serialize_dataclass_to_dict(cls, obj):
-        return SerializationMixin._serialize_dataclass_to_dict.__func__(cls, obj)
+        return SerializationMixin._serialize_dataclass_to_dict.__func__(SerializationMixin, obj)
+
+
+cdef class Autorun:
+    cdef object _store
+    cdef object _selector
+    cdef object _comparator
+    cdef object _func
+    cdef public object _options
+    cdef public object _latest_value
+    cdef object _last_selector_result
+    cdef object _last_comparator_result
+    cdef bint _should_be_called
+    cdef object _subscriptions
+    cdef public object _unsubscribe
+    cdef public object _is_coroutine
+    cdef dict __dict__
+    cdef object __weakref__
+
+    def __init__(
+        self,
+        *,
+        store,
+        selector,
+        comparator,
+        func,
+        options,
+    ):
+        if hasattr(func, '__name__'):
+            self.__name__ = f'Autorun:{func.__name__}'
+        else:
+            self.__name__ = f'Autorun:{func}'
+        
+        if hasattr(func, '__qualname__'):
+            self.__qualname__ = f'Autorun:{func.__qualname__}'
+        else:
+            self.__qualname__ = f'Autorun:{func}'
+
+        self.__signature__ = signature_without_selector(func)
+        self.__module__ = func.__module__
+        
+        self.__annotations__ = getattr(func, '__annotations__', None)
+        self.__defaults__ = getattr(func, '__defaults__', None)
+        self.__kwdefaults__ = getattr(func, '__kwdefaults__', None)
+
+        self._store = store
+        self._selector = selector
+        self._comparator = comparator
+        self._should_be_called = False
+
+        if options.keep_ref:
+            self._func = func
+        elif inspect.ismethod(func):
+            self._func = weakref.WeakMethod(func, self.unsubscribe)
+        else:
+            self._func = weakref.ref(func, self.unsubscribe)
+            
+        self._is_coroutine = (
+            asyncio.coroutines._is_coroutine
+            if asyncio.iscoroutinefunction(func) and options.auto_await is False
+            else None
+        )
+        self._options = options
+
+        self._last_selector_result = NOT_SET
+        # cast('ComparatorOutput', object()) equivalent
+        self._last_comparator_result = object()
+
+        if asyncio.iscoroutinefunction(func):
+            # Hack for default value wrapper async
+            # In Cython we can't easily define async def inside def
+            # We'll just manually use the value
+            default_value = options.default_value
+            self._create_task_value(default_value)
+            self._latest_value = default_value
+        else:
+            self._latest_value = options.default_value
+            
+        self._subscriptions = set()
+
+        # Initial check
+        # We need to call store.with_state...
+        # But we can optimize this since we are inside Cython and have access to _store internals?
+        # store.with_state returns a wrapper. calling it calls the func.
+        # self.check needs to be called.
+        
+        # Original: store.with_state(lambda state: state, ignore_uninitialized_store=True)(self.check)()
+        # Optimized: access store._state directly if possible or use public API
+        
+        cdef object state = store._state
+        if state is not None or options.initial_call:
+             if self.check(state) and self._options.initial_call:
+                 self._should_be_called = False
+                 self.call()
+
+        if self._options.reactive:
+            # We pass self.react which is a bound method
+            self._unsubscribe = store._subscribe(self.react)
+        else:
+            self._unsubscribe = None
+
+    cdef void _create_task_value(self, object value):
+         # Helper to create a task returning value
+         async def wrapper():
+             return value
+         if self._store.store_options.task_creator:
+             self._store.store_options.task_creator(wrapper())
+
+    def _create_task(self, coro):
+        if self._store.store_options.task_creator:
+            self._store.store_options.task_creator(coro)
+
+    cpdef bint check(self, object state):
+        if state is None:
+            return False
+        
+        cdef object selector_result
+        try:
+            selector_result = self._selector(state)
+        except AttributeError:
+            return False
+            
+        cdef object comparator_result
+        if self._comparator is None:
+            comparator_result = selector_result
+        else:
+            try:
+                comparator_result = self._comparator(state)
+            except AttributeError:
+                return False
+        
+        self._should_be_called = (
+            self._should_be_called or comparator_result != self._last_comparator_result
+        )
+        self._last_selector_result = selector_result
+        self._last_comparator_result = comparator_result
+        return self._should_be_called
+
+    def react(self, state):
+        if self._options.reactive and self.check(state):
+            self._should_be_called = False
+            self.call()
+
+    def unsubscribe(self, _=None):
+        if self._unsubscribe:
+            self._unsubscribe()
+            self._unsubscribe = None
+
+    def inform_subscribers(self):
+        cdef object subscriber_
+        cdef object subscriber
+        
+        for subscriber_ in list(self._subscriptions):
+            if isinstance(subscriber_, weakref.ref):
+                subscriber = subscriber_()
+                if subscriber is None:
+                    self._subscriptions.discard(subscriber_)
+                    continue
+            else:
+                subscriber = subscriber_
+            subscriber(self._latest_value)
+
+    def call(self, *args, **kwargs):
+        cdef object func
+        cdef object value
+        cdef object previous_value
+        
+        if isinstance(self._func, weakref.ref):
+            func = self._func()
+        else:
+            func = self._func
+            
+        if func and self._last_selector_result is not NOT_SET:
+            value = call_func(
+                func,
+                [self._last_selector_result],
+                *args,
+                **kwargs,
+            )
+            previous_value = self._latest_value
+            
+            if asyncio.iscoroutine(value):
+                if self._options.auto_await is False:
+                     if (
+                         self._latest_value is not NOT_SET
+                         and isinstance(self._latest_value, AwaitableWrapper)
+                         and not self._latest_value.awaited
+                     ):
+                         self._latest_value.close()
+                     self._latest_value = AwaitableWrapper(value)
+                else:
+                     self._latest_value = None
+                     self._create_task(value)
+            else:
+                self._latest_value = value
+                
+            if self._latest_value is not previous_value:
+                self.inform_subscribers()
+
+    def __call__(self, *args, **kwargs):
+        # Original: store.with_state(..., ignore_uninitialized_store=True)(self.check)()
+        cdef object state = self._store._state
+        # We manually call check with current state
+        self.check(state)
+        
+        if self._should_be_called or args or kwargs or not self._options.memoization:
+            self._should_be_called = False
+            self.call(*args, **kwargs)
+        
+        return self._latest_value
+
+    def __repr__(self):
+        return (
+            f'<{self.__class__.__name__} object at {id(self)}> '
+            f'(func: {self._func}, last_value: {self._latest_value})'
+        )
+
+    @property
+    def value(self):
+        return self._latest_value
+
+    def subscribe(self, callback, *, initial_run=None, keep_ref=None):
+        if initial_run is None:
+            initial_run = self._options.subscribers_initial_run
+        if keep_ref is None:
+            keep_ref = self._options.subscribers_keep_ref
+            
+        cdef object callback_ref
+        if keep_ref:
+            callback_ref = callback
+        elif inspect.ismethod(callback):
+            callback_ref = weakref.WeakMethod(callback)
+        else:
+            callback_ref = weakref.ref(callback)
+            
+        self._subscriptions.add(callback_ref)
+
+        if initial_run:
+            callback(self.value)
+
+        def unsubscribe():
+            self._subscriptions.discard(callback_ref)
+        return unsubscribe
+
+    def __get__(self, obj, owner):
+        if obj is None:
+            return self
+        else:
+            # Recreate partial equivalent
+            # This is hard to fully replicate via partial in Cython for cdef class methods?
+            # But the original code wraps the instance itself in partial(self, obj)
+            # which works because Autorun is callable.
+            # Cython classes are callable if __call__ is defined.
+            import functools
+            return functools.partial(self, obj)

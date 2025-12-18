@@ -84,7 +84,7 @@ def test_repr(store: StoreType) -> None:
         return value
 
     assert re.match(
-        r'.*<function test_repr\.<locals>\.func at .*>$',
+        r'.*<(cy)?function test_repr\.<locals>\.func at .*>$',
         repr(func),
     )
 

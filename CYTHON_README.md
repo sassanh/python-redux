@@ -29,6 +29,19 @@ Performance comparison between the Pure Python baseline and the Hyper-Optimized 
 
 The **4.65x speedup** for subscribers is a result of "Hyper Optimization" (Phase 8), which eliminated 66% of the overhead associated with checking for coroutines in synchronous listeners.
 
+## Autorun Optimization (Phase 9)
+
+In Phase 9, we fully Cythonized the `Autorun` class, embedding it directly within `_store_core.pyx` to access internal store state efficiently.
+
+| Test Case | Baseline (Python) | Optimized (Cython) | Speedup |
+|-----------|-------------------|--------------------|-------------|
+| **Autorun Creation** | 52.6 μs | 15.5 μs | **3.40x** |
+| **Reactivity Check** | 9.6 μs | 5.6 μs | **1.71x** |
+| **Complex Selector** | 9.7 μs | 5.9 μs | **1.64x** |
+| **Notifications** | 668 μs | 383 μs | **1.74x** |
+
+This provides substantial improvements for applications that rely heavily on reactive state derived from the store.
+
 ## Build & Reproduction
 
 To reproduce these results, you can build the extension and run the benchmarks.
@@ -64,4 +77,5 @@ pytest-benchmark compare baseline.json optimized.json
 -   `redux/_store_core.pyx`: The optimized Cython `Store` implementation.
 -   `redux/_store_py.py`: The pure Python fallback.
 -   `redux/main.py`: The selector module that handles the import logic.
--   `benchmarks/bench_dispatch.py`: The performance test suite.
+-   `benchmarks/bench_dispatch.py`: The performance test suite for dispatch.
+-   `benchmarks/bench_autorun.py`: The performance test suite for Autorun.
