@@ -7,7 +7,7 @@ try:
     from Cython.Build import cythonize
 
     ext_modules = cythonize(
-        'redux/_store_core.pyx',
+        ['redux/_store_core.pyx', 'redux/_combine_reducers.pyx'],
         compiler_directives={
             'language_level': '3',
             'boundscheck': False,

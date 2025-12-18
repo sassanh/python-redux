@@ -42,6 +42,18 @@ In Phase 9, we fully Cythonized the `Autorun` class, embedding it directly withi
 
 This provides substantial improvements for applications that rely heavily on reactive state derived from the store.
 
+## Combine Reducers Optimization (Phase 10)
+
+In Phase 10, we optimized `combine_reducers` by moving the dispatch loop and state aggregation logic to Cython.
+
+| Test Case | Baseline (Python) | Optimized (Cython) | Speedup |
+|-----------|-------------------|--------------------|-------------|
+| **10 Reducers** | 12.9 μs | 10.5 μs | **1.23x** |
+| **50 Reducers** | 69.5 μs | 55.3 μs | **1.26x** |
+| **100 Reducers** | 178.0 μs | 154.5 μs | **1.15x** |
+
+The dispatch loop avoids Python attribute access overhead (`getattr`) during state decomposition and aggregates results efficiently, though gains are capped by the execution time of the underlying Python reducers.
+
 ## Build & Reproduction
 
 To reproduce these results, you can build the extension and run the benchmarks.
@@ -79,3 +91,4 @@ pytest-benchmark compare baseline.json optimized.json
 -   `redux/main.py`: The selector module that handles the import logic.
 -   `benchmarks/bench_dispatch.py`: The performance test suite for dispatch.
 -   `benchmarks/bench_autorun.py`: The performance test suite for Autorun.
+-   `benchmarks/bench_combine_reducers.py`: The performance test suite for combine_reducers.
