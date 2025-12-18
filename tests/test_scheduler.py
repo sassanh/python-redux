@@ -1,8 +1,9 @@
-# ruff: noqa: D100, D101, D102, D103, D104, D107
+# ruff: noqa: D100, D101, D102, D103, D107
 from __future__ import annotations
 
 import asyncio
 import threading
+import time
 from dataclasses import replace
 from typing import TYPE_CHECKING, TypeAlias
 from unittest.mock import call
@@ -138,7 +139,6 @@ def test_scheduler(mocker: MockerFixture) -> None:
     )
 
     store._subscribe(render)  # noqa: SLF001
-    import time
 
     time.sleep(0.1)
 

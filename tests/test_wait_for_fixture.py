@@ -1,4 +1,4 @@
-# ruff: noqa: D100, D101, D102, D103, D104, D107
+# ruff: noqa: D100, D103
 import pytest
 from tenacity import RetryError, stop_after_delay
 from tenacity.wait import wait_fixed

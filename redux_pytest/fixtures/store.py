@@ -6,6 +6,8 @@ from typing import TYPE_CHECKING
 
 import pytest
 
+from redux import FinishAction
+
 if TYPE_CHECKING:
     from collections.abc import Generator
 
@@ -24,6 +26,5 @@ def needs_finish(store: Store) -> Generator:
     """Dispatch a finish action after the test."""
     yield None
 
-    from redux import FinishAction
 
     store.dispatch(FinishAction())

@@ -1,4 +1,4 @@
-# ruff: noqa: A003, D100, D101, D102, D103, D104, D105, D107, T201
+# ruff: noqa: D100, D101, D103, T201
 from __future__ import annotations
 
 import time
@@ -50,7 +50,7 @@ class CallApiEvent(BaseEvent):
 def reducer(
     state: TodoState | None,
     action: BaseAction,
-) -> ReducerResult[TodoState, BaseAction, BaseEvent]:
+) -> ReducerResult[TodoState, BaseAction, BaseEvent | None]:
     if state is None:
         return TodoState(
             items=[
