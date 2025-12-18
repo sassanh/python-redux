@@ -65,9 +65,9 @@ python setup.py build_ext --inplace
 ```
 
 ### 2. Run Benchmarks
-Run the benchmark suite using `pytest-benchmark`:
+Run the benchmark suite using `pytest-benchmark`. We recommend disabling timeouts to allow sufficient warmup time:
 ```bash
-pytest benchmarks/
+pytest -o "python_files=bench_*.py" --timeout=0 benchmarks/
 ```
 
 ### 3. Compare with Python
@@ -75,10 +75,10 @@ You can force the use of the Pure Python implementation by setting `REDUX_FORCE_
 
 ```bash
 # Run Python Baseline
-REDUX_FORCE_PYTHON=1 pytest benchmarks/ --benchmark-json=baseline.json
+REDUX_FORCE_PYTHON=1 pytest -o "python_files=bench_*.py" --timeout=0 benchmarks/ --benchmark-json=baseline.json
 
 # Run Cython Optimized
-pytest benchmarks/ --benchmark-json=optimized.json
+pytest -o "python_files=bench_*.py" --timeout=0 benchmarks/ --benchmark-json=optimized.json
 
 # Compare
 pytest-benchmark compare baseline.json optimized.json
