@@ -22,9 +22,6 @@ from redux.basic_types import (
     StoreOptions,
     AutorunOptions,
     ViewOptions,
-    StoreOptions,
-    AutorunOptions,
-    ViewOptions,
     CompleteReducerResult,
     is_state_reducer_result,
     NOT_SET,
@@ -60,7 +57,12 @@ cdef class AwaitableWrapper:
     def awaited(self):
         return self.value[0]
 
-class SubscribeEventCleanup:
+cdef class SubscribeEventCleanup:
+    """Helper class to handle subscription cleanup."""
+    
+    cdef object unsubscribe
+    cdef object handler
+
     def __init__(self, unsubscribe, handler):
         self.unsubscribe = unsubscribe
         self.handler = handler
@@ -69,7 +71,7 @@ class SubscribeEventCleanup:
         return self.unsubscribe()
     
     def __repr__(self):
-        return f'AwaitableWrapper({self.coro}, awaited={self.awaited})'
+        return f'SubscribeEventCleanup(handler={self.handler})'
 from libc.stdlib cimport malloc, free
 
 cdef class Store:
@@ -439,6 +441,7 @@ cdef class Store:
 
 
 cdef class Autorun:
+    """Cython implementation of Autorun."""
     cdef object _store
     cdef object _selector
     cdef object _comparator

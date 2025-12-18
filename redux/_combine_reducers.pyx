@@ -27,6 +27,7 @@ from .basic_types import (
 from immutable import make_immutable
 
 cdef class CombinedReducer:
+    """Cython implementation of combined reducer."""
     cdef object state_type
     cdef object state_class
     cdef dict reducers
@@ -176,6 +177,11 @@ def combine_reducers(
     event_type=BaseEvent,
     **reducers,
 ):
+    """
+    Combine multiple reducers into a single reducer.
+
+    Optimized Cython implementation.
+    """
     id_ = uuid.uuid4().hex
     # Copy reducers dict
     reducers_copy = reducers.copy()

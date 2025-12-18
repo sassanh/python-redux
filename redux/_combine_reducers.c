@@ -1530,8 +1530,8 @@ struct __pyx_defaults;
  * from immutable import make_immutable
  * 
  * cdef class CombinedReducer:             # <<<<<<<<<<<<<<
+ *     """Cython implementation of combined reducer."""
  *     cdef object state_type
- *     cdef object state_class
 */
 struct __pyx_obj_5redux_17_combine_reducers_CombinedReducer {
   PyObject_HEAD
@@ -1544,7 +1544,7 @@ struct __pyx_obj_5redux_17_combine_reducers_CombinedReducer {
 };
 
 
-/* "redux/_combine_reducers.pyx":173
+/* "redux/_combine_reducers.pyx":174
  *         )
  * 
  * def combine_reducers(             # <<<<<<<<<<<<<<
@@ -1563,8 +1563,8 @@ struct __pyx_defaults {
  * from immutable import make_immutable
  * 
  * cdef class CombinedReducer:             # <<<<<<<<<<<<<<
+ *     """Cython implementation of combined reducer."""
  *     cdef object state_type
- *     cdef object state_class
 */
 
 struct __pyx_vtabstruct_5redux_17_combine_reducers_CombinedReducer {
@@ -2709,7 +2709,7 @@ return 0;
 #endif
 /* #### Code section: module_code ### */
 
-/* "redux/_combine_reducers.pyx":35
+/* "redux/_combine_reducers.pyx":36
  *     cdef str id_
  * 
  *     def __init__(self, state_type, reducers, id_):             # <<<<<<<<<<<<<<
@@ -2741,38 +2741,38 @@ static int __pyx_pw_5redux_17_combine_reducers_15CombinedReducer_1__init__(PyObj
   {
     PyObject ** const __pyx_pyargnames[] = {&__pyx_mstate_global->__pyx_n_u_state_type,&__pyx_mstate_global->__pyx_n_u_reducers,&__pyx_mstate_global->__pyx_n_u_id,0};
     const Py_ssize_t __pyx_kwds_len = (__pyx_kwds) ? __Pyx_NumKwargs_VARARGS(__pyx_kwds) : 0;
-    if (unlikely(__pyx_kwds_len) < 0) __PYX_ERR(0, 35, __pyx_L3_error)
+    if (unlikely(__pyx_kwds_len) < 0) __PYX_ERR(0, 36, __pyx_L3_error)
     if (__pyx_kwds_len > 0) {
       switch (__pyx_nargs) {
         case  3:
         values[2] = __Pyx_ArgRef_VARARGS(__pyx_args, 2);
-        if (!CYTHON_ASSUME_SAFE_MACROS && unlikely(!values[2])) __PYX_ERR(0, 35, __pyx_L3_error)
+        if (!CYTHON_ASSUME_SAFE_MACROS && unlikely(!values[2])) __PYX_ERR(0, 36, __pyx_L3_error)
         CYTHON_FALLTHROUGH;
         case  2:
         values[1] = __Pyx_ArgRef_VARARGS(__pyx_args, 1);
-        if (!CYTHON_ASSUME_SAFE_MACROS && unlikely(!values[1])) __PYX_ERR(0, 35, __pyx_L3_error)
+        if (!CYTHON_ASSUME_SAFE_MACROS && unlikely(!values[1])) __PYX_ERR(0, 36, __pyx_L3_error)
         CYTHON_FALLTHROUGH;
         case  1:
         values[0] = __Pyx_ArgRef_VARARGS(__pyx_args, 0);
-        if (!CYTHON_ASSUME_SAFE_MACROS && unlikely(!values[0])) __PYX_ERR(0, 35, __pyx_L3_error)
+        if (!CYTHON_ASSUME_SAFE_MACROS && unlikely(!values[0])) __PYX_ERR(0, 36, __pyx_L3_error)
         CYTHON_FALLTHROUGH;
         case  0: break;
         default: goto __pyx_L5_argtuple_error;
       }
       const Py_ssize_t kwd_pos_args = __pyx_nargs;
-      if (__Pyx_ParseKeywords(__pyx_kwds, __pyx_kwvalues, __pyx_pyargnames, 0, values, kwd_pos_args, __pyx_kwds_len, "__init__", 0) < (0)) __PYX_ERR(0, 35, __pyx_L3_error)
+      if (__Pyx_ParseKeywords(__pyx_kwds, __pyx_kwvalues, __pyx_pyargnames, 0, values, kwd_pos_args, __pyx_kwds_len, "__init__", 0) < (0)) __PYX_ERR(0, 36, __pyx_L3_error)
       for (Py_ssize_t i = __pyx_nargs; i < 3; i++) {
-        if (unlikely(!values[i])) { __Pyx_RaiseArgtupleInvalid("__init__", 1, 3, 3, i); __PYX_ERR(0, 35, __pyx_L3_error) }
+        if (unlikely(!values[i])) { __Pyx_RaiseArgtupleInvalid("__init__", 1, 3, 3, i); __PYX_ERR(0, 36, __pyx_L3_error) }
       }
     } else if (unlikely(__pyx_nargs != 3)) {
       goto __pyx_L5_argtuple_error;
     } else {
       values[0] = __Pyx_ArgRef_VARARGS(__pyx_args, 0);
-      if (!CYTHON_ASSUME_SAFE_MACROS && unlikely(!values[0])) __PYX_ERR(0, 35, __pyx_L3_error)
+      if (!CYTHON_ASSUME_SAFE_MACROS && unlikely(!values[0])) __PYX_ERR(0, 36, __pyx_L3_error)
       values[1] = __Pyx_ArgRef_VARARGS(__pyx_args, 1);
-      if (!CYTHON_ASSUME_SAFE_MACROS && unlikely(!values[1])) __PYX_ERR(0, 35, __pyx_L3_error)
+      if (!CYTHON_ASSUME_SAFE_MACROS && unlikely(!values[1])) __PYX_ERR(0, 36, __pyx_L3_error)
       values[2] = __Pyx_ArgRef_VARARGS(__pyx_args, 2);
-      if (!CYTHON_ASSUME_SAFE_MACROS && unlikely(!values[2])) __PYX_ERR(0, 35, __pyx_L3_error)
+      if (!CYTHON_ASSUME_SAFE_MACROS && unlikely(!values[2])) __PYX_ERR(0, 36, __pyx_L3_error)
     }
     __pyx_v_state_type = values[0];
     __pyx_v_reducers = values[1];
@@ -2780,7 +2780,7 @@ static int __pyx_pw_5redux_17_combine_reducers_15CombinedReducer_1__init__(PyObj
   }
   goto __pyx_L6_skip;
   __pyx_L5_argtuple_error:;
-  __Pyx_RaiseArgtupleInvalid("__init__", 1, 3, 3, __pyx_nargs); __PYX_ERR(0, 35, __pyx_L3_error)
+  __Pyx_RaiseArgtupleInvalid("__init__", 1, 3, 3, __pyx_nargs); __PYX_ERR(0, 36, __pyx_L3_error)
   __pyx_L6_skip:;
   goto __pyx_L4_argument_unpacking_done;
   __pyx_L3_error:;
@@ -2810,7 +2810,7 @@ static int __pyx_pf_5redux_17_combine_reducers_15CombinedReducer___init__(struct
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("__init__", 0);
 
-  /* "redux/_combine_reducers.pyx":36
+  /* "redux/_combine_reducers.pyx":37
  * 
  *     def __init__(self, state_type, reducers, id_):
  *         self.state_type = state_type             # <<<<<<<<<<<<<<
@@ -2823,7 +2823,7 @@ static int __pyx_pf_5redux_17_combine_reducers_15CombinedReducer___init__(struct
   __Pyx_DECREF(__pyx_v_self->state_type);
   __pyx_v_self->state_type = __pyx_v_state_type;
 
-  /* "redux/_combine_reducers.pyx":37
+  /* "redux/_combine_reducers.pyx":38
  *     def __init__(self, state_type, reducers, id_):
  *         self.state_type = state_type
  *         self.reducers = reducers             # <<<<<<<<<<<<<<
@@ -2832,14 +2832,14 @@ static int __pyx_pf_5redux_17_combine_reducers_15CombinedReducer___init__(struct
 */
   __pyx_t_1 = __pyx_v_reducers;
   __Pyx_INCREF(__pyx_t_1);
-  if (!(likely(PyDict_CheckExact(__pyx_t_1))||((__pyx_t_1) == Py_None) || __Pyx_RaiseUnexpectedTypeError("dict", __pyx_t_1))) __PYX_ERR(0, 37, __pyx_L1_error)
+  if (!(likely(PyDict_CheckExact(__pyx_t_1))||((__pyx_t_1) == Py_None) || __Pyx_RaiseUnexpectedTypeError("dict", __pyx_t_1))) __PYX_ERR(0, 38, __pyx_L1_error)
   __Pyx_GIVEREF(__pyx_t_1);
   __Pyx_GOTREF(__pyx_v_self->reducers);
   __Pyx_DECREF(__pyx_v_self->reducers);
   __pyx_v_self->reducers = ((PyObject*)__pyx_t_1);
   __pyx_t_1 = 0;
 
-  /* "redux/_combine_reducers.pyx":38
+  /* "redux/_combine_reducers.pyx":39
  *         self.state_type = state_type
  *         self.reducers = reducers
  *         self.id_ = id_             # <<<<<<<<<<<<<<
@@ -2848,25 +2848,25 @@ static int __pyx_pf_5redux_17_combine_reducers_15CombinedReducer___init__(struct
 */
   __pyx_t_1 = __pyx_v_id_;
   __Pyx_INCREF(__pyx_t_1);
-  if (!(likely(PyUnicode_CheckExact(__pyx_t_1))||((__pyx_t_1) == Py_None) || __Pyx_RaiseUnexpectedTypeError("str", __pyx_t_1))) __PYX_ERR(0, 38, __pyx_L1_error)
+  if (!(likely(PyUnicode_CheckExact(__pyx_t_1))||((__pyx_t_1) == Py_None) || __Pyx_RaiseUnexpectedTypeError("str", __pyx_t_1))) __PYX_ERR(0, 39, __pyx_L1_error)
   __Pyx_GIVEREF(__pyx_t_1);
   __Pyx_GOTREF(__pyx_v_self->id_);
   __Pyx_DECREF(__pyx_v_self->id_);
   __pyx_v_self->id_ = ((PyObject*)__pyx_t_1);
   __pyx_t_1 = 0;
 
-  /* "redux/_combine_reducers.pyx":39
+  /* "redux/_combine_reducers.pyx":40
  *         self.reducers = reducers
  *         self.id_ = id_
  *         self._update_state_class()             # <<<<<<<<<<<<<<
  * 
  *     cdef object state_accessor
 */
-  __pyx_t_1 = ((struct __pyx_vtabstruct_5redux_17_combine_reducers_CombinedReducer *)__pyx_v_self->__pyx_vtab)->_update_state_class(__pyx_v_self); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 39, __pyx_L1_error)
+  __pyx_t_1 = ((struct __pyx_vtabstruct_5redux_17_combine_reducers_CombinedReducer *)__pyx_v_self->__pyx_vtab)->_update_state_class(__pyx_v_self); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 40, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "redux/_combine_reducers.pyx":35
+  /* "redux/_combine_reducers.pyx":36
  *     cdef str id_
  * 
  *     def __init__(self, state_type, reducers, id_):             # <<<<<<<<<<<<<<
@@ -2886,7 +2886,7 @@ static int __pyx_pf_5redux_17_combine_reducers_15CombinedReducer___init__(struct
   return __pyx_r;
 }
 
-/* "redux/_combine_reducers.pyx":43
+/* "redux/_combine_reducers.pyx":44
  *     cdef object state_accessor
  * 
  *     cdef _update_state_class(self):             # <<<<<<<<<<<<<<
@@ -2911,7 +2911,7 @@ static PyObject *__pyx_f_5redux_17_combine_reducers_15CombinedReducer__update_st
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("_update_state_class", 0);
 
-  /* "redux/_combine_reducers.pyx":44
+  /* "redux/_combine_reducers.pyx":45
  * 
  *     cdef _update_state_class(self):
  *         self.state_class = make_immutable(             # <<<<<<<<<<<<<<
@@ -2919,53 +2919,53 @@ static PyObject *__pyx_f_5redux_17_combine_reducers_15CombinedReducer__update_st
  *             (('combine_reducers_id', str), *self.reducers.keys()),
 */
   __pyx_t_2 = NULL;
-  __Pyx_GetModuleGlobalName(__pyx_t_3, __pyx_mstate_global->__pyx_n_u_make_immutable); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 44, __pyx_L1_error)
+  __Pyx_GetModuleGlobalName(__pyx_t_3, __pyx_mstate_global->__pyx_n_u_make_immutable); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 45, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_3);
 
-  /* "redux/_combine_reducers.pyx":45
+  /* "redux/_combine_reducers.pyx":46
  *     cdef _update_state_class(self):
  *         self.state_class = make_immutable(
  *             self.state_type.__name__,             # <<<<<<<<<<<<<<
  *             (('combine_reducers_id', str), *self.reducers.keys()),
  *         )
 */
-  __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_v_self->state_type, __pyx_mstate_global->__pyx_n_u_name); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 45, __pyx_L1_error)
+  __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_v_self->state_type, __pyx_mstate_global->__pyx_n_u_name); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 46, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_4);
 
-  /* "redux/_combine_reducers.pyx":46
+  /* "redux/_combine_reducers.pyx":47
  *         self.state_class = make_immutable(
  *             self.state_type.__name__,
  *             (('combine_reducers_id', str), *self.reducers.keys()),             # <<<<<<<<<<<<<<
  *         )
  *         if self.reducers:
 */
-  __pyx_t_6 = PyTuple_New(2); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 46, __pyx_L1_error)
+  __pyx_t_6 = PyTuple_New(2); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 47, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_6);
   __Pyx_INCREF(__pyx_mstate_global->__pyx_n_u_combine_reducers_id);
   __Pyx_GIVEREF(__pyx_mstate_global->__pyx_n_u_combine_reducers_id);
-  if (__Pyx_PyTuple_SET_ITEM(__pyx_t_6, 0, __pyx_mstate_global->__pyx_n_u_combine_reducers_id) != (0)) __PYX_ERR(0, 46, __pyx_L1_error);
+  if (__Pyx_PyTuple_SET_ITEM(__pyx_t_6, 0, __pyx_mstate_global->__pyx_n_u_combine_reducers_id) != (0)) __PYX_ERR(0, 47, __pyx_L1_error);
   __Pyx_INCREF((PyObject *)(&PyUnicode_Type));
   __Pyx_GIVEREF((PyObject *)(&PyUnicode_Type));
-  if (__Pyx_PyTuple_SET_ITEM(__pyx_t_6, 1, ((PyObject *)(&PyUnicode_Type))) != (0)) __PYX_ERR(0, 46, __pyx_L1_error);
-  __pyx_t_7 = PyList_New(1); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 46, __pyx_L1_error)
+  if (__Pyx_PyTuple_SET_ITEM(__pyx_t_6, 1, ((PyObject *)(&PyUnicode_Type))) != (0)) __PYX_ERR(0, 47, __pyx_L1_error);
+  __pyx_t_7 = PyList_New(1); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 47, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_7);
   __Pyx_GIVEREF(__pyx_t_6);
-  if (__Pyx_PyList_SET_ITEM(__pyx_t_7, 0, __pyx_t_6) != (0)) __PYX_ERR(0, 46, __pyx_L1_error);
+  if (__Pyx_PyList_SET_ITEM(__pyx_t_7, 0, __pyx_t_6) != (0)) __PYX_ERR(0, 47, __pyx_L1_error);
   __pyx_t_6 = 0;
   __pyx_t_5 = __pyx_t_7;
   __pyx_t_7 = 0;
   if (unlikely(__pyx_v_self->reducers == Py_None)) {
     PyErr_Format(PyExc_AttributeError, "'NoneType' object has no attribute '%.30s'", "keys");
-    __PYX_ERR(0, 46, __pyx_L1_error)
+    __PYX_ERR(0, 47, __pyx_L1_error)
   }
-  __pyx_t_7 = __Pyx_PyDict_Keys(__pyx_v_self->reducers); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 46, __pyx_L1_error)
+  __pyx_t_7 = __Pyx_PyDict_Keys(__pyx_v_self->reducers); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 47, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_7);
-  if (__Pyx_PyList_Extend(__pyx_t_5, __pyx_t_7) < (0)) __PYX_ERR(0, 46, __pyx_L1_error)
+  if (__Pyx_PyList_Extend(__pyx_t_5, __pyx_t_7) < (0)) __PYX_ERR(0, 47, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
   {
     PyObject *__pyx_temp = PyList_AsTuple(__pyx_t_5);
     __Pyx_DECREF(__pyx_t_5);
-    __pyx_t_5 = __pyx_temp; if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 46, __pyx_L1_error)
+    __pyx_t_5 = __pyx_temp; if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 47, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_5);
   }
   __pyx_t_8 = 1;
@@ -2987,11 +2987,11 @@ static PyObject *__pyx_f_5redux_17_combine_reducers_15CombinedReducer__update_st
     __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
     __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
     __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
-    if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 44, __pyx_L1_error)
+    if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 45, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_1);
   }
 
-  /* "redux/_combine_reducers.pyx":44
+  /* "redux/_combine_reducers.pyx":45
  * 
  *     cdef _update_state_class(self):
  *         self.state_class = make_immutable(             # <<<<<<<<<<<<<<
@@ -3004,38 +3004,38 @@ static PyObject *__pyx_f_5redux_17_combine_reducers_15CombinedReducer__update_st
   __pyx_v_self->state_class = __pyx_t_1;
   __pyx_t_1 = 0;
 
-  /* "redux/_combine_reducers.pyx":48
+  /* "redux/_combine_reducers.pyx":49
  *             (('combine_reducers_id', str), *self.reducers.keys()),
  *         )
  *         if self.reducers:             # <<<<<<<<<<<<<<
  *             self.state_accessor = operator.attrgetter(*self.reducers.keys())
  *         else:
 */
-  __pyx_t_9 = __Pyx_PyObject_IsTrue(__pyx_v_self->reducers); if (unlikely((__pyx_t_9 < 0))) __PYX_ERR(0, 48, __pyx_L1_error)
+  __pyx_t_9 = __Pyx_PyObject_IsTrue(__pyx_v_self->reducers); if (unlikely((__pyx_t_9 < 0))) __PYX_ERR(0, 49, __pyx_L1_error)
   if (__pyx_t_9) {
 
-    /* "redux/_combine_reducers.pyx":49
+    /* "redux/_combine_reducers.pyx":50
  *         )
  *         if self.reducers:
  *             self.state_accessor = operator.attrgetter(*self.reducers.keys())             # <<<<<<<<<<<<<<
  *         else:
  *             self.state_accessor = None
 */
-    __Pyx_GetModuleGlobalName(__pyx_t_1, __pyx_mstate_global->__pyx_n_u_operator); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 49, __pyx_L1_error)
+    __Pyx_GetModuleGlobalName(__pyx_t_1, __pyx_mstate_global->__pyx_n_u_operator); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 50, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_1);
-    __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_t_1, __pyx_mstate_global->__pyx_n_u_attrgetter); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 49, __pyx_L1_error)
+    __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_t_1, __pyx_mstate_global->__pyx_n_u_attrgetter); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 50, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_3);
     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
     if (unlikely(__pyx_v_self->reducers == Py_None)) {
       PyErr_Format(PyExc_AttributeError, "'NoneType' object has no attribute '%.30s'", "keys");
-      __PYX_ERR(0, 49, __pyx_L1_error)
+      __PYX_ERR(0, 50, __pyx_L1_error)
     }
-    __pyx_t_1 = __Pyx_PyDict_Keys(__pyx_v_self->reducers); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 49, __pyx_L1_error)
+    __pyx_t_1 = __Pyx_PyDict_Keys(__pyx_v_self->reducers); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 50, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_1);
-    __pyx_t_5 = __Pyx_PySequence_Tuple(__pyx_t_1); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 49, __pyx_L1_error)
+    __pyx_t_5 = __Pyx_PySequence_Tuple(__pyx_t_1); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 50, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_5);
     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-    __pyx_t_1 = __Pyx_PyObject_Call(__pyx_t_3, __pyx_t_5, NULL); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 49, __pyx_L1_error)
+    __pyx_t_1 = __Pyx_PyObject_Call(__pyx_t_3, __pyx_t_5, NULL); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 50, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_1);
     __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
     __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
@@ -3045,7 +3045,7 @@ static PyObject *__pyx_f_5redux_17_combine_reducers_15CombinedReducer__update_st
     __pyx_v_self->state_accessor = __pyx_t_1;
     __pyx_t_1 = 0;
 
-    /* "redux/_combine_reducers.pyx":48
+    /* "redux/_combine_reducers.pyx":49
  *             (('combine_reducers_id', str), *self.reducers.keys()),
  *         )
  *         if self.reducers:             # <<<<<<<<<<<<<<
@@ -3055,7 +3055,7 @@ static PyObject *__pyx_f_5redux_17_combine_reducers_15CombinedReducer__update_st
     goto __pyx_L3;
   }
 
-  /* "redux/_combine_reducers.pyx":51
+  /* "redux/_combine_reducers.pyx":52
  *             self.state_accessor = operator.attrgetter(*self.reducers.keys())
  *         else:
  *             self.state_accessor = None             # <<<<<<<<<<<<<<
@@ -3071,7 +3071,7 @@ static PyObject *__pyx_f_5redux_17_combine_reducers_15CombinedReducer__update_st
   }
   __pyx_L3:;
 
-  /* "redux/_combine_reducers.pyx":43
+  /* "redux/_combine_reducers.pyx":44
  *     cdef object state_accessor
  * 
  *     cdef _update_state_class(self):             # <<<<<<<<<<<<<<
@@ -3098,7 +3098,7 @@ static PyObject *__pyx_f_5redux_17_combine_reducers_15CombinedReducer__update_st
   return __pyx_r;
 }
 
-/* "redux/_combine_reducers.pyx":53
+/* "redux/_combine_reducers.pyx":54
  *             self.state_accessor = None
  * 
  *     def __call__(self, state, action):             # <<<<<<<<<<<<<<
@@ -3129,39 +3129,39 @@ static PyObject *__pyx_pw_5redux_17_combine_reducers_15CombinedReducer_3__call__
   {
     PyObject ** const __pyx_pyargnames[] = {&__pyx_mstate_global->__pyx_n_u_state,&__pyx_mstate_global->__pyx_n_u_action,0};
     const Py_ssize_t __pyx_kwds_len = (__pyx_kwds) ? __Pyx_NumKwargs_VARARGS(__pyx_kwds) : 0;
-    if (unlikely(__pyx_kwds_len) < 0) __PYX_ERR(0, 53, __pyx_L3_error)
+    if (unlikely(__pyx_kwds_len) < 0) __PYX_ERR(0, 54, __pyx_L3_error)
     if (__pyx_kwds_len > 0) {
       switch (__pyx_nargs) {
         case  2:
         values[1] = __Pyx_ArgRef_VARARGS(__pyx_args, 1);
-        if (!CYTHON_ASSUME_SAFE_MACROS && unlikely(!values[1])) __PYX_ERR(0, 53, __pyx_L3_error)
+        if (!CYTHON_ASSUME_SAFE_MACROS && unlikely(!values[1])) __PYX_ERR(0, 54, __pyx_L3_error)
         CYTHON_FALLTHROUGH;
         case  1:
         values[0] = __Pyx_ArgRef_VARARGS(__pyx_args, 0);
-        if (!CYTHON_ASSUME_SAFE_MACROS && unlikely(!values[0])) __PYX_ERR(0, 53, __pyx_L3_error)
+        if (!CYTHON_ASSUME_SAFE_MACROS && unlikely(!values[0])) __PYX_ERR(0, 54, __pyx_L3_error)
         CYTHON_FALLTHROUGH;
         case  0: break;
         default: goto __pyx_L5_argtuple_error;
       }
       const Py_ssize_t kwd_pos_args = __pyx_nargs;
-      if (__Pyx_ParseKeywords(__pyx_kwds, __pyx_kwvalues, __pyx_pyargnames, 0, values, kwd_pos_args, __pyx_kwds_len, "__call__", 0) < (0)) __PYX_ERR(0, 53, __pyx_L3_error)
+      if (__Pyx_ParseKeywords(__pyx_kwds, __pyx_kwvalues, __pyx_pyargnames, 0, values, kwd_pos_args, __pyx_kwds_len, "__call__", 0) < (0)) __PYX_ERR(0, 54, __pyx_L3_error)
       for (Py_ssize_t i = __pyx_nargs; i < 2; i++) {
-        if (unlikely(!values[i])) { __Pyx_RaiseArgtupleInvalid("__call__", 1, 2, 2, i); __PYX_ERR(0, 53, __pyx_L3_error) }
+        if (unlikely(!values[i])) { __Pyx_RaiseArgtupleInvalid("__call__", 1, 2, 2, i); __PYX_ERR(0, 54, __pyx_L3_error) }
       }
     } else if (unlikely(__pyx_nargs != 2)) {
       goto __pyx_L5_argtuple_error;
     } else {
       values[0] = __Pyx_ArgRef_VARARGS(__pyx_args, 0);
-      if (!CYTHON_ASSUME_SAFE_MACROS && unlikely(!values[0])) __PYX_ERR(0, 53, __pyx_L3_error)
+      if (!CYTHON_ASSUME_SAFE_MACROS && unlikely(!values[0])) __PYX_ERR(0, 54, __pyx_L3_error)
       values[1] = __Pyx_ArgRef_VARARGS(__pyx_args, 1);
-      if (!CYTHON_ASSUME_SAFE_MACROS && unlikely(!values[1])) __PYX_ERR(0, 53, __pyx_L3_error)
+      if (!CYTHON_ASSUME_SAFE_MACROS && unlikely(!values[1])) __PYX_ERR(0, 54, __pyx_L3_error)
     }
     __pyx_v_state = values[0];
     __pyx_v_action = values[1];
   }
   goto __pyx_L6_skip;
   __pyx_L5_argtuple_error:;
-  __Pyx_RaiseArgtupleInvalid("__call__", 1, 2, 2, __pyx_nargs); __PYX_ERR(0, 53, __pyx_L3_error)
+  __Pyx_RaiseArgtupleInvalid("__call__", 1, 2, 2, __pyx_nargs); __PYX_ERR(0, 54, __pyx_L3_error)
   __pyx_L6_skip:;
   goto __pyx_L4_argument_unpacking_done;
   __pyx_L3_error:;
@@ -3226,31 +3226,31 @@ static PyObject *__pyx_pf_5redux_17_combine_reducers_15CombinedReducer_2__call__
   __Pyx_RefNannySetupContext("__call__", 0);
   __Pyx_INCREF(__pyx_v_state);
 
-  /* "redux/_combine_reducers.pyx":54
+  /* "redux/_combine_reducers.pyx":55
  * 
  *     def __call__(self, state, action):
  *         cdef list result_actions = []             # <<<<<<<<<<<<<<
  *         cdef list result_events = []
  *         cdef object key
 */
-  __pyx_t_1 = PyList_New(0); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 54, __pyx_L1_error)
+  __pyx_t_1 = PyList_New(0); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 55, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   __pyx_v_result_actions = ((PyObject*)__pyx_t_1);
   __pyx_t_1 = 0;
 
-  /* "redux/_combine_reducers.pyx":55
+  /* "redux/_combine_reducers.pyx":56
  *     def __call__(self, state, action):
  *         cdef list result_actions = []
  *         cdef list result_events = []             # <<<<<<<<<<<<<<
  *         cdef object key
  *         cdef object reducer
 */
-  __pyx_t_1 = PyList_New(0); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 55, __pyx_L1_error)
+  __pyx_t_1 = PyList_New(0); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 56, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   __pyx_v_result_events = ((PyObject*)__pyx_t_1);
   __pyx_t_1 = 0;
 
-  /* "redux/_combine_reducers.pyx":64
+  /* "redux/_combine_reducers.pyx":65
  *         # Handle Registration/Unregistration (Slow Path)
  *         if (
  *             state is not None             # <<<<<<<<<<<<<<
@@ -3264,16 +3264,16 @@ static PyObject *__pyx_pf_5redux_17_combine_reducers_15CombinedReducer_2__call__
     goto __pyx_L4_bool_binop_done;
   }
 
-  /* "redux/_combine_reducers.pyx":65
+  /* "redux/_combine_reducers.pyx":66
  *         if (
  *             state is not None
  *             and isinstance(action, CombineReducerAction)             # <<<<<<<<<<<<<<
  *             and action.combine_reducers_id == self.id_
  *         ):
 */
-  __Pyx_GetModuleGlobalName(__pyx_t_1, __pyx_mstate_global->__pyx_n_u_CombineReducerAction); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 65, __pyx_L1_error)
+  __Pyx_GetModuleGlobalName(__pyx_t_1, __pyx_mstate_global->__pyx_n_u_CombineReducerAction); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 66, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
-  __pyx_t_3 = PyObject_IsInstance(__pyx_v_action, __pyx_t_1); if (unlikely(__pyx_t_3 == ((int)-1))) __PYX_ERR(0, 65, __pyx_L1_error)
+  __pyx_t_3 = PyObject_IsInstance(__pyx_v_action, __pyx_t_1); if (unlikely(__pyx_t_3 == ((int)-1))) __PYX_ERR(0, 66, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
   if (__pyx_t_3) {
   } else {
@@ -3281,21 +3281,21 @@ static PyObject *__pyx_pf_5redux_17_combine_reducers_15CombinedReducer_2__call__
     goto __pyx_L4_bool_binop_done;
   }
 
-  /* "redux/_combine_reducers.pyx":66
+  /* "redux/_combine_reducers.pyx":67
  *             state is not None
  *             and isinstance(action, CombineReducerAction)
  *             and action.combine_reducers_id == self.id_             # <<<<<<<<<<<<<<
  *         ):
  *             if isinstance(action, CombineReducerRegisterAction):
 */
-  __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_v_action, __pyx_mstate_global->__pyx_n_u_combine_reducers_id); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 66, __pyx_L1_error)
+  __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_v_action, __pyx_mstate_global->__pyx_n_u_combine_reducers_id); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 67, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
-  __pyx_t_3 = (__Pyx_PyUnicode_Equals(__pyx_t_1, __pyx_v_self->id_, Py_EQ)); if (unlikely((__pyx_t_3 < 0))) __PYX_ERR(0, 66, __pyx_L1_error)
+  __pyx_t_3 = (__Pyx_PyUnicode_Equals(__pyx_t_1, __pyx_v_self->id_, Py_EQ)); if (unlikely((__pyx_t_3 < 0))) __PYX_ERR(0, 67, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
   __pyx_t_2 = __pyx_t_3;
   __pyx_L4_bool_binop_done:;
 
-  /* "redux/_combine_reducers.pyx":63
+  /* "redux/_combine_reducers.pyx":64
  * 
  *         # Handle Registration/Unregistration (Slow Path)
  *         if (             # <<<<<<<<<<<<<<
@@ -3304,44 +3304,44 @@ static PyObject *__pyx_pf_5redux_17_combine_reducers_15CombinedReducer_2__call__
 */
   if (__pyx_t_2) {
 
-    /* "redux/_combine_reducers.pyx":68
+    /* "redux/_combine_reducers.pyx":69
  *             and action.combine_reducers_id == self.id_
  *         ):
  *             if isinstance(action, CombineReducerRegisterAction):             # <<<<<<<<<<<<<<
  *                 key = action.key
  *                 reducer = action.reducer
 */
-    __Pyx_GetModuleGlobalName(__pyx_t_1, __pyx_mstate_global->__pyx_n_u_CombineReducerRegisterAction); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 68, __pyx_L1_error)
+    __Pyx_GetModuleGlobalName(__pyx_t_1, __pyx_mstate_global->__pyx_n_u_CombineReducerRegisterAction); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 69, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_1);
-    __pyx_t_2 = PyObject_IsInstance(__pyx_v_action, __pyx_t_1); if (unlikely(__pyx_t_2 == ((int)-1))) __PYX_ERR(0, 68, __pyx_L1_error)
+    __pyx_t_2 = PyObject_IsInstance(__pyx_v_action, __pyx_t_1); if (unlikely(__pyx_t_2 == ((int)-1))) __PYX_ERR(0, 69, __pyx_L1_error)
     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
     if (__pyx_t_2) {
 
-      /* "redux/_combine_reducers.pyx":69
+      /* "redux/_combine_reducers.pyx":70
  *         ):
  *             if isinstance(action, CombineReducerRegisterAction):
  *                 key = action.key             # <<<<<<<<<<<<<<
  *                 reducer = action.reducer
  *                 self.reducers[key] = reducer
 */
-      __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_v_action, __pyx_mstate_global->__pyx_n_u_key); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 69, __pyx_L1_error)
+      __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_v_action, __pyx_mstate_global->__pyx_n_u_key); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 70, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_1);
       __pyx_v_key = __pyx_t_1;
       __pyx_t_1 = 0;
 
-      /* "redux/_combine_reducers.pyx":70
+      /* "redux/_combine_reducers.pyx":71
  *             if isinstance(action, CombineReducerRegisterAction):
  *                 key = action.key
  *                 reducer = action.reducer             # <<<<<<<<<<<<<<
  *                 self.reducers[key] = reducer
  *                 self._update_state_class()
 */
-      __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_v_action, __pyx_mstate_global->__pyx_n_u_reducer); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 70, __pyx_L1_error)
+      __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_v_action, __pyx_mstate_global->__pyx_n_u_reducer); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 71, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_1);
       __pyx_v_reducer = __pyx_t_1;
       __pyx_t_1 = 0;
 
-      /* "redux/_combine_reducers.pyx":71
+      /* "redux/_combine_reducers.pyx":72
  *                 key = action.key
  *                 reducer = action.reducer
  *                 self.reducers[key] = reducer             # <<<<<<<<<<<<<<
@@ -3350,22 +3350,22 @@ static PyObject *__pyx_pf_5redux_17_combine_reducers_15CombinedReducer_2__call__
 */
       if (unlikely(__pyx_v_self->reducers == Py_None)) {
         PyErr_SetString(PyExc_TypeError, "'NoneType' object is not subscriptable");
-        __PYX_ERR(0, 71, __pyx_L1_error)
+        __PYX_ERR(0, 72, __pyx_L1_error)
       }
-      if (unlikely((PyDict_SetItem(__pyx_v_self->reducers, __pyx_v_key, __pyx_v_reducer) < 0))) __PYX_ERR(0, 71, __pyx_L1_error)
+      if (unlikely((PyDict_SetItem(__pyx_v_self->reducers, __pyx_v_key, __pyx_v_reducer) < 0))) __PYX_ERR(0, 72, __pyx_L1_error)
 
-      /* "redux/_combine_reducers.pyx":72
+      /* "redux/_combine_reducers.pyx":73
  *                 reducer = action.reducer
  *                 self.reducers[key] = reducer
  *                 self._update_state_class()             # <<<<<<<<<<<<<<
  * 
  *                 reducer_result = reducer(
 */
-      __pyx_t_1 = ((struct __pyx_vtabstruct_5redux_17_combine_reducers_CombinedReducer *)__pyx_v_self->__pyx_vtab)->_update_state_class(__pyx_v_self); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 72, __pyx_L1_error)
+      __pyx_t_1 = ((struct __pyx_vtabstruct_5redux_17_combine_reducers_CombinedReducer *)__pyx_v_self->__pyx_vtab)->_update_state_class(__pyx_v_self); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 73, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_1);
       __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-      /* "redux/_combine_reducers.pyx":74
+      /* "redux/_combine_reducers.pyx":75
  *                 self._update_state_class()
  * 
  *                 reducer_result = reducer(             # <<<<<<<<<<<<<<
@@ -3376,7 +3376,7 @@ static PyObject *__pyx_pf_5redux_17_combine_reducers_15CombinedReducer_2__call__
       __Pyx_INCREF(__pyx_v_reducer);
       __pyx_t_5 = __pyx_v_reducer; 
 
-      /* "redux/_combine_reducers.pyx":76
+      /* "redux/_combine_reducers.pyx":77
  *                 reducer_result = reducer(
  *                     None,
  *                     CombineReducerInitAction(             # <<<<<<<<<<<<<<
@@ -3384,17 +3384,17 @@ static PyObject *__pyx_pf_5redux_17_combine_reducers_15CombinedReducer_2__call__
  *                         key=key,
 */
       __pyx_t_7 = NULL;
-      __Pyx_GetModuleGlobalName(__pyx_t_8, __pyx_mstate_global->__pyx_n_u_CombineReducerInitAction); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 76, __pyx_L1_error)
+      __Pyx_GetModuleGlobalName(__pyx_t_8, __pyx_mstate_global->__pyx_n_u_CombineReducerInitAction); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 77, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_8);
 
-      /* "redux/_combine_reducers.pyx":79
+      /* "redux/_combine_reducers.pyx":80
  *                         combine_reducers_id=self.id_,
  *                         key=key,
  *                         payload=action.payload,             # <<<<<<<<<<<<<<
  *                     ),
  *                 )
 */
-      __pyx_t_9 = __Pyx_PyObject_GetAttrStr(__pyx_v_action, __pyx_mstate_global->__pyx_n_u_payload); if (unlikely(!__pyx_t_9)) __PYX_ERR(0, 79, __pyx_L1_error)
+      __pyx_t_9 = __Pyx_PyObject_GetAttrStr(__pyx_v_action, __pyx_mstate_global->__pyx_n_u_payload); if (unlikely(!__pyx_t_9)) __PYX_ERR(0, 80, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_9);
       __pyx_t_10 = 1;
       #if CYTHON_UNPACK_METHODS
@@ -3410,17 +3410,17 @@ static PyObject *__pyx_pf_5redux_17_combine_reducers_15CombinedReducer_2__call__
       #endif
       {
         PyObject *__pyx_callargs[2 + ((CYTHON_VECTORCALL) ? 3 : 0)] = {__pyx_t_7, NULL};
-        __pyx_t_11 = __Pyx_MakeVectorcallBuilderKwds(3); if (unlikely(!__pyx_t_11)) __PYX_ERR(0, 76, __pyx_L1_error)
+        __pyx_t_11 = __Pyx_MakeVectorcallBuilderKwds(3); if (unlikely(!__pyx_t_11)) __PYX_ERR(0, 77, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_11);
-        if (__Pyx_VectorcallBuilder_AddArg(__pyx_mstate_global->__pyx_n_u_combine_reducers_id, __pyx_v_self->id_, __pyx_t_11, __pyx_callargs+1, 0) < (0)) __PYX_ERR(0, 76, __pyx_L1_error)
-        if (__Pyx_VectorcallBuilder_AddArg(__pyx_mstate_global->__pyx_n_u_key, __pyx_v_key, __pyx_t_11, __pyx_callargs+1, 1) < (0)) __PYX_ERR(0, 76, __pyx_L1_error)
-        if (__Pyx_VectorcallBuilder_AddArg(__pyx_mstate_global->__pyx_n_u_payload, __pyx_t_9, __pyx_t_11, __pyx_callargs+1, 2) < (0)) __PYX_ERR(0, 76, __pyx_L1_error)
+        if (__Pyx_VectorcallBuilder_AddArg(__pyx_mstate_global->__pyx_n_u_combine_reducers_id, __pyx_v_self->id_, __pyx_t_11, __pyx_callargs+1, 0) < (0)) __PYX_ERR(0, 77, __pyx_L1_error)
+        if (__Pyx_VectorcallBuilder_AddArg(__pyx_mstate_global->__pyx_n_u_key, __pyx_v_key, __pyx_t_11, __pyx_callargs+1, 1) < (0)) __PYX_ERR(0, 77, __pyx_L1_error)
+        if (__Pyx_VectorcallBuilder_AddArg(__pyx_mstate_global->__pyx_n_u_payload, __pyx_t_9, __pyx_t_11, __pyx_callargs+1, 2) < (0)) __PYX_ERR(0, 77, __pyx_L1_error)
         __pyx_t_6 = __Pyx_Object_Vectorcall_CallFromBuilder((PyObject*)__pyx_t_8, __pyx_callargs+__pyx_t_10, (1-__pyx_t_10) | (__pyx_t_10*__Pyx_PY_VECTORCALL_ARGUMENTS_OFFSET), __pyx_t_11);
         __Pyx_XDECREF(__pyx_t_7); __pyx_t_7 = 0;
         __Pyx_DECREF(__pyx_t_9); __pyx_t_9 = 0;
         __Pyx_DECREF(__pyx_t_11); __pyx_t_11 = 0;
         __Pyx_DECREF(__pyx_t_8); __pyx_t_8 = 0;
-        if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 76, __pyx_L1_error)
+        if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 77, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_6);
       }
       __pyx_t_10 = 1;
@@ -3441,29 +3441,29 @@ static PyObject *__pyx_pf_5redux_17_combine_reducers_15CombinedReducer_2__call__
         __Pyx_XDECREF(__pyx_t_4); __pyx_t_4 = 0;
         __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
         __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
-        if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 74, __pyx_L1_error)
+        if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 75, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_1);
       }
       __pyx_v_reducer_result = __pyx_t_1;
       __pyx_t_1 = 0;
 
-      /* "redux/_combine_reducers.pyx":84
+      /* "redux/_combine_reducers.pyx":85
  * 
  *                 # Reconstruct state with new key
  *                 new_state_kwargs = {'combine_reducers_id': state.combine_reducers_id}             # <<<<<<<<<<<<<<
  *                 for k in self.reducers:
  *                     if k == key:
 */
-      __pyx_t_1 = __Pyx_PyDict_NewPresized(1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 84, __pyx_L1_error)
+      __pyx_t_1 = __Pyx_PyDict_NewPresized(1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 85, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_1);
-      __pyx_t_5 = __Pyx_PyObject_GetAttrStr(__pyx_v_state, __pyx_mstate_global->__pyx_n_u_combine_reducers_id); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 84, __pyx_L1_error)
+      __pyx_t_5 = __Pyx_PyObject_GetAttrStr(__pyx_v_state, __pyx_mstate_global->__pyx_n_u_combine_reducers_id); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 85, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_5);
-      if (PyDict_SetItem(__pyx_t_1, __pyx_mstate_global->__pyx_n_u_combine_reducers_id, __pyx_t_5) < (0)) __PYX_ERR(0, 84, __pyx_L1_error)
+      if (PyDict_SetItem(__pyx_t_1, __pyx_mstate_global->__pyx_n_u_combine_reducers_id, __pyx_t_5) < (0)) __PYX_ERR(0, 85, __pyx_L1_error)
       __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
       __pyx_v_new_state_kwargs = ((PyObject*)__pyx_t_1);
       __pyx_t_1 = 0;
 
-      /* "redux/_combine_reducers.pyx":85
+      /* "redux/_combine_reducers.pyx":86
  *                 # Reconstruct state with new key
  *                 new_state_kwargs = {'combine_reducers_id': state.combine_reducers_id}
  *                 for k in self.reducers:             # <<<<<<<<<<<<<<
@@ -3473,9 +3473,9 @@ static PyObject *__pyx_pf_5redux_17_combine_reducers_15CombinedReducer_2__call__
       __pyx_t_12 = 0;
       if (unlikely(__pyx_v_self->reducers == Py_None)) {
         PyErr_SetString(PyExc_TypeError, "'NoneType' object is not iterable");
-        __PYX_ERR(0, 85, __pyx_L1_error)
+        __PYX_ERR(0, 86, __pyx_L1_error)
       }
-      __pyx_t_5 = __Pyx_dict_iterator(__pyx_v_self->reducers, 1, ((PyObject *)NULL), (&__pyx_t_13), (&__pyx_t_14)); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 85, __pyx_L1_error)
+      __pyx_t_5 = __Pyx_dict_iterator(__pyx_v_self->reducers, 1, ((PyObject *)NULL), (&__pyx_t_13), (&__pyx_t_14)); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 86, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_5);
       __Pyx_XDECREF(__pyx_t_1);
       __pyx_t_1 = __pyx_t_5;
@@ -3483,24 +3483,24 @@ static PyObject *__pyx_pf_5redux_17_combine_reducers_15CombinedReducer_2__call__
       while (1) {
         __pyx_t_15 = __Pyx_dict_iter_next(__pyx_t_1, __pyx_t_13, &__pyx_t_12, &__pyx_t_5, NULL, NULL, __pyx_t_14);
         if (unlikely(__pyx_t_15 == 0)) break;
-        if (unlikely(__pyx_t_15 == -1)) __PYX_ERR(0, 85, __pyx_L1_error)
+        if (unlikely(__pyx_t_15 == -1)) __PYX_ERR(0, 86, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_5);
         __Pyx_XDECREF_SET(__pyx_v_k, __pyx_t_5);
         __pyx_t_5 = 0;
 
-        /* "redux/_combine_reducers.pyx":86
+        /* "redux/_combine_reducers.pyx":87
  *                 new_state_kwargs = {'combine_reducers_id': state.combine_reducers_id}
  *                 for k in self.reducers:
  *                     if k == key:             # <<<<<<<<<<<<<<
  *                         new_state_kwargs[k] = (
  *                             reducer_result.state
 */
-        __pyx_t_5 = PyObject_RichCompare(__pyx_v_k, __pyx_v_key, Py_EQ); __Pyx_XGOTREF(__pyx_t_5); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 86, __pyx_L1_error)
-        __pyx_t_2 = __Pyx_PyObject_IsTrue(__pyx_t_5); if (unlikely((__pyx_t_2 < 0))) __PYX_ERR(0, 86, __pyx_L1_error)
+        __pyx_t_5 = PyObject_RichCompare(__pyx_v_k, __pyx_v_key, Py_EQ); __Pyx_XGOTREF(__pyx_t_5); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 87, __pyx_L1_error)
+        __pyx_t_2 = __Pyx_PyObject_IsTrue(__pyx_t_5); if (unlikely((__pyx_t_2 < 0))) __PYX_ERR(0, 87, __pyx_L1_error)
         __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
         if (__pyx_t_2) {
 
-          /* "redux/_combine_reducers.pyx":89
+          /* "redux/_combine_reducers.pyx":90
  *                         new_state_kwargs[k] = (
  *                             reducer_result.state
  *                             if is_complete_reducer_result(reducer_result)             # <<<<<<<<<<<<<<
@@ -3508,7 +3508,7 @@ static PyObject *__pyx_pf_5redux_17_combine_reducers_15CombinedReducer_2__call__
  *                         )
 */
           __pyx_t_4 = NULL;
-          __Pyx_GetModuleGlobalName(__pyx_t_8, __pyx_mstate_global->__pyx_n_u_is_complete_reducer_result); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 89, __pyx_L1_error)
+          __Pyx_GetModuleGlobalName(__pyx_t_8, __pyx_mstate_global->__pyx_n_u_is_complete_reducer_result); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 90, __pyx_L1_error)
           __Pyx_GOTREF(__pyx_t_8);
           __pyx_t_10 = 1;
           #if CYTHON_UNPACK_METHODS
@@ -3527,27 +3527,27 @@ static PyObject *__pyx_pf_5redux_17_combine_reducers_15CombinedReducer_2__call__
             __pyx_t_6 = __Pyx_PyObject_FastCall((PyObject*)__pyx_t_8, __pyx_callargs+__pyx_t_10, (2-__pyx_t_10) | (__pyx_t_10*__Pyx_PY_VECTORCALL_ARGUMENTS_OFFSET));
             __Pyx_XDECREF(__pyx_t_4); __pyx_t_4 = 0;
             __Pyx_DECREF(__pyx_t_8); __pyx_t_8 = 0;
-            if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 89, __pyx_L1_error)
+            if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 90, __pyx_L1_error)
             __Pyx_GOTREF(__pyx_t_6);
           }
-          __pyx_t_2 = __Pyx_PyObject_IsTrue(__pyx_t_6); if (unlikely((__pyx_t_2 < 0))) __PYX_ERR(0, 89, __pyx_L1_error)
+          __pyx_t_2 = __Pyx_PyObject_IsTrue(__pyx_t_6); if (unlikely((__pyx_t_2 < 0))) __PYX_ERR(0, 90, __pyx_L1_error)
           __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
           if (__pyx_t_2) {
 
-            /* "redux/_combine_reducers.pyx":88
+            /* "redux/_combine_reducers.pyx":89
  *                     if k == key:
  *                         new_state_kwargs[k] = (
  *                             reducer_result.state             # <<<<<<<<<<<<<<
  *                             if is_complete_reducer_result(reducer_result)
  *                             else reducer_result
 */
-            __pyx_t_6 = __Pyx_PyObject_GetAttrStr(__pyx_v_reducer_result, __pyx_mstate_global->__pyx_n_u_state); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 88, __pyx_L1_error)
+            __pyx_t_6 = __Pyx_PyObject_GetAttrStr(__pyx_v_reducer_result, __pyx_mstate_global->__pyx_n_u_state); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 89, __pyx_L1_error)
             __Pyx_GOTREF(__pyx_t_6);
             __pyx_t_5 = __pyx_t_6;
             __pyx_t_6 = 0;
           } else {
 
-            /* "redux/_combine_reducers.pyx":90
+            /* "redux/_combine_reducers.pyx":91
  *                             reducer_result.state
  *                             if is_complete_reducer_result(reducer_result)
  *                             else reducer_result             # <<<<<<<<<<<<<<
@@ -3558,17 +3558,17 @@ static PyObject *__pyx_pf_5redux_17_combine_reducers_15CombinedReducer_2__call__
             __pyx_t_5 = __pyx_v_reducer_result;
           }
 
-          /* "redux/_combine_reducers.pyx":87
+          /* "redux/_combine_reducers.pyx":88
  *                 for k in self.reducers:
  *                     if k == key:
  *                         new_state_kwargs[k] = (             # <<<<<<<<<<<<<<
  *                             reducer_result.state
  *                             if is_complete_reducer_result(reducer_result)
 */
-          if (unlikely((PyDict_SetItem(__pyx_v_new_state_kwargs, __pyx_v_k, __pyx_t_5) < 0))) __PYX_ERR(0, 87, __pyx_L1_error)
+          if (unlikely((PyDict_SetItem(__pyx_v_new_state_kwargs, __pyx_v_k, __pyx_t_5) < 0))) __PYX_ERR(0, 88, __pyx_L1_error)
           __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
 
-          /* "redux/_combine_reducers.pyx":86
+          /* "redux/_combine_reducers.pyx":87
  *                 new_state_kwargs = {'combine_reducers_id': state.combine_reducers_id}
  *                 for k in self.reducers:
  *                     if k == key:             # <<<<<<<<<<<<<<
@@ -3578,7 +3578,7 @@ static PyObject *__pyx_pf_5redux_17_combine_reducers_15CombinedReducer_2__call__
           goto __pyx_L10;
         }
 
-        /* "redux/_combine_reducers.pyx":93
+        /* "redux/_combine_reducers.pyx":94
  *                         )
  *                     else:
  *                         new_state_kwargs[k] = getattr(state, k)             # <<<<<<<<<<<<<<
@@ -3586,31 +3586,31 @@ static PyObject *__pyx_pf_5redux_17_combine_reducers_15CombinedReducer_2__call__
  *                 state = self.state_class(**new_state_kwargs)
 */
         /*else*/ {
-          __pyx_t_5 = __Pyx_GetAttr(__pyx_v_state, __pyx_v_k); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 93, __pyx_L1_error)
+          __pyx_t_5 = __Pyx_GetAttr(__pyx_v_state, __pyx_v_k); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 94, __pyx_L1_error)
           __Pyx_GOTREF(__pyx_t_5);
-          if (unlikely((PyDict_SetItem(__pyx_v_new_state_kwargs, __pyx_v_k, __pyx_t_5) < 0))) __PYX_ERR(0, 93, __pyx_L1_error)
+          if (unlikely((PyDict_SetItem(__pyx_v_new_state_kwargs, __pyx_v_k, __pyx_t_5) < 0))) __PYX_ERR(0, 94, __pyx_L1_error)
           __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
         }
         __pyx_L10:;
       }
       __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-      /* "redux/_combine_reducers.pyx":95
+      /* "redux/_combine_reducers.pyx":96
  *                         new_state_kwargs[k] = getattr(state, k)
  * 
  *                 state = self.state_class(**new_state_kwargs)             # <<<<<<<<<<<<<<
  * 
  *                 if is_complete_reducer_result(reducer_result):
 */
-      __pyx_t_1 = PyDict_Copy(__pyx_v_new_state_kwargs); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 95, __pyx_L1_error)
+      __pyx_t_1 = PyDict_Copy(__pyx_v_new_state_kwargs); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 96, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_1);
-      __pyx_t_5 = __Pyx_PyObject_Call(__pyx_v_self->state_class, __pyx_mstate_global->__pyx_empty_tuple, __pyx_t_1); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 95, __pyx_L1_error)
+      __pyx_t_5 = __Pyx_PyObject_Call(__pyx_v_self->state_class, __pyx_mstate_global->__pyx_empty_tuple, __pyx_t_1); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 96, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_5);
       __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
       __Pyx_DECREF_SET(__pyx_v_state, __pyx_t_5);
       __pyx_t_5 = 0;
 
-      /* "redux/_combine_reducers.pyx":97
+      /* "redux/_combine_reducers.pyx":98
  *                 state = self.state_class(**new_state_kwargs)
  * 
  *                 if is_complete_reducer_result(reducer_result):             # <<<<<<<<<<<<<<
@@ -3618,7 +3618,7 @@ static PyObject *__pyx_pf_5redux_17_combine_reducers_15CombinedReducer_2__call__
  *                         result_actions.extend(reducer_result.actions)
 */
       __pyx_t_1 = NULL;
-      __Pyx_GetModuleGlobalName(__pyx_t_6, __pyx_mstate_global->__pyx_n_u_is_complete_reducer_result); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 97, __pyx_L1_error)
+      __Pyx_GetModuleGlobalName(__pyx_t_6, __pyx_mstate_global->__pyx_n_u_is_complete_reducer_result); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 98, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_6);
       __pyx_t_10 = 1;
       #if CYTHON_UNPACK_METHODS
@@ -3637,39 +3637,39 @@ static PyObject *__pyx_pf_5redux_17_combine_reducers_15CombinedReducer_2__call__
         __pyx_t_5 = __Pyx_PyObject_FastCall((PyObject*)__pyx_t_6, __pyx_callargs+__pyx_t_10, (2-__pyx_t_10) | (__pyx_t_10*__Pyx_PY_VECTORCALL_ARGUMENTS_OFFSET));
         __Pyx_XDECREF(__pyx_t_1); __pyx_t_1 = 0;
         __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
-        if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 97, __pyx_L1_error)
+        if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 98, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_5);
       }
-      __pyx_t_2 = __Pyx_PyObject_IsTrue(__pyx_t_5); if (unlikely((__pyx_t_2 < 0))) __PYX_ERR(0, 97, __pyx_L1_error)
+      __pyx_t_2 = __Pyx_PyObject_IsTrue(__pyx_t_5); if (unlikely((__pyx_t_2 < 0))) __PYX_ERR(0, 98, __pyx_L1_error)
       __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
       if (__pyx_t_2) {
 
-        /* "redux/_combine_reducers.pyx":98
+        /* "redux/_combine_reducers.pyx":99
  * 
  *                 if is_complete_reducer_result(reducer_result):
  *                     if reducer_result.actions:             # <<<<<<<<<<<<<<
  *                         result_actions.extend(reducer_result.actions)
  *                     if reducer_result.events:
 */
-        __pyx_t_5 = __Pyx_PyObject_GetAttrStr(__pyx_v_reducer_result, __pyx_mstate_global->__pyx_n_u_actions); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 98, __pyx_L1_error)
+        __pyx_t_5 = __Pyx_PyObject_GetAttrStr(__pyx_v_reducer_result, __pyx_mstate_global->__pyx_n_u_actions); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 99, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_5);
-        __pyx_t_2 = __Pyx_PyObject_IsTrue(__pyx_t_5); if (unlikely((__pyx_t_2 < 0))) __PYX_ERR(0, 98, __pyx_L1_error)
+        __pyx_t_2 = __Pyx_PyObject_IsTrue(__pyx_t_5); if (unlikely((__pyx_t_2 < 0))) __PYX_ERR(0, 99, __pyx_L1_error)
         __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
         if (__pyx_t_2) {
 
-          /* "redux/_combine_reducers.pyx":99
+          /* "redux/_combine_reducers.pyx":100
  *                 if is_complete_reducer_result(reducer_result):
  *                     if reducer_result.actions:
  *                         result_actions.extend(reducer_result.actions)             # <<<<<<<<<<<<<<
  *                     if reducer_result.events:
  *                         result_events.extend(reducer_result.events)
 */
-          __pyx_t_5 = __Pyx_PyObject_GetAttrStr(__pyx_v_reducer_result, __pyx_mstate_global->__pyx_n_u_actions); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 99, __pyx_L1_error)
+          __pyx_t_5 = __Pyx_PyObject_GetAttrStr(__pyx_v_reducer_result, __pyx_mstate_global->__pyx_n_u_actions); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 100, __pyx_L1_error)
           __Pyx_GOTREF(__pyx_t_5);
-          __pyx_t_16 = __Pyx_PyList_Extend(__pyx_v_result_actions, __pyx_t_5); if (unlikely(__pyx_t_16 == ((int)-1))) __PYX_ERR(0, 99, __pyx_L1_error)
+          __pyx_t_16 = __Pyx_PyList_Extend(__pyx_v_result_actions, __pyx_t_5); if (unlikely(__pyx_t_16 == ((int)-1))) __PYX_ERR(0, 100, __pyx_L1_error)
           __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
 
-          /* "redux/_combine_reducers.pyx":98
+          /* "redux/_combine_reducers.pyx":99
  * 
  *                 if is_complete_reducer_result(reducer_result):
  *                     if reducer_result.actions:             # <<<<<<<<<<<<<<
@@ -3678,32 +3678,32 @@ static PyObject *__pyx_pf_5redux_17_combine_reducers_15CombinedReducer_2__call__
 */
         }
 
-        /* "redux/_combine_reducers.pyx":100
+        /* "redux/_combine_reducers.pyx":101
  *                     if reducer_result.actions:
  *                         result_actions.extend(reducer_result.actions)
  *                     if reducer_result.events:             # <<<<<<<<<<<<<<
  *                         result_events.extend(reducer_result.events)
  * 
 */
-        __pyx_t_5 = __Pyx_PyObject_GetAttrStr(__pyx_v_reducer_result, __pyx_mstate_global->__pyx_n_u_events); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 100, __pyx_L1_error)
+        __pyx_t_5 = __Pyx_PyObject_GetAttrStr(__pyx_v_reducer_result, __pyx_mstate_global->__pyx_n_u_events); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 101, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_5);
-        __pyx_t_2 = __Pyx_PyObject_IsTrue(__pyx_t_5); if (unlikely((__pyx_t_2 < 0))) __PYX_ERR(0, 100, __pyx_L1_error)
+        __pyx_t_2 = __Pyx_PyObject_IsTrue(__pyx_t_5); if (unlikely((__pyx_t_2 < 0))) __PYX_ERR(0, 101, __pyx_L1_error)
         __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
         if (__pyx_t_2) {
 
-          /* "redux/_combine_reducers.pyx":101
+          /* "redux/_combine_reducers.pyx":102
  *                         result_actions.extend(reducer_result.actions)
  *                     if reducer_result.events:
  *                         result_events.extend(reducer_result.events)             # <<<<<<<<<<<<<<
  * 
  *             elif isinstance(action, CombineReducerUnregisterAction):
 */
-          __pyx_t_5 = __Pyx_PyObject_GetAttrStr(__pyx_v_reducer_result, __pyx_mstate_global->__pyx_n_u_events); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 101, __pyx_L1_error)
+          __pyx_t_5 = __Pyx_PyObject_GetAttrStr(__pyx_v_reducer_result, __pyx_mstate_global->__pyx_n_u_events); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 102, __pyx_L1_error)
           __Pyx_GOTREF(__pyx_t_5);
-          __pyx_t_16 = __Pyx_PyList_Extend(__pyx_v_result_events, __pyx_t_5); if (unlikely(__pyx_t_16 == ((int)-1))) __PYX_ERR(0, 101, __pyx_L1_error)
+          __pyx_t_16 = __Pyx_PyList_Extend(__pyx_v_result_events, __pyx_t_5); if (unlikely(__pyx_t_16 == ((int)-1))) __PYX_ERR(0, 102, __pyx_L1_error)
           __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
 
-          /* "redux/_combine_reducers.pyx":100
+          /* "redux/_combine_reducers.pyx":101
  *                     if reducer_result.actions:
  *                         result_actions.extend(reducer_result.actions)
  *                     if reducer_result.events:             # <<<<<<<<<<<<<<
@@ -3712,7 +3712,7 @@ static PyObject *__pyx_pf_5redux_17_combine_reducers_15CombinedReducer_2__call__
 */
         }
 
-        /* "redux/_combine_reducers.pyx":97
+        /* "redux/_combine_reducers.pyx":98
  *                 state = self.state_class(**new_state_kwargs)
  * 
  *                 if is_complete_reducer_result(reducer_result):             # <<<<<<<<<<<<<<
@@ -3721,7 +3721,7 @@ static PyObject *__pyx_pf_5redux_17_combine_reducers_15CombinedReducer_2__call__
 */
       }
 
-      /* "redux/_combine_reducers.pyx":68
+      /* "redux/_combine_reducers.pyx":69
  *             and action.combine_reducers_id == self.id_
  *         ):
  *             if isinstance(action, CombineReducerRegisterAction):             # <<<<<<<<<<<<<<
@@ -3731,32 +3731,32 @@ static PyObject *__pyx_pf_5redux_17_combine_reducers_15CombinedReducer_2__call__
       goto __pyx_L7;
     }
 
-    /* "redux/_combine_reducers.pyx":103
+    /* "redux/_combine_reducers.pyx":104
  *                         result_events.extend(reducer_result.events)
  * 
  *             elif isinstance(action, CombineReducerUnregisterAction):             # <<<<<<<<<<<<<<
  *                 key = action.key
  *                 del self.reducers[key]
 */
-    __Pyx_GetModuleGlobalName(__pyx_t_5, __pyx_mstate_global->__pyx_n_u_CombineReducerUnregisterAction); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 103, __pyx_L1_error)
+    __Pyx_GetModuleGlobalName(__pyx_t_5, __pyx_mstate_global->__pyx_n_u_CombineReducerUnregisterAction); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 104, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_5);
-    __pyx_t_2 = PyObject_IsInstance(__pyx_v_action, __pyx_t_5); if (unlikely(__pyx_t_2 == ((int)-1))) __PYX_ERR(0, 103, __pyx_L1_error)
+    __pyx_t_2 = PyObject_IsInstance(__pyx_v_action, __pyx_t_5); if (unlikely(__pyx_t_2 == ((int)-1))) __PYX_ERR(0, 104, __pyx_L1_error)
     __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
     if (__pyx_t_2) {
 
-      /* "redux/_combine_reducers.pyx":104
+      /* "redux/_combine_reducers.pyx":105
  * 
  *             elif isinstance(action, CombineReducerUnregisterAction):
  *                 key = action.key             # <<<<<<<<<<<<<<
  *                 del self.reducers[key]
  * 
 */
-      __pyx_t_5 = __Pyx_PyObject_GetAttrStr(__pyx_v_action, __pyx_mstate_global->__pyx_n_u_key); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 104, __pyx_L1_error)
+      __pyx_t_5 = __Pyx_PyObject_GetAttrStr(__pyx_v_action, __pyx_mstate_global->__pyx_n_u_key); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 105, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_5);
       __pyx_v_key = __pyx_t_5;
       __pyx_t_5 = 0;
 
-      /* "redux/_combine_reducers.pyx":105
+      /* "redux/_combine_reducers.pyx":106
  *             elif isinstance(action, CombineReducerUnregisterAction):
  *                 key = action.key
  *                 del self.reducers[key]             # <<<<<<<<<<<<<<
@@ -3765,11 +3765,11 @@ static PyObject *__pyx_pf_5redux_17_combine_reducers_15CombinedReducer_2__call__
 */
       if (unlikely(__pyx_v_self->reducers == Py_None)) {
         PyErr_SetString(PyExc_TypeError, "'NoneType' object is not subscriptable");
-        __PYX_ERR(0, 105, __pyx_L1_error)
+        __PYX_ERR(0, 106, __pyx_L1_error)
       }
-      if (unlikely((PyDict_DelItem(__pyx_v_self->reducers, __pyx_v_key) < 0))) __PYX_ERR(0, 105, __pyx_L1_error)
+      if (unlikely((PyDict_DelItem(__pyx_v_self->reducers, __pyx_v_key) < 0))) __PYX_ERR(0, 106, __pyx_L1_error)
 
-      /* "redux/_combine_reducers.pyx":108
+      /* "redux/_combine_reducers.pyx":109
  * 
  *                 # Update state class structure manually (mimicking Python implementation)
  *                 fields_copy = {field.name: field for field in fields(self.state_class)}             # <<<<<<<<<<<<<<
@@ -3777,10 +3777,10 @@ static PyObject *__pyx_pf_5redux_17_combine_reducers_15CombinedReducer_2__call__
  *                 del fields_copy[key]
 */
       { /* enter inner scope */
-        __pyx_t_5 = PyDict_New(); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 108, __pyx_L16_error)
+        __pyx_t_5 = PyDict_New(); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 109, __pyx_L16_error)
         __Pyx_GOTREF(__pyx_t_5);
         __pyx_t_1 = NULL;
-        __Pyx_GetModuleGlobalName(__pyx_t_8, __pyx_mstate_global->__pyx_n_u_fields); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 108, __pyx_L16_error)
+        __Pyx_GetModuleGlobalName(__pyx_t_8, __pyx_mstate_global->__pyx_n_u_fields); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 109, __pyx_L16_error)
         __Pyx_GOTREF(__pyx_t_8);
         __pyx_t_10 = 1;
         #if CYTHON_UNPACK_METHODS
@@ -3799,7 +3799,7 @@ static PyObject *__pyx_pf_5redux_17_combine_reducers_15CombinedReducer_2__call__
           __pyx_t_6 = __Pyx_PyObject_FastCall((PyObject*)__pyx_t_8, __pyx_callargs+__pyx_t_10, (2-__pyx_t_10) | (__pyx_t_10*__Pyx_PY_VECTORCALL_ARGUMENTS_OFFSET));
           __Pyx_XDECREF(__pyx_t_1); __pyx_t_1 = 0;
           __Pyx_DECREF(__pyx_t_8); __pyx_t_8 = 0;
-          if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 108, __pyx_L16_error)
+          if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 109, __pyx_L16_error)
           __Pyx_GOTREF(__pyx_t_6);
         }
         if (likely(PyList_CheckExact(__pyx_t_6)) || PyTuple_CheckExact(__pyx_t_6)) {
@@ -3807,9 +3807,9 @@ static PyObject *__pyx_pf_5redux_17_combine_reducers_15CombinedReducer_2__call__
           __pyx_t_13 = 0;
           __pyx_t_17 = NULL;
         } else {
-          __pyx_t_13 = -1; __pyx_t_8 = PyObject_GetIter(__pyx_t_6); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 108, __pyx_L16_error)
+          __pyx_t_13 = -1; __pyx_t_8 = PyObject_GetIter(__pyx_t_6); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 109, __pyx_L16_error)
           __Pyx_GOTREF(__pyx_t_8);
-          __pyx_t_17 = (CYTHON_COMPILING_IN_LIMITED_API) ? PyIter_Next : __Pyx_PyObject_GetIterNextFunc(__pyx_t_8); if (unlikely(!__pyx_t_17)) __PYX_ERR(0, 108, __pyx_L16_error)
+          __pyx_t_17 = (CYTHON_COMPILING_IN_LIMITED_API) ? PyIter_Next : __Pyx_PyObject_GetIterNextFunc(__pyx_t_8); if (unlikely(!__pyx_t_17)) __PYX_ERR(0, 109, __pyx_L16_error)
         }
         __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
         for (;;) {
@@ -3818,7 +3818,7 @@ static PyObject *__pyx_pf_5redux_17_combine_reducers_15CombinedReducer_2__call__
               {
                 Py_ssize_t __pyx_temp = __Pyx_PyList_GET_SIZE(__pyx_t_8);
                 #if !CYTHON_ASSUME_SAFE_SIZE
-                if (unlikely((__pyx_temp < 0))) __PYX_ERR(0, 108, __pyx_L16_error)
+                if (unlikely((__pyx_temp < 0))) __PYX_ERR(0, 109, __pyx_L16_error)
                 #endif
                 if (__pyx_t_13 >= __pyx_temp) break;
               }
@@ -3828,7 +3828,7 @@ static PyObject *__pyx_pf_5redux_17_combine_reducers_15CombinedReducer_2__call__
               {
                 Py_ssize_t __pyx_temp = __Pyx_PyTuple_GET_SIZE(__pyx_t_8);
                 #if !CYTHON_ASSUME_SAFE_SIZE
-                if (unlikely((__pyx_temp < 0))) __PYX_ERR(0, 108, __pyx_L16_error)
+                if (unlikely((__pyx_temp < 0))) __PYX_ERR(0, 109, __pyx_L16_error)
                 #endif
                 if (__pyx_t_13 >= __pyx_temp) break;
               }
@@ -3839,13 +3839,13 @@ static PyObject *__pyx_pf_5redux_17_combine_reducers_15CombinedReducer_2__call__
               #endif
               ++__pyx_t_13;
             }
-            if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 108, __pyx_L16_error)
+            if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 109, __pyx_L16_error)
           } else {
             __pyx_t_6 = __pyx_t_17(__pyx_t_8);
             if (unlikely(!__pyx_t_6)) {
               PyObject* exc_type = PyErr_Occurred();
               if (exc_type) {
-                if (unlikely(!__Pyx_PyErr_GivenExceptionMatches(exc_type, PyExc_StopIteration))) __PYX_ERR(0, 108, __pyx_L16_error)
+                if (unlikely(!__Pyx_PyErr_GivenExceptionMatches(exc_type, PyExc_StopIteration))) __PYX_ERR(0, 109, __pyx_L16_error)
                 PyErr_Clear();
               }
               break;
@@ -3854,9 +3854,9 @@ static PyObject *__pyx_pf_5redux_17_combine_reducers_15CombinedReducer_2__call__
           __Pyx_GOTREF(__pyx_t_6);
           __Pyx_XDECREF_SET(__pyx_7genexpr__pyx_v_field, __pyx_t_6);
           __pyx_t_6 = 0;
-          __pyx_t_6 = __Pyx_PyObject_GetAttrStr(__pyx_7genexpr__pyx_v_field, __pyx_mstate_global->__pyx_n_u_name_2); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 108, __pyx_L16_error)
+          __pyx_t_6 = __Pyx_PyObject_GetAttrStr(__pyx_7genexpr__pyx_v_field, __pyx_mstate_global->__pyx_n_u_name_2); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 109, __pyx_L16_error)
           __Pyx_GOTREF(__pyx_t_6);
-          if (unlikely(PyDict_SetItem(__pyx_t_5, (PyObject*)__pyx_t_6, (PyObject*)__pyx_7genexpr__pyx_v_field))) __PYX_ERR(0, 108, __pyx_L16_error)
+          if (unlikely(PyDict_SetItem(__pyx_t_5, (PyObject*)__pyx_t_6, (PyObject*)__pyx_7genexpr__pyx_v_field))) __PYX_ERR(0, 109, __pyx_L16_error)
           __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
         }
         __Pyx_DECREF(__pyx_t_8); __pyx_t_8 = 0;
@@ -3870,7 +3870,7 @@ static PyObject *__pyx_pf_5redux_17_combine_reducers_15CombinedReducer_2__call__
       __pyx_v_fields_copy = ((PyObject*)__pyx_t_5);
       __pyx_t_5 = 0;
 
-      /* "redux/_combine_reducers.pyx":109
+      /* "redux/_combine_reducers.pyx":110
  *                 # Update state class structure manually (mimicking Python implementation)
  *                 fields_copy = {field.name: field for field in fields(self.state_class)}
  *                 annotations_copy = copy.deepcopy(self.state_class.__annotations__)             # <<<<<<<<<<<<<<
@@ -3878,12 +3878,12 @@ static PyObject *__pyx_pf_5redux_17_combine_reducers_15CombinedReducer_2__call__
  *                 del annotations_copy[key]
 */
       __pyx_t_8 = NULL;
-      __Pyx_GetModuleGlobalName(__pyx_t_6, __pyx_mstate_global->__pyx_n_u_copy); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 109, __pyx_L1_error)
+      __Pyx_GetModuleGlobalName(__pyx_t_6, __pyx_mstate_global->__pyx_n_u_copy); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 110, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_6);
-      __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_t_6, __pyx_mstate_global->__pyx_n_u_deepcopy); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 109, __pyx_L1_error)
+      __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_t_6, __pyx_mstate_global->__pyx_n_u_deepcopy); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 110, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_1);
       __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
-      __pyx_t_6 = __Pyx_PyObject_GetAttrStr(__pyx_v_self->state_class, __pyx_mstate_global->__pyx_n_u_annotations); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 109, __pyx_L1_error)
+      __pyx_t_6 = __Pyx_PyObject_GetAttrStr(__pyx_v_self->state_class, __pyx_mstate_global->__pyx_n_u_annotations); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 110, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_6);
       __pyx_t_10 = 1;
       #if CYTHON_UNPACK_METHODS
@@ -3903,31 +3903,31 @@ static PyObject *__pyx_pf_5redux_17_combine_reducers_15CombinedReducer_2__call__
         __Pyx_XDECREF(__pyx_t_8); __pyx_t_8 = 0;
         __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
         __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-        if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 109, __pyx_L1_error)
+        if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 110, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_5);
       }
       __pyx_v_annotations_copy = __pyx_t_5;
       __pyx_t_5 = 0;
 
-      /* "redux/_combine_reducers.pyx":110
+      /* "redux/_combine_reducers.pyx":111
  *                 fields_copy = {field.name: field for field in fields(self.state_class)}
  *                 annotations_copy = copy.deepcopy(self.state_class.__annotations__)
  *                 del fields_copy[key]             # <<<<<<<<<<<<<<
  *                 del annotations_copy[key]
  *                 self.state_class = make_immutable(self.state_type.__name__, annotations_copy)
 */
-      if (unlikely((PyDict_DelItem(__pyx_v_fields_copy, __pyx_v_key) < 0))) __PYX_ERR(0, 110, __pyx_L1_error)
+      if (unlikely((PyDict_DelItem(__pyx_v_fields_copy, __pyx_v_key) < 0))) __PYX_ERR(0, 111, __pyx_L1_error)
 
-      /* "redux/_combine_reducers.pyx":111
+      /* "redux/_combine_reducers.pyx":112
  *                 annotations_copy = copy.deepcopy(self.state_class.__annotations__)
  *                 del fields_copy[key]
  *                 del annotations_copy[key]             # <<<<<<<<<<<<<<
  *                 self.state_class = make_immutable(self.state_type.__name__, annotations_copy)
  *                 self.state_class.__dataclass_fields__ = fields_copy
 */
-      if (unlikely((PyObject_DelItem(__pyx_v_annotations_copy, __pyx_v_key) < 0))) __PYX_ERR(0, 111, __pyx_L1_error)
+      if (unlikely((PyObject_DelItem(__pyx_v_annotations_copy, __pyx_v_key) < 0))) __PYX_ERR(0, 112, __pyx_L1_error)
 
-      /* "redux/_combine_reducers.pyx":112
+      /* "redux/_combine_reducers.pyx":113
  *                 del fields_copy[key]
  *                 del annotations_copy[key]
  *                 self.state_class = make_immutable(self.state_type.__name__, annotations_copy)             # <<<<<<<<<<<<<<
@@ -3935,9 +3935,9 @@ static PyObject *__pyx_pf_5redux_17_combine_reducers_15CombinedReducer_2__call__
  * 
 */
       __pyx_t_1 = NULL;
-      __Pyx_GetModuleGlobalName(__pyx_t_6, __pyx_mstate_global->__pyx_n_u_make_immutable); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 112, __pyx_L1_error)
+      __Pyx_GetModuleGlobalName(__pyx_t_6, __pyx_mstate_global->__pyx_n_u_make_immutable); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 113, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_6);
-      __pyx_t_8 = __Pyx_PyObject_GetAttrStr(__pyx_v_self->state_type, __pyx_mstate_global->__pyx_n_u_name); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 112, __pyx_L1_error)
+      __pyx_t_8 = __Pyx_PyObject_GetAttrStr(__pyx_v_self->state_type, __pyx_mstate_global->__pyx_n_u_name); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 113, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_8);
       __pyx_t_10 = 1;
       #if CYTHON_UNPACK_METHODS
@@ -3957,7 +3957,7 @@ static PyObject *__pyx_pf_5redux_17_combine_reducers_15CombinedReducer_2__call__
         __Pyx_XDECREF(__pyx_t_1); __pyx_t_1 = 0;
         __Pyx_DECREF(__pyx_t_8); __pyx_t_8 = 0;
         __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
-        if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 112, __pyx_L1_error)
+        if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 113, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_5);
       }
       __Pyx_GIVEREF(__pyx_t_5);
@@ -3966,47 +3966,47 @@ static PyObject *__pyx_pf_5redux_17_combine_reducers_15CombinedReducer_2__call__
       __pyx_v_self->state_class = __pyx_t_5;
       __pyx_t_5 = 0;
 
-      /* "redux/_combine_reducers.pyx":113
+      /* "redux/_combine_reducers.pyx":114
  *                 del annotations_copy[key]
  *                 self.state_class = make_immutable(self.state_type.__name__, annotations_copy)
  *                 self.state_class.__dataclass_fields__ = fields_copy             # <<<<<<<<<<<<<<
  * 
  *                 # Update state accessor
 */
-      if (__Pyx_PyObject_SetAttrStr(__pyx_v_self->state_class, __pyx_mstate_global->__pyx_n_u_dataclass_fields, __pyx_v_fields_copy) < (0)) __PYX_ERR(0, 113, __pyx_L1_error)
+      if (__Pyx_PyObject_SetAttrStr(__pyx_v_self->state_class, __pyx_mstate_global->__pyx_n_u_dataclass_fields, __pyx_v_fields_copy) < (0)) __PYX_ERR(0, 114, __pyx_L1_error)
 
-      /* "redux/_combine_reducers.pyx":116
+      /* "redux/_combine_reducers.pyx":117
  * 
  *                 # Update state accessor
  *                 if self.reducers:             # <<<<<<<<<<<<<<
  *                     self.state_accessor = operator.attrgetter(*self.reducers.keys())
  *                 else:
 */
-      __pyx_t_2 = __Pyx_PyObject_IsTrue(__pyx_v_self->reducers); if (unlikely((__pyx_t_2 < 0))) __PYX_ERR(0, 116, __pyx_L1_error)
+      __pyx_t_2 = __Pyx_PyObject_IsTrue(__pyx_v_self->reducers); if (unlikely((__pyx_t_2 < 0))) __PYX_ERR(0, 117, __pyx_L1_error)
       if (__pyx_t_2) {
 
-        /* "redux/_combine_reducers.pyx":117
+        /* "redux/_combine_reducers.pyx":118
  *                 # Update state accessor
  *                 if self.reducers:
  *                     self.state_accessor = operator.attrgetter(*self.reducers.keys())             # <<<<<<<<<<<<<<
  *                 else:
  *                     self.state_accessor = None
 */
-        __Pyx_GetModuleGlobalName(__pyx_t_5, __pyx_mstate_global->__pyx_n_u_operator); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 117, __pyx_L1_error)
+        __Pyx_GetModuleGlobalName(__pyx_t_5, __pyx_mstate_global->__pyx_n_u_operator); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 118, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_5);
-        __pyx_t_6 = __Pyx_PyObject_GetAttrStr(__pyx_t_5, __pyx_mstate_global->__pyx_n_u_attrgetter); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 117, __pyx_L1_error)
+        __pyx_t_6 = __Pyx_PyObject_GetAttrStr(__pyx_t_5, __pyx_mstate_global->__pyx_n_u_attrgetter); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 118, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_6);
         __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
         if (unlikely(__pyx_v_self->reducers == Py_None)) {
           PyErr_Format(PyExc_AttributeError, "'NoneType' object has no attribute '%.30s'", "keys");
-          __PYX_ERR(0, 117, __pyx_L1_error)
+          __PYX_ERR(0, 118, __pyx_L1_error)
         }
-        __pyx_t_5 = __Pyx_PyDict_Keys(__pyx_v_self->reducers); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 117, __pyx_L1_error)
+        __pyx_t_5 = __Pyx_PyDict_Keys(__pyx_v_self->reducers); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 118, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_5);
-        __pyx_t_8 = __Pyx_PySequence_Tuple(__pyx_t_5); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 117, __pyx_L1_error)
+        __pyx_t_8 = __Pyx_PySequence_Tuple(__pyx_t_5); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 118, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_8);
         __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
-        __pyx_t_5 = __Pyx_PyObject_Call(__pyx_t_6, __pyx_t_8, NULL); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 117, __pyx_L1_error)
+        __pyx_t_5 = __Pyx_PyObject_Call(__pyx_t_6, __pyx_t_8, NULL); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 118, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_5);
         __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
         __Pyx_DECREF(__pyx_t_8); __pyx_t_8 = 0;
@@ -4016,7 +4016,7 @@ static PyObject *__pyx_pf_5redux_17_combine_reducers_15CombinedReducer_2__call__
         __pyx_v_self->state_accessor = __pyx_t_5;
         __pyx_t_5 = 0;
 
-        /* "redux/_combine_reducers.pyx":116
+        /* "redux/_combine_reducers.pyx":117
  * 
  *                 # Update state accessor
  *                 if self.reducers:             # <<<<<<<<<<<<<<
@@ -4026,7 +4026,7 @@ static PyObject *__pyx_pf_5redux_17_combine_reducers_15CombinedReducer_2__call__
         goto __pyx_L21;
       }
 
-      /* "redux/_combine_reducers.pyx":119
+      /* "redux/_combine_reducers.pyx":120
  *                     self.state_accessor = operator.attrgetter(*self.reducers.keys())
  *                 else:
  *                     self.state_accessor = None             # <<<<<<<<<<<<<<
@@ -4042,23 +4042,23 @@ static PyObject *__pyx_pf_5redux_17_combine_reducers_15CombinedReducer_2__call__
       }
       __pyx_L21:;
 
-      /* "redux/_combine_reducers.pyx":121
+      /* "redux/_combine_reducers.pyx":122
  *                     self.state_accessor = None
  * 
  *                 new_state_kwargs = {'combine_reducers_id': state.combine_reducers_id}             # <<<<<<<<<<<<<<
  *                 for k in self.reducers:
  *                     new_state_kwargs[k] = getattr(state, k)
 */
-      __pyx_t_5 = __Pyx_PyDict_NewPresized(1); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 121, __pyx_L1_error)
+      __pyx_t_5 = __Pyx_PyDict_NewPresized(1); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 122, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_5);
-      __pyx_t_8 = __Pyx_PyObject_GetAttrStr(__pyx_v_state, __pyx_mstate_global->__pyx_n_u_combine_reducers_id); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 121, __pyx_L1_error)
+      __pyx_t_8 = __Pyx_PyObject_GetAttrStr(__pyx_v_state, __pyx_mstate_global->__pyx_n_u_combine_reducers_id); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 122, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_8);
-      if (PyDict_SetItem(__pyx_t_5, __pyx_mstate_global->__pyx_n_u_combine_reducers_id, __pyx_t_8) < (0)) __PYX_ERR(0, 121, __pyx_L1_error)
+      if (PyDict_SetItem(__pyx_t_5, __pyx_mstate_global->__pyx_n_u_combine_reducers_id, __pyx_t_8) < (0)) __PYX_ERR(0, 122, __pyx_L1_error)
       __Pyx_DECREF(__pyx_t_8); __pyx_t_8 = 0;
       __pyx_v_new_state_kwargs = ((PyObject*)__pyx_t_5);
       __pyx_t_5 = 0;
 
-      /* "redux/_combine_reducers.pyx":122
+      /* "redux/_combine_reducers.pyx":123
  * 
  *                 new_state_kwargs = {'combine_reducers_id': state.combine_reducers_id}
  *                 for k in self.reducers:             # <<<<<<<<<<<<<<
@@ -4068,9 +4068,9 @@ static PyObject *__pyx_pf_5redux_17_combine_reducers_15CombinedReducer_2__call__
       __pyx_t_13 = 0;
       if (unlikely(__pyx_v_self->reducers == Py_None)) {
         PyErr_SetString(PyExc_TypeError, "'NoneType' object is not iterable");
-        __PYX_ERR(0, 122, __pyx_L1_error)
+        __PYX_ERR(0, 123, __pyx_L1_error)
       }
-      __pyx_t_8 = __Pyx_dict_iterator(__pyx_v_self->reducers, 1, ((PyObject *)NULL), (&__pyx_t_12), (&__pyx_t_14)); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 122, __pyx_L1_error)
+      __pyx_t_8 = __Pyx_dict_iterator(__pyx_v_self->reducers, 1, ((PyObject *)NULL), (&__pyx_t_12), (&__pyx_t_14)); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 123, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_8);
       __Pyx_XDECREF(__pyx_t_5);
       __pyx_t_5 = __pyx_t_8;
@@ -4078,41 +4078,41 @@ static PyObject *__pyx_pf_5redux_17_combine_reducers_15CombinedReducer_2__call__
       while (1) {
         __pyx_t_15 = __Pyx_dict_iter_next(__pyx_t_5, __pyx_t_12, &__pyx_t_13, &__pyx_t_8, NULL, NULL, __pyx_t_14);
         if (unlikely(__pyx_t_15 == 0)) break;
-        if (unlikely(__pyx_t_15 == -1)) __PYX_ERR(0, 122, __pyx_L1_error)
+        if (unlikely(__pyx_t_15 == -1)) __PYX_ERR(0, 123, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_8);
         __Pyx_XDECREF_SET(__pyx_v_k, __pyx_t_8);
         __pyx_t_8 = 0;
 
-        /* "redux/_combine_reducers.pyx":123
+        /* "redux/_combine_reducers.pyx":124
  *                 new_state_kwargs = {'combine_reducers_id': state.combine_reducers_id}
  *                 for k in self.reducers:
  *                     new_state_kwargs[k] = getattr(state, k)             # <<<<<<<<<<<<<<
  *                 state = self.state_class(**new_state_kwargs)
  * 
 */
-        __pyx_t_8 = __Pyx_GetAttr(__pyx_v_state, __pyx_v_k); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 123, __pyx_L1_error)
+        __pyx_t_8 = __Pyx_GetAttr(__pyx_v_state, __pyx_v_k); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 124, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_8);
-        if (unlikely((PyDict_SetItem(__pyx_v_new_state_kwargs, __pyx_v_k, __pyx_t_8) < 0))) __PYX_ERR(0, 123, __pyx_L1_error)
+        if (unlikely((PyDict_SetItem(__pyx_v_new_state_kwargs, __pyx_v_k, __pyx_t_8) < 0))) __PYX_ERR(0, 124, __pyx_L1_error)
         __Pyx_DECREF(__pyx_t_8); __pyx_t_8 = 0;
       }
       __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
 
-      /* "redux/_combine_reducers.pyx":124
+      /* "redux/_combine_reducers.pyx":125
  *                 for k in self.reducers:
  *                     new_state_kwargs[k] = getattr(state, k)
  *                 state = self.state_class(**new_state_kwargs)             # <<<<<<<<<<<<<<
  * 
  *         # Dispatch Loop (Hot Path)
 */
-      __pyx_t_5 = PyDict_Copy(__pyx_v_new_state_kwargs); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 124, __pyx_L1_error)
+      __pyx_t_5 = PyDict_Copy(__pyx_v_new_state_kwargs); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 125, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_5);
-      __pyx_t_8 = __Pyx_PyObject_Call(__pyx_v_self->state_class, __pyx_mstate_global->__pyx_empty_tuple, __pyx_t_5); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 124, __pyx_L1_error)
+      __pyx_t_8 = __Pyx_PyObject_Call(__pyx_v_self->state_class, __pyx_mstate_global->__pyx_empty_tuple, __pyx_t_5); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 125, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_8);
       __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
       __Pyx_DECREF_SET(__pyx_v_state, __pyx_t_8);
       __pyx_t_8 = 0;
 
-      /* "redux/_combine_reducers.pyx":103
+      /* "redux/_combine_reducers.pyx":104
  *                         result_events.extend(reducer_result.events)
  * 
  *             elif isinstance(action, CombineReducerUnregisterAction):             # <<<<<<<<<<<<<<
@@ -4122,7 +4122,7 @@ static PyObject *__pyx_pf_5redux_17_combine_reducers_15CombinedReducer_2__call__
     }
     __pyx_L7:;
 
-    /* "redux/_combine_reducers.pyx":63
+    /* "redux/_combine_reducers.pyx":64
  * 
  *         # Handle Registration/Unregistration (Slow Path)
  *         if (             # <<<<<<<<<<<<<<
@@ -4131,33 +4131,33 @@ static PyObject *__pyx_pf_5redux_17_combine_reducers_15CombinedReducer_2__call__
 */
   }
 
-  /* "redux/_combine_reducers.pyx":127
+  /* "redux/_combine_reducers.pyx":128
  * 
  *         # Dispatch Loop (Hot Path)
  *         cdef bint is_init = isinstance(action, InitAction)             # <<<<<<<<<<<<<<
  * 
  *         # Pre-allocate kwargs for result state
 */
-  __Pyx_GetModuleGlobalName(__pyx_t_8, __pyx_mstate_global->__pyx_n_u_InitAction); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 127, __pyx_L1_error)
+  __Pyx_GetModuleGlobalName(__pyx_t_8, __pyx_mstate_global->__pyx_n_u_InitAction); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 128, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_8);
-  __pyx_t_2 = PyObject_IsInstance(__pyx_v_action, __pyx_t_8); if (unlikely(__pyx_t_2 == ((int)-1))) __PYX_ERR(0, 127, __pyx_L1_error)
+  __pyx_t_2 = PyObject_IsInstance(__pyx_v_action, __pyx_t_8); if (unlikely(__pyx_t_2 == ((int)-1))) __PYX_ERR(0, 128, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_8); __pyx_t_8 = 0;
   __pyx_v_is_init = __pyx_t_2;
 
-  /* "redux/_combine_reducers.pyx":130
+  /* "redux/_combine_reducers.pyx":131
  * 
  *         # Pre-allocate kwargs for result state
  *         cdef dict result_state_kwargs = {'combine_reducers_id': self.id_}             # <<<<<<<<<<<<<<
  * 
  *         # Optimize State Access
 */
-  __pyx_t_8 = __Pyx_PyDict_NewPresized(1); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 130, __pyx_L1_error)
+  __pyx_t_8 = __Pyx_PyDict_NewPresized(1); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 131, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_8);
-  if (PyDict_SetItem(__pyx_t_8, __pyx_mstate_global->__pyx_n_u_combine_reducers_id, __pyx_v_self->id_) < (0)) __PYX_ERR(0, 130, __pyx_L1_error)
+  if (PyDict_SetItem(__pyx_t_8, __pyx_mstate_global->__pyx_n_u_combine_reducers_id, __pyx_v_self->id_) < (0)) __PYX_ERR(0, 131, __pyx_L1_error)
   __pyx_v_result_state_kwargs = ((PyObject*)__pyx_t_8);
   __pyx_t_8 = 0;
 
-  /* "redux/_combine_reducers.pyx":133
+  /* "redux/_combine_reducers.pyx":134
  * 
  *         # Optimize State Access
  *         if state is None:             # <<<<<<<<<<<<<<
@@ -4167,7 +4167,7 @@ static PyObject *__pyx_pf_5redux_17_combine_reducers_15CombinedReducer_2__call__
   __pyx_t_2 = (__pyx_v_state == Py_None);
   if (__pyx_t_2) {
 
-    /* "redux/_combine_reducers.pyx":134
+    /* "redux/_combine_reducers.pyx":135
  *         # Optimize State Access
  *         if state is None:
  *             sub_states = None             # <<<<<<<<<<<<<<
@@ -4177,7 +4177,7 @@ static PyObject *__pyx_pf_5redux_17_combine_reducers_15CombinedReducer_2__call__
     __Pyx_INCREF(Py_None);
     __pyx_v_sub_states = Py_None;
 
-    /* "redux/_combine_reducers.pyx":133
+    /* "redux/_combine_reducers.pyx":134
  * 
  *         # Optimize State Access
  *         if state is None:             # <<<<<<<<<<<<<<
@@ -4187,17 +4187,17 @@ static PyObject *__pyx_pf_5redux_17_combine_reducers_15CombinedReducer_2__call__
     goto __pyx_L24;
   }
 
-  /* "redux/_combine_reducers.pyx":135
+  /* "redux/_combine_reducers.pyx":136
  *         if state is None:
  *             sub_states = None
  *         elif self.state_accessor:             # <<<<<<<<<<<<<<
  *             sub_states = self.state_accessor(state)
  *             if len(self.reducers) == 1:
 */
-  __pyx_t_2 = __Pyx_PyObject_IsTrue(__pyx_v_self->state_accessor); if (unlikely((__pyx_t_2 < 0))) __PYX_ERR(0, 135, __pyx_L1_error)
+  __pyx_t_2 = __Pyx_PyObject_IsTrue(__pyx_v_self->state_accessor); if (unlikely((__pyx_t_2 < 0))) __PYX_ERR(0, 136, __pyx_L1_error)
   if (__pyx_t_2) {
 
-    /* "redux/_combine_reducers.pyx":136
+    /* "redux/_combine_reducers.pyx":137
  *             sub_states = None
  *         elif self.state_accessor:
  *             sub_states = self.state_accessor(state)             # <<<<<<<<<<<<<<
@@ -4224,13 +4224,13 @@ static PyObject *__pyx_pf_5redux_17_combine_reducers_15CombinedReducer_2__call__
       __pyx_t_8 = __Pyx_PyObject_FastCall((PyObject*)__pyx_t_6, __pyx_callargs+__pyx_t_10, (2-__pyx_t_10) | (__pyx_t_10*__Pyx_PY_VECTORCALL_ARGUMENTS_OFFSET));
       __Pyx_XDECREF(__pyx_t_5); __pyx_t_5 = 0;
       __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
-      if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 136, __pyx_L1_error)
+      if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 137, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_8);
     }
     __pyx_v_sub_states = __pyx_t_8;
     __pyx_t_8 = 0;
 
-    /* "redux/_combine_reducers.pyx":137
+    /* "redux/_combine_reducers.pyx":138
  *         elif self.state_accessor:
  *             sub_states = self.state_accessor(state)
  *             if len(self.reducers) == 1:             # <<<<<<<<<<<<<<
@@ -4241,29 +4241,29 @@ static PyObject *__pyx_pf_5redux_17_combine_reducers_15CombinedReducer_2__call__
     __Pyx_INCREF(__pyx_t_8);
     if (unlikely(__pyx_t_8 == Py_None)) {
       PyErr_SetString(PyExc_TypeError, "object of type 'NoneType' has no len()");
-      __PYX_ERR(0, 137, __pyx_L1_error)
+      __PYX_ERR(0, 138, __pyx_L1_error)
     }
-    __pyx_t_12 = PyDict_Size(__pyx_t_8); if (unlikely(__pyx_t_12 == ((Py_ssize_t)-1))) __PYX_ERR(0, 137, __pyx_L1_error)
+    __pyx_t_12 = PyDict_Size(__pyx_t_8); if (unlikely(__pyx_t_12 == ((Py_ssize_t)-1))) __PYX_ERR(0, 138, __pyx_L1_error)
     __Pyx_DECREF(__pyx_t_8); __pyx_t_8 = 0;
     __pyx_t_2 = (__pyx_t_12 == 1);
     if (__pyx_t_2) {
 
-      /* "redux/_combine_reducers.pyx":138
+      /* "redux/_combine_reducers.pyx":139
  *             sub_states = self.state_accessor(state)
  *             if len(self.reducers) == 1:
  *                 sub_states = (sub_states,)             # <<<<<<<<<<<<<<
  *         else:
  *              sub_states = ()
 */
-      __pyx_t_8 = PyTuple_New(1); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 138, __pyx_L1_error)
+      __pyx_t_8 = PyTuple_New(1); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 139, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_8);
       __Pyx_INCREF(__pyx_v_sub_states);
       __Pyx_GIVEREF(__pyx_v_sub_states);
-      if (__Pyx_PyTuple_SET_ITEM(__pyx_t_8, 0, __pyx_v_sub_states) != (0)) __PYX_ERR(0, 138, __pyx_L1_error);
+      if (__Pyx_PyTuple_SET_ITEM(__pyx_t_8, 0, __pyx_v_sub_states) != (0)) __PYX_ERR(0, 139, __pyx_L1_error);
       __Pyx_DECREF_SET(__pyx_v_sub_states, __pyx_t_8);
       __pyx_t_8 = 0;
 
-      /* "redux/_combine_reducers.pyx":137
+      /* "redux/_combine_reducers.pyx":138
  *         elif self.state_accessor:
  *             sub_states = self.state_accessor(state)
  *             if len(self.reducers) == 1:             # <<<<<<<<<<<<<<
@@ -4272,7 +4272,7 @@ static PyObject *__pyx_pf_5redux_17_combine_reducers_15CombinedReducer_2__call__
 */
     }
 
-    /* "redux/_combine_reducers.pyx":135
+    /* "redux/_combine_reducers.pyx":136
  *         if state is None:
  *             sub_states = None
  *         elif self.state_accessor:             # <<<<<<<<<<<<<<
@@ -4282,7 +4282,7 @@ static PyObject *__pyx_pf_5redux_17_combine_reducers_15CombinedReducer_2__call__
     goto __pyx_L24;
   }
 
-  /* "redux/_combine_reducers.pyx":140
+  /* "redux/_combine_reducers.pyx":141
  *                 sub_states = (sub_states,)
  *         else:
  *              sub_states = ()             # <<<<<<<<<<<<<<
@@ -4295,7 +4295,7 @@ static PyObject *__pyx_pf_5redux_17_combine_reducers_15CombinedReducer_2__call__
   }
   __pyx_L24:;
 
-  /* "redux/_combine_reducers.pyx":142
+  /* "redux/_combine_reducers.pyx":143
  *              sub_states = ()
  * 
  *         cdef int idx = 0             # <<<<<<<<<<<<<<
@@ -4304,7 +4304,7 @@ static PyObject *__pyx_pf_5redux_17_combine_reducers_15CombinedReducer_2__call__
 */
   __pyx_v_idx = 0;
 
-  /* "redux/_combine_reducers.pyx":143
+  /* "redux/_combine_reducers.pyx":144
  * 
  *         cdef int idx = 0
  *         for key, reducer in self.reducers.items():             # <<<<<<<<<<<<<<
@@ -4314,9 +4314,9 @@ static PyObject *__pyx_pf_5redux_17_combine_reducers_15CombinedReducer_2__call__
   __pyx_t_12 = 0;
   if (unlikely(__pyx_v_self->reducers == Py_None)) {
     PyErr_Format(PyExc_AttributeError, "'NoneType' object has no attribute '%.30s'", "items");
-    __PYX_ERR(0, 143, __pyx_L1_error)
+    __PYX_ERR(0, 144, __pyx_L1_error)
   }
-  __pyx_t_6 = __Pyx_dict_iterator(__pyx_v_self->reducers, 1, __pyx_mstate_global->__pyx_n_u_items, (&__pyx_t_13), (&__pyx_t_14)); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 143, __pyx_L1_error)
+  __pyx_t_6 = __Pyx_dict_iterator(__pyx_v_self->reducers, 1, __pyx_mstate_global->__pyx_n_u_items, (&__pyx_t_13), (&__pyx_t_14)); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 144, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_6);
   __Pyx_XDECREF(__pyx_t_8);
   __pyx_t_8 = __pyx_t_6;
@@ -4324,7 +4324,7 @@ static PyObject *__pyx_pf_5redux_17_combine_reducers_15CombinedReducer_2__call__
   while (1) {
     __pyx_t_15 = __Pyx_dict_iter_next(__pyx_t_8, __pyx_t_13, &__pyx_t_12, &__pyx_t_6, &__pyx_t_5, NULL, __pyx_t_14);
     if (unlikely(__pyx_t_15 == 0)) break;
-    if (unlikely(__pyx_t_15 == -1)) __PYX_ERR(0, 143, __pyx_L1_error)
+    if (unlikely(__pyx_t_15 == -1)) __PYX_ERR(0, 144, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_6);
     __Pyx_GOTREF(__pyx_t_5);
     __Pyx_XDECREF_SET(__pyx_v_key, __pyx_t_6);
@@ -4332,7 +4332,7 @@ static PyObject *__pyx_pf_5redux_17_combine_reducers_15CombinedReducer_2__call__
     __Pyx_XDECREF_SET(__pyx_v_reducer, __pyx_t_5);
     __pyx_t_5 = 0;
 
-    /* "redux/_combine_reducers.pyx":144
+    /* "redux/_combine_reducers.pyx":145
  *         cdef int idx = 0
  *         for key, reducer in self.reducers.items():
  *             if sub_states is not None:             # <<<<<<<<<<<<<<
@@ -4342,19 +4342,19 @@ static PyObject *__pyx_pf_5redux_17_combine_reducers_15CombinedReducer_2__call__
     __pyx_t_2 = (__pyx_v_sub_states != Py_None);
     if (__pyx_t_2) {
 
-      /* "redux/_combine_reducers.pyx":145
+      /* "redux/_combine_reducers.pyx":146
  *         for key, reducer in self.reducers.items():
  *             if sub_states is not None:
  *                 sub_state = sub_states[idx]             # <<<<<<<<<<<<<<
  *             else:
  *                 sub_state = None
 */
-      __pyx_t_5 = __Pyx_GetItemInt(__pyx_v_sub_states, __pyx_v_idx, int, 1, __Pyx_PyLong_From_int, 0, 0, 0, 1, __Pyx_ReferenceSharing_OwnStrongReference); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 145, __pyx_L1_error)
+      __pyx_t_5 = __Pyx_GetItemInt(__pyx_v_sub_states, __pyx_v_idx, int, 1, __Pyx_PyLong_From_int, 0, 0, 0, 1, __Pyx_ReferenceSharing_OwnStrongReference); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 146, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_5);
       __Pyx_XDECREF_SET(__pyx_v_sub_state, __pyx_t_5);
       __pyx_t_5 = 0;
 
-      /* "redux/_combine_reducers.pyx":144
+      /* "redux/_combine_reducers.pyx":145
  *         cdef int idx = 0
  *         for key, reducer in self.reducers.items():
  *             if sub_states is not None:             # <<<<<<<<<<<<<<
@@ -4364,7 +4364,7 @@ static PyObject *__pyx_pf_5redux_17_combine_reducers_15CombinedReducer_2__call__
       goto __pyx_L28;
     }
 
-    /* "redux/_combine_reducers.pyx":147
+    /* "redux/_combine_reducers.pyx":148
  *                 sub_state = sub_states[idx]
  *             else:
  *                 sub_state = None             # <<<<<<<<<<<<<<
@@ -4377,7 +4377,7 @@ static PyObject *__pyx_pf_5redux_17_combine_reducers_15CombinedReducer_2__call__
     }
     __pyx_L28:;
 
-    /* "redux/_combine_reducers.pyx":148
+    /* "redux/_combine_reducers.pyx":149
  *             else:
  *                 sub_state = None
  *             idx += 1             # <<<<<<<<<<<<<<
@@ -4386,7 +4386,7 @@ static PyObject *__pyx_pf_5redux_17_combine_reducers_15CombinedReducer_2__call__
 */
     __pyx_v_idx = (__pyx_v_idx + 1);
 
-    /* "redux/_combine_reducers.pyx":150
+    /* "redux/_combine_reducers.pyx":151
  *             idx += 1
  * 
  *             sub_action = action             # <<<<<<<<<<<<<<
@@ -4396,7 +4396,7 @@ static PyObject *__pyx_pf_5redux_17_combine_reducers_15CombinedReducer_2__call__
     __Pyx_INCREF(__pyx_v_action);
     __Pyx_XDECREF_SET(__pyx_v_sub_action, __pyx_v_action);
 
-    /* "redux/_combine_reducers.pyx":151
+    /* "redux/_combine_reducers.pyx":152
  * 
  *             sub_action = action
  *             if is_init:             # <<<<<<<<<<<<<<
@@ -4405,7 +4405,7 @@ static PyObject *__pyx_pf_5redux_17_combine_reducers_15CombinedReducer_2__call__
 */
     if (__pyx_v_is_init) {
 
-      /* "redux/_combine_reducers.pyx":152
+      /* "redux/_combine_reducers.pyx":153
  *             sub_action = action
  *             if is_init:
  *                 sub_action = CombineReducerInitAction(key=key, combine_reducers_id=self.id_)             # <<<<<<<<<<<<<<
@@ -4413,7 +4413,7 @@ static PyObject *__pyx_pf_5redux_17_combine_reducers_15CombinedReducer_2__call__
  *             res = reducer(sub_state, sub_action)
 */
       __pyx_t_6 = NULL;
-      __Pyx_GetModuleGlobalName(__pyx_t_1, __pyx_mstate_global->__pyx_n_u_CombineReducerInitAction); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 152, __pyx_L1_error)
+      __Pyx_GetModuleGlobalName(__pyx_t_1, __pyx_mstate_global->__pyx_n_u_CombineReducerInitAction); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 153, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_1);
       __pyx_t_10 = 1;
       #if CYTHON_UNPACK_METHODS
@@ -4429,21 +4429,21 @@ static PyObject *__pyx_pf_5redux_17_combine_reducers_15CombinedReducer_2__call__
       #endif
       {
         PyObject *__pyx_callargs[2 + ((CYTHON_VECTORCALL) ? 2 : 0)] = {__pyx_t_6, NULL};
-        __pyx_t_4 = __Pyx_MakeVectorcallBuilderKwds(2); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 152, __pyx_L1_error)
+        __pyx_t_4 = __Pyx_MakeVectorcallBuilderKwds(2); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 153, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_4);
-        if (__Pyx_VectorcallBuilder_AddArg(__pyx_mstate_global->__pyx_n_u_key, __pyx_v_key, __pyx_t_4, __pyx_callargs+1, 0) < (0)) __PYX_ERR(0, 152, __pyx_L1_error)
-        if (__Pyx_VectorcallBuilder_AddArg(__pyx_mstate_global->__pyx_n_u_combine_reducers_id, __pyx_v_self->id_, __pyx_t_4, __pyx_callargs+1, 1) < (0)) __PYX_ERR(0, 152, __pyx_L1_error)
+        if (__Pyx_VectorcallBuilder_AddArg(__pyx_mstate_global->__pyx_n_u_key, __pyx_v_key, __pyx_t_4, __pyx_callargs+1, 0) < (0)) __PYX_ERR(0, 153, __pyx_L1_error)
+        if (__Pyx_VectorcallBuilder_AddArg(__pyx_mstate_global->__pyx_n_u_combine_reducers_id, __pyx_v_self->id_, __pyx_t_4, __pyx_callargs+1, 1) < (0)) __PYX_ERR(0, 153, __pyx_L1_error)
         __pyx_t_5 = __Pyx_Object_Vectorcall_CallFromBuilder((PyObject*)__pyx_t_1, __pyx_callargs+__pyx_t_10, (1-__pyx_t_10) | (__pyx_t_10*__Pyx_PY_VECTORCALL_ARGUMENTS_OFFSET), __pyx_t_4);
         __Pyx_XDECREF(__pyx_t_6); __pyx_t_6 = 0;
         __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
         __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-        if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 152, __pyx_L1_error)
+        if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 153, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_5);
       }
       __Pyx_DECREF_SET(__pyx_v_sub_action, __pyx_t_5);
       __pyx_t_5 = 0;
 
-      /* "redux/_combine_reducers.pyx":151
+      /* "redux/_combine_reducers.pyx":152
  * 
  *             sub_action = action
  *             if is_init:             # <<<<<<<<<<<<<<
@@ -4452,7 +4452,7 @@ static PyObject *__pyx_pf_5redux_17_combine_reducers_15CombinedReducer_2__call__
 */
     }
 
-    /* "redux/_combine_reducers.pyx":154
+    /* "redux/_combine_reducers.pyx":155
  *                 sub_action = CombineReducerInitAction(key=key, combine_reducers_id=self.id_)
  * 
  *             res = reducer(sub_state, sub_action)             # <<<<<<<<<<<<<<
@@ -4479,13 +4479,13 @@ static PyObject *__pyx_pf_5redux_17_combine_reducers_15CombinedReducer_2__call__
       __pyx_t_5 = __Pyx_PyObject_FastCall((PyObject*)__pyx_t_4, __pyx_callargs+__pyx_t_10, (3-__pyx_t_10) | (__pyx_t_10*__Pyx_PY_VECTORCALL_ARGUMENTS_OFFSET));
       __Pyx_XDECREF(__pyx_t_1); __pyx_t_1 = 0;
       __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
-      if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 154, __pyx_L1_error)
+      if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 155, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_5);
     }
     __Pyx_XDECREF_SET(__pyx_v_res, __pyx_t_5);
     __pyx_t_5 = 0;
 
-    /* "redux/_combine_reducers.pyx":156
+    /* "redux/_combine_reducers.pyx":157
  *             res = reducer(sub_state, sub_action)
  * 
  *             if is_complete_reducer_result(res):             # <<<<<<<<<<<<<<
@@ -4493,7 +4493,7 @@ static PyObject *__pyx_pf_5redux_17_combine_reducers_15CombinedReducer_2__call__
  *                 if res.actions:
 */
     __pyx_t_4 = NULL;
-    __Pyx_GetModuleGlobalName(__pyx_t_1, __pyx_mstate_global->__pyx_n_u_is_complete_reducer_result); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 156, __pyx_L1_error)
+    __Pyx_GetModuleGlobalName(__pyx_t_1, __pyx_mstate_global->__pyx_n_u_is_complete_reducer_result); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 157, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_1);
     __pyx_t_10 = 1;
     #if CYTHON_UNPACK_METHODS
@@ -4512,51 +4512,51 @@ static PyObject *__pyx_pf_5redux_17_combine_reducers_15CombinedReducer_2__call__
       __pyx_t_5 = __Pyx_PyObject_FastCall((PyObject*)__pyx_t_1, __pyx_callargs+__pyx_t_10, (2-__pyx_t_10) | (__pyx_t_10*__Pyx_PY_VECTORCALL_ARGUMENTS_OFFSET));
       __Pyx_XDECREF(__pyx_t_4); __pyx_t_4 = 0;
       __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-      if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 156, __pyx_L1_error)
+      if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 157, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_5);
     }
-    __pyx_t_2 = __Pyx_PyObject_IsTrue(__pyx_t_5); if (unlikely((__pyx_t_2 < 0))) __PYX_ERR(0, 156, __pyx_L1_error)
+    __pyx_t_2 = __Pyx_PyObject_IsTrue(__pyx_t_5); if (unlikely((__pyx_t_2 < 0))) __PYX_ERR(0, 157, __pyx_L1_error)
     __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
     if (__pyx_t_2) {
 
-      /* "redux/_combine_reducers.pyx":157
+      /* "redux/_combine_reducers.pyx":158
  * 
  *             if is_complete_reducer_result(res):
  *                 result_state_kwargs[key] = res.state             # <<<<<<<<<<<<<<
  *                 if res.actions:
  *                     result_actions.extend(res.actions)
 */
-      __pyx_t_5 = __Pyx_PyObject_GetAttrStr(__pyx_v_res, __pyx_mstate_global->__pyx_n_u_state); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 157, __pyx_L1_error)
+      __pyx_t_5 = __Pyx_PyObject_GetAttrStr(__pyx_v_res, __pyx_mstate_global->__pyx_n_u_state); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 158, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_5);
-      if (unlikely((PyDict_SetItem(__pyx_v_result_state_kwargs, __pyx_v_key, __pyx_t_5) < 0))) __PYX_ERR(0, 157, __pyx_L1_error)
+      if (unlikely((PyDict_SetItem(__pyx_v_result_state_kwargs, __pyx_v_key, __pyx_t_5) < 0))) __PYX_ERR(0, 158, __pyx_L1_error)
       __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
 
-      /* "redux/_combine_reducers.pyx":158
+      /* "redux/_combine_reducers.pyx":159
  *             if is_complete_reducer_result(res):
  *                 result_state_kwargs[key] = res.state
  *                 if res.actions:             # <<<<<<<<<<<<<<
  *                     result_actions.extend(res.actions)
  *                 if res.events:
 */
-      __pyx_t_5 = __Pyx_PyObject_GetAttrStr(__pyx_v_res, __pyx_mstate_global->__pyx_n_u_actions); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 158, __pyx_L1_error)
+      __pyx_t_5 = __Pyx_PyObject_GetAttrStr(__pyx_v_res, __pyx_mstate_global->__pyx_n_u_actions); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 159, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_5);
-      __pyx_t_2 = __Pyx_PyObject_IsTrue(__pyx_t_5); if (unlikely((__pyx_t_2 < 0))) __PYX_ERR(0, 158, __pyx_L1_error)
+      __pyx_t_2 = __Pyx_PyObject_IsTrue(__pyx_t_5); if (unlikely((__pyx_t_2 < 0))) __PYX_ERR(0, 159, __pyx_L1_error)
       __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
       if (__pyx_t_2) {
 
-        /* "redux/_combine_reducers.pyx":159
+        /* "redux/_combine_reducers.pyx":160
  *                 result_state_kwargs[key] = res.state
  *                 if res.actions:
  *                     result_actions.extend(res.actions)             # <<<<<<<<<<<<<<
  *                 if res.events:
  *                     result_events.extend(res.events)
 */
-        __pyx_t_5 = __Pyx_PyObject_GetAttrStr(__pyx_v_res, __pyx_mstate_global->__pyx_n_u_actions); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 159, __pyx_L1_error)
+        __pyx_t_5 = __Pyx_PyObject_GetAttrStr(__pyx_v_res, __pyx_mstate_global->__pyx_n_u_actions); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 160, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_5);
-        __pyx_t_16 = __Pyx_PyList_Extend(__pyx_v_result_actions, __pyx_t_5); if (unlikely(__pyx_t_16 == ((int)-1))) __PYX_ERR(0, 159, __pyx_L1_error)
+        __pyx_t_16 = __Pyx_PyList_Extend(__pyx_v_result_actions, __pyx_t_5); if (unlikely(__pyx_t_16 == ((int)-1))) __PYX_ERR(0, 160, __pyx_L1_error)
         __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
 
-        /* "redux/_combine_reducers.pyx":158
+        /* "redux/_combine_reducers.pyx":159
  *             if is_complete_reducer_result(res):
  *                 result_state_kwargs[key] = res.state
  *                 if res.actions:             # <<<<<<<<<<<<<<
@@ -4565,32 +4565,32 @@ static PyObject *__pyx_pf_5redux_17_combine_reducers_15CombinedReducer_2__call__
 */
       }
 
-      /* "redux/_combine_reducers.pyx":160
+      /* "redux/_combine_reducers.pyx":161
  *                 if res.actions:
  *                     result_actions.extend(res.actions)
  *                 if res.events:             # <<<<<<<<<<<<<<
  *                     result_events.extend(res.events)
  *             else:
 */
-      __pyx_t_5 = __Pyx_PyObject_GetAttrStr(__pyx_v_res, __pyx_mstate_global->__pyx_n_u_events); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 160, __pyx_L1_error)
+      __pyx_t_5 = __Pyx_PyObject_GetAttrStr(__pyx_v_res, __pyx_mstate_global->__pyx_n_u_events); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 161, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_5);
-      __pyx_t_2 = __Pyx_PyObject_IsTrue(__pyx_t_5); if (unlikely((__pyx_t_2 < 0))) __PYX_ERR(0, 160, __pyx_L1_error)
+      __pyx_t_2 = __Pyx_PyObject_IsTrue(__pyx_t_5); if (unlikely((__pyx_t_2 < 0))) __PYX_ERR(0, 161, __pyx_L1_error)
       __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
       if (__pyx_t_2) {
 
-        /* "redux/_combine_reducers.pyx":161
+        /* "redux/_combine_reducers.pyx":162
  *                     result_actions.extend(res.actions)
  *                 if res.events:
  *                     result_events.extend(res.events)             # <<<<<<<<<<<<<<
  *             else:
  *                 result_state_kwargs[key] = res
 */
-        __pyx_t_5 = __Pyx_PyObject_GetAttrStr(__pyx_v_res, __pyx_mstate_global->__pyx_n_u_events); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 161, __pyx_L1_error)
+        __pyx_t_5 = __Pyx_PyObject_GetAttrStr(__pyx_v_res, __pyx_mstate_global->__pyx_n_u_events); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 162, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_5);
-        __pyx_t_16 = __Pyx_PyList_Extend(__pyx_v_result_events, __pyx_t_5); if (unlikely(__pyx_t_16 == ((int)-1))) __PYX_ERR(0, 161, __pyx_L1_error)
+        __pyx_t_16 = __Pyx_PyList_Extend(__pyx_v_result_events, __pyx_t_5); if (unlikely(__pyx_t_16 == ((int)-1))) __PYX_ERR(0, 162, __pyx_L1_error)
         __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
 
-        /* "redux/_combine_reducers.pyx":160
+        /* "redux/_combine_reducers.pyx":161
  *                 if res.actions:
  *                     result_actions.extend(res.actions)
  *                 if res.events:             # <<<<<<<<<<<<<<
@@ -4599,7 +4599,7 @@ static PyObject *__pyx_pf_5redux_17_combine_reducers_15CombinedReducer_2__call__
 */
       }
 
-      /* "redux/_combine_reducers.pyx":156
+      /* "redux/_combine_reducers.pyx":157
  *             res = reducer(sub_state, sub_action)
  * 
  *             if is_complete_reducer_result(res):             # <<<<<<<<<<<<<<
@@ -4609,7 +4609,7 @@ static PyObject *__pyx_pf_5redux_17_combine_reducers_15CombinedReducer_2__call__
       goto __pyx_L30;
     }
 
-    /* "redux/_combine_reducers.pyx":163
+    /* "redux/_combine_reducers.pyx":164
  *                     result_events.extend(res.events)
  *             else:
  *                 result_state_kwargs[key] = res             # <<<<<<<<<<<<<<
@@ -4617,28 +4617,28 @@ static PyObject *__pyx_pf_5redux_17_combine_reducers_15CombinedReducer_2__call__
  *         result_state = self.state_class(**result_state_kwargs)
 */
     /*else*/ {
-      if (unlikely((PyDict_SetItem(__pyx_v_result_state_kwargs, __pyx_v_key, __pyx_v_res) < 0))) __PYX_ERR(0, 163, __pyx_L1_error)
+      if (unlikely((PyDict_SetItem(__pyx_v_result_state_kwargs, __pyx_v_key, __pyx_v_res) < 0))) __PYX_ERR(0, 164, __pyx_L1_error)
     }
     __pyx_L30:;
   }
   __Pyx_DECREF(__pyx_t_8); __pyx_t_8 = 0;
 
-  /* "redux/_combine_reducers.pyx":165
+  /* "redux/_combine_reducers.pyx":166
  *                 result_state_kwargs[key] = res
  * 
  *         result_state = self.state_class(**result_state_kwargs)             # <<<<<<<<<<<<<<
  * 
  *         return CompleteReducerResult(
 */
-  __pyx_t_8 = PyDict_Copy(__pyx_v_result_state_kwargs); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 165, __pyx_L1_error)
+  __pyx_t_8 = PyDict_Copy(__pyx_v_result_state_kwargs); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 166, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_8);
-  __pyx_t_5 = __Pyx_PyObject_Call(__pyx_v_self->state_class, __pyx_mstate_global->__pyx_empty_tuple, __pyx_t_8); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 165, __pyx_L1_error)
+  __pyx_t_5 = __Pyx_PyObject_Call(__pyx_v_self->state_class, __pyx_mstate_global->__pyx_empty_tuple, __pyx_t_8); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 166, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_5);
   __Pyx_DECREF(__pyx_t_8); __pyx_t_8 = 0;
   __pyx_v_result_state = __pyx_t_5;
   __pyx_t_5 = 0;
 
-  /* "redux/_combine_reducers.pyx":167
+  /* "redux/_combine_reducers.pyx":168
  *         result_state = self.state_class(**result_state_kwargs)
  * 
  *         return CompleteReducerResult(             # <<<<<<<<<<<<<<
@@ -4647,10 +4647,10 @@ static PyObject *__pyx_pf_5redux_17_combine_reducers_15CombinedReducer_2__call__
 */
   __Pyx_XDECREF(__pyx_r);
   __pyx_t_8 = NULL;
-  __Pyx_GetModuleGlobalName(__pyx_t_1, __pyx_mstate_global->__pyx_n_u_CompleteReducerResult); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 167, __pyx_L1_error)
+  __Pyx_GetModuleGlobalName(__pyx_t_1, __pyx_mstate_global->__pyx_n_u_CompleteReducerResult); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 168, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
 
-  /* "redux/_combine_reducers.pyx":170
+  /* "redux/_combine_reducers.pyx":171
  *             state=result_state,
  *             actions=result_actions,
  *             events=result_events,             # <<<<<<<<<<<<<<
@@ -4671,23 +4671,23 @@ static PyObject *__pyx_pf_5redux_17_combine_reducers_15CombinedReducer_2__call__
   #endif
   {
     PyObject *__pyx_callargs[2 + ((CYTHON_VECTORCALL) ? 3 : 0)] = {__pyx_t_8, NULL};
-    __pyx_t_4 = __Pyx_MakeVectorcallBuilderKwds(3); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 167, __pyx_L1_error)
+    __pyx_t_4 = __Pyx_MakeVectorcallBuilderKwds(3); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 168, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_4);
-    if (__Pyx_VectorcallBuilder_AddArg(__pyx_mstate_global->__pyx_n_u_state, __pyx_v_result_state, __pyx_t_4, __pyx_callargs+1, 0) < (0)) __PYX_ERR(0, 167, __pyx_L1_error)
-    if (__Pyx_VectorcallBuilder_AddArg(__pyx_mstate_global->__pyx_n_u_actions, __pyx_v_result_actions, __pyx_t_4, __pyx_callargs+1, 1) < (0)) __PYX_ERR(0, 167, __pyx_L1_error)
-    if (__Pyx_VectorcallBuilder_AddArg(__pyx_mstate_global->__pyx_n_u_events, __pyx_v_result_events, __pyx_t_4, __pyx_callargs+1, 2) < (0)) __PYX_ERR(0, 167, __pyx_L1_error)
+    if (__Pyx_VectorcallBuilder_AddArg(__pyx_mstate_global->__pyx_n_u_state, __pyx_v_result_state, __pyx_t_4, __pyx_callargs+1, 0) < (0)) __PYX_ERR(0, 168, __pyx_L1_error)
+    if (__Pyx_VectorcallBuilder_AddArg(__pyx_mstate_global->__pyx_n_u_actions, __pyx_v_result_actions, __pyx_t_4, __pyx_callargs+1, 1) < (0)) __PYX_ERR(0, 168, __pyx_L1_error)
+    if (__Pyx_VectorcallBuilder_AddArg(__pyx_mstate_global->__pyx_n_u_events, __pyx_v_result_events, __pyx_t_4, __pyx_callargs+1, 2) < (0)) __PYX_ERR(0, 168, __pyx_L1_error)
     __pyx_t_5 = __Pyx_Object_Vectorcall_CallFromBuilder((PyObject*)__pyx_t_1, __pyx_callargs+__pyx_t_10, (1-__pyx_t_10) | (__pyx_t_10*__Pyx_PY_VECTORCALL_ARGUMENTS_OFFSET), __pyx_t_4);
     __Pyx_XDECREF(__pyx_t_8); __pyx_t_8 = 0;
     __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-    if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 167, __pyx_L1_error)
+    if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 168, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_5);
   }
   __pyx_r = __pyx_t_5;
   __pyx_t_5 = 0;
   goto __pyx_L0;
 
-  /* "redux/_combine_reducers.pyx":53
+  /* "redux/_combine_reducers.pyx":54
  *             self.state_accessor = None
  * 
  *     def __call__(self, state, action):             # <<<<<<<<<<<<<<
@@ -5151,7 +5151,7 @@ static PyObject *__pyx_pf_5redux_17_combine_reducers_15CombinedReducer_6__setsta
   return __pyx_r;
 }
 
-/* "redux/_combine_reducers.pyx":173
+/* "redux/_combine_reducers.pyx":174
  *         )
  * 
  * def combine_reducers(             # <<<<<<<<<<<<<<
@@ -5169,21 +5169,21 @@ static PyObject *__pyx_pf_5redux_17_combine_reducers_4__defaults__(CYTHON_UNUSED
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("__defaults__", 0);
   __Pyx_XDECREF(__pyx_r);
-  __pyx_t_1 = PyTuple_New(2); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 173, __pyx_L1_error)
+  __pyx_t_1 = PyTuple_New(2); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 174, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   __Pyx_INCREF(__Pyx_CyFunction_Defaults(struct __pyx_defaults, __pyx_self)->arg0);
   __Pyx_GIVEREF(__Pyx_CyFunction_Defaults(struct __pyx_defaults, __pyx_self)->arg0);
-  if (__Pyx_PyTuple_SET_ITEM(__pyx_t_1, 0, __Pyx_CyFunction_Defaults(struct __pyx_defaults, __pyx_self)->arg0) != (0)) __PYX_ERR(0, 173, __pyx_L1_error);
+  if (__Pyx_PyTuple_SET_ITEM(__pyx_t_1, 0, __Pyx_CyFunction_Defaults(struct __pyx_defaults, __pyx_self)->arg0) != (0)) __PYX_ERR(0, 174, __pyx_L1_error);
   __Pyx_INCREF(__Pyx_CyFunction_Defaults(struct __pyx_defaults, __pyx_self)->arg1);
   __Pyx_GIVEREF(__Pyx_CyFunction_Defaults(struct __pyx_defaults, __pyx_self)->arg1);
-  if (__Pyx_PyTuple_SET_ITEM(__pyx_t_1, 1, __Pyx_CyFunction_Defaults(struct __pyx_defaults, __pyx_self)->arg1) != (0)) __PYX_ERR(0, 173, __pyx_L1_error);
-  __pyx_t_2 = PyTuple_New(2); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 173, __pyx_L1_error)
+  if (__Pyx_PyTuple_SET_ITEM(__pyx_t_1, 1, __Pyx_CyFunction_Defaults(struct __pyx_defaults, __pyx_self)->arg1) != (0)) __PYX_ERR(0, 174, __pyx_L1_error);
+  __pyx_t_2 = PyTuple_New(2); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 174, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
   __Pyx_GIVEREF(__pyx_t_1);
-  if (__Pyx_PyTuple_SET_ITEM(__pyx_t_2, 0, __pyx_t_1) != (0)) __PYX_ERR(0, 173, __pyx_L1_error);
+  if (__Pyx_PyTuple_SET_ITEM(__pyx_t_2, 0, __pyx_t_1) != (0)) __PYX_ERR(0, 174, __pyx_L1_error);
   __Pyx_INCREF(Py_None);
   __Pyx_GIVEREF(Py_None);
-  if (__Pyx_PyTuple_SET_ITEM(__pyx_t_2, 1, Py_None) != (0)) __PYX_ERR(0, 173, __pyx_L1_error);
+  if (__Pyx_PyTuple_SET_ITEM(__pyx_t_2, 1, Py_None) != (0)) __PYX_ERR(0, 174, __pyx_L1_error);
   __pyx_t_1 = 0;
   __pyx_r = __pyx_t_2;
   __pyx_t_2 = 0;
@@ -5209,7 +5209,8 @@ PyObject *const *__pyx_args, Py_ssize_t __pyx_nargs, PyObject *__pyx_kwds
 PyObject *__pyx_args, PyObject *__pyx_kwds
 #endif
 ); /*proto*/
-static PyMethodDef __pyx_mdef_5redux_17_combine_reducers_1combine_reducers = {"combine_reducers", (PyCFunction)(void(*)(void))(__Pyx_PyCFunction_FastCallWithKeywords)__pyx_pw_5redux_17_combine_reducers_1combine_reducers, __Pyx_METH_FASTCALL|METH_KEYWORDS, 0};
+PyDoc_STRVAR(__pyx_doc_5redux_17_combine_reducers_combine_reducers, "\n    Combine multiple reducers into a single reducer.\n\n    Optimized Cython implementation.\n    ");
+static PyMethodDef __pyx_mdef_5redux_17_combine_reducers_1combine_reducers = {"combine_reducers", (PyCFunction)(void(*)(void))(__Pyx_PyCFunction_FastCallWithKeywords)__pyx_pw_5redux_17_combine_reducers_1combine_reducers, __Pyx_METH_FASTCALL|METH_KEYWORDS, __pyx_doc_5redux_17_combine_reducers_combine_reducers};
 static PyObject *__pyx_pw_5redux_17_combine_reducers_1combine_reducers(PyObject *__pyx_self, 
 #if CYTHON_METH_FASTCALL
 PyObject *const *__pyx_args, Py_ssize_t __pyx_nargs, PyObject *__pyx_kwds
@@ -5246,44 +5247,44 @@ PyObject *__pyx_args, PyObject *__pyx_kwds
     PyObject ** const __pyx_pyargnames[] = {&__pyx_mstate_global->__pyx_n_u_state_type,&__pyx_mstate_global->__pyx_n_u_action_type,&__pyx_mstate_global->__pyx_n_u_event_type,0};
     struct __pyx_defaults *__pyx_dynamic_args = __Pyx_CyFunction_Defaults(struct __pyx_defaults, __pyx_self);
     const Py_ssize_t __pyx_kwds_len = (__pyx_kwds) ? __Pyx_NumKwargs_FASTCALL(__pyx_kwds) : 0;
-    if (unlikely(__pyx_kwds_len) < 0) __PYX_ERR(0, 173, __pyx_L3_error)
+    if (unlikely(__pyx_kwds_len) < 0) __PYX_ERR(0, 174, __pyx_L3_error)
     if (__pyx_kwds_len > 0) {
       switch (__pyx_nargs) {
         case  3:
         values[2] = __Pyx_ArgRef_FASTCALL(__pyx_args, 2);
-        if (!CYTHON_ASSUME_SAFE_MACROS && unlikely(!values[2])) __PYX_ERR(0, 173, __pyx_L3_error)
+        if (!CYTHON_ASSUME_SAFE_MACROS && unlikely(!values[2])) __PYX_ERR(0, 174, __pyx_L3_error)
         CYTHON_FALLTHROUGH;
         case  2:
         values[1] = __Pyx_ArgRef_FASTCALL(__pyx_args, 1);
-        if (!CYTHON_ASSUME_SAFE_MACROS && unlikely(!values[1])) __PYX_ERR(0, 173, __pyx_L3_error)
+        if (!CYTHON_ASSUME_SAFE_MACROS && unlikely(!values[1])) __PYX_ERR(0, 174, __pyx_L3_error)
         CYTHON_FALLTHROUGH;
         case  1:
         values[0] = __Pyx_ArgRef_FASTCALL(__pyx_args, 0);
-        if (!CYTHON_ASSUME_SAFE_MACROS && unlikely(!values[0])) __PYX_ERR(0, 173, __pyx_L3_error)
+        if (!CYTHON_ASSUME_SAFE_MACROS && unlikely(!values[0])) __PYX_ERR(0, 174, __pyx_L3_error)
         CYTHON_FALLTHROUGH;
         case  0: break;
         default: goto __pyx_L5_argtuple_error;
       }
       const Py_ssize_t kwd_pos_args = __pyx_nargs;
-      if (__Pyx_ParseKeywords(__pyx_kwds, __pyx_kwvalues, __pyx_pyargnames, __pyx_v_reducers, values, kwd_pos_args, __pyx_kwds_len, "combine_reducers", 1) < (0)) __PYX_ERR(0, 173, __pyx_L3_error)
+      if (__Pyx_ParseKeywords(__pyx_kwds, __pyx_kwvalues, __pyx_pyargnames, __pyx_v_reducers, values, kwd_pos_args, __pyx_kwds_len, "combine_reducers", 1) < (0)) __PYX_ERR(0, 174, __pyx_L3_error)
       if (!values[1]) values[1] = __Pyx_NewRef(__pyx_dynamic_args->arg0);
       if (!values[2]) values[2] = __Pyx_NewRef(__pyx_dynamic_args->arg1);
       for (Py_ssize_t i = __pyx_nargs; i < 1; i++) {
-        if (unlikely(!values[i])) { __Pyx_RaiseArgtupleInvalid("combine_reducers", 0, 1, 3, i); __PYX_ERR(0, 173, __pyx_L3_error) }
+        if (unlikely(!values[i])) { __Pyx_RaiseArgtupleInvalid("combine_reducers", 0, 1, 3, i); __PYX_ERR(0, 174, __pyx_L3_error) }
       }
     } else {
       switch (__pyx_nargs) {
         case  3:
         values[2] = __Pyx_ArgRef_FASTCALL(__pyx_args, 2);
-        if (!CYTHON_ASSUME_SAFE_MACROS && unlikely(!values[2])) __PYX_ERR(0, 173, __pyx_L3_error)
+        if (!CYTHON_ASSUME_SAFE_MACROS && unlikely(!values[2])) __PYX_ERR(0, 174, __pyx_L3_error)
         CYTHON_FALLTHROUGH;
         case  2:
         values[1] = __Pyx_ArgRef_FASTCALL(__pyx_args, 1);
-        if (!CYTHON_ASSUME_SAFE_MACROS && unlikely(!values[1])) __PYX_ERR(0, 173, __pyx_L3_error)
+        if (!CYTHON_ASSUME_SAFE_MACROS && unlikely(!values[1])) __PYX_ERR(0, 174, __pyx_L3_error)
         CYTHON_FALLTHROUGH;
         case  1:
         values[0] = __Pyx_ArgRef_FASTCALL(__pyx_args, 0);
-        if (!CYTHON_ASSUME_SAFE_MACROS && unlikely(!values[0])) __PYX_ERR(0, 173, __pyx_L3_error)
+        if (!CYTHON_ASSUME_SAFE_MACROS && unlikely(!values[0])) __PYX_ERR(0, 174, __pyx_L3_error)
         break;
         default: goto __pyx_L5_argtuple_error;
       }
@@ -5296,7 +5297,7 @@ PyObject *__pyx_args, PyObject *__pyx_kwds
   }
   goto __pyx_L6_skip;
   __pyx_L5_argtuple_error:;
-  __Pyx_RaiseArgtupleInvalid("combine_reducers", 0, 1, 3, __pyx_nargs); __PYX_ERR(0, 173, __pyx_L3_error)
+  __Pyx_RaiseArgtupleInvalid("combine_reducers", 0, 1, 3, __pyx_nargs); __PYX_ERR(0, 174, __pyx_L3_error)
   __pyx_L6_skip:;
   goto __pyx_L4_argument_unpacking_done;
   __pyx_L3_error:;
@@ -5335,17 +5336,17 @@ static PyObject *__pyx_pf_5redux_17_combine_reducers_combine_reducers(CYTHON_UNU
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("combine_reducers", 0);
 
-  /* "redux/_combine_reducers.pyx":179
- *     **reducers,
- * ):
+  /* "redux/_combine_reducers.pyx":185
+ *     Optimized Cython implementation.
+ *     """
  *     id_ = uuid.uuid4().hex             # <<<<<<<<<<<<<<
  *     # Copy reducers dict
  *     reducers_copy = reducers.copy()
 */
   __pyx_t_2 = NULL;
-  __Pyx_GetModuleGlobalName(__pyx_t_3, __pyx_mstate_global->__pyx_n_u_uuid); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 179, __pyx_L1_error)
+  __Pyx_GetModuleGlobalName(__pyx_t_3, __pyx_mstate_global->__pyx_n_u_uuid); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 185, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_3);
-  __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_t_3, __pyx_mstate_global->__pyx_n_u_uuid4); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 179, __pyx_L1_error)
+  __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_t_3, __pyx_mstate_global->__pyx_n_u_uuid4); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 185, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_4);
   __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
   __pyx_t_5 = 1;
@@ -5365,28 +5366,28 @@ static PyObject *__pyx_pf_5redux_17_combine_reducers_combine_reducers(CYTHON_UNU
     __pyx_t_1 = __Pyx_PyObject_FastCall((PyObject*)__pyx_t_4, __pyx_callargs+__pyx_t_5, (1-__pyx_t_5) | (__pyx_t_5*__Pyx_PY_VECTORCALL_ARGUMENTS_OFFSET));
     __Pyx_XDECREF(__pyx_t_2); __pyx_t_2 = 0;
     __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
-    if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 179, __pyx_L1_error)
+    if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 185, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_1);
   }
-  __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_t_1, __pyx_mstate_global->__pyx_n_u_hex); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 179, __pyx_L1_error)
+  __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_t_1, __pyx_mstate_global->__pyx_n_u_hex); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 185, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_4);
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
   __pyx_v_id_ = __pyx_t_4;
   __pyx_t_4 = 0;
 
-  /* "redux/_combine_reducers.pyx":181
+  /* "redux/_combine_reducers.pyx":187
  *     id_ = uuid.uuid4().hex
  *     # Copy reducers dict
  *     reducers_copy = reducers.copy()             # <<<<<<<<<<<<<<
  * 
  *     combined = CombinedReducer(state_type, reducers_copy, id_)
 */
-  __pyx_t_4 = PyDict_Copy(__pyx_v_reducers); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 181, __pyx_L1_error)
+  __pyx_t_4 = PyDict_Copy(__pyx_v_reducers); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 187, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_4);
   __pyx_v_reducers_copy = ((PyObject*)__pyx_t_4);
   __pyx_t_4 = 0;
 
-  /* "redux/_combine_reducers.pyx":183
+  /* "redux/_combine_reducers.pyx":189
  *     reducers_copy = reducers.copy()
  * 
  *     combined = CombinedReducer(state_type, reducers_copy, id_)             # <<<<<<<<<<<<<<
@@ -5398,31 +5399,31 @@ static PyObject *__pyx_pf_5redux_17_combine_reducers_combine_reducers(CYTHON_UNU
     PyObject *__pyx_callargs[4] = {__pyx_t_1, __pyx_v_state_type, __pyx_v_reducers_copy, __pyx_v_id_};
     __pyx_t_4 = __Pyx_PyObject_FastCall((PyObject*)__pyx_mstate_global->__pyx_ptype_5redux_17_combine_reducers_CombinedReducer, __pyx_callargs+__pyx_t_5, (4-__pyx_t_5) | (__pyx_t_5*__Pyx_PY_VECTORCALL_ARGUMENTS_OFFSET));
     __Pyx_XDECREF(__pyx_t_1); __pyx_t_1 = 0;
-    if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 183, __pyx_L1_error)
+    if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 189, __pyx_L1_error)
     __Pyx_GOTREF((PyObject *)__pyx_t_4);
   }
   __pyx_v_combined = ((struct __pyx_obj_5redux_17_combine_reducers_CombinedReducer *)__pyx_t_4);
   __pyx_t_4 = 0;
 
-  /* "redux/_combine_reducers.pyx":184
+  /* "redux/_combine_reducers.pyx":190
  * 
  *     combined = CombinedReducer(state_type, reducers_copy, id_)
  *     return combined, id_             # <<<<<<<<<<<<<<
 */
   __Pyx_XDECREF(__pyx_r);
-  __pyx_t_4 = PyTuple_New(2); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 184, __pyx_L1_error)
+  __pyx_t_4 = PyTuple_New(2); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 190, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_4);
   __Pyx_INCREF((PyObject *)__pyx_v_combined);
   __Pyx_GIVEREF((PyObject *)__pyx_v_combined);
-  if (__Pyx_PyTuple_SET_ITEM(__pyx_t_4, 0, ((PyObject *)__pyx_v_combined)) != (0)) __PYX_ERR(0, 184, __pyx_L1_error);
+  if (__Pyx_PyTuple_SET_ITEM(__pyx_t_4, 0, ((PyObject *)__pyx_v_combined)) != (0)) __PYX_ERR(0, 190, __pyx_L1_error);
   __Pyx_INCREF(__pyx_v_id_);
   __Pyx_GIVEREF(__pyx_v_id_);
-  if (__Pyx_PyTuple_SET_ITEM(__pyx_t_4, 1, __pyx_v_id_) != (0)) __PYX_ERR(0, 184, __pyx_L1_error);
+  if (__Pyx_PyTuple_SET_ITEM(__pyx_t_4, 1, __pyx_v_id_) != (0)) __PYX_ERR(0, 190, __pyx_L1_error);
   __pyx_r = __pyx_t_4;
   __pyx_t_4 = 0;
   goto __pyx_L0;
 
-  /* "redux/_combine_reducers.pyx":173
+  /* "redux/_combine_reducers.pyx":174
  *         )
  * 
  * def combine_reducers(             # <<<<<<<<<<<<<<
@@ -5861,6 +5862,7 @@ static PyMethodDef __pyx_methods_5redux_17_combine_reducers_CombinedReducer[] = 
 static PyType_Slot __pyx_type_5redux_17_combine_reducers_CombinedReducer_slots[] = {
   {Py_tp_dealloc, (void *)__pyx_tp_dealloc_5redux_17_combine_reducers_CombinedReducer},
   {Py_tp_call, (void *)__pyx_pw_5redux_17_combine_reducers_15CombinedReducer_3__call__},
+  {Py_tp_doc, (void *)PyDoc_STR("Cython implementation of combined reducer.")},
   {Py_tp_traverse, (void *)__pyx_tp_traverse_5redux_17_combine_reducers_CombinedReducer},
   {Py_tp_clear, (void *)__pyx_tp_clear_5redux_17_combine_reducers_CombinedReducer},
   {Py_tp_methods, (void *)__pyx_methods_5redux_17_combine_reducers_CombinedReducer},
@@ -5898,7 +5900,7 @@ static PyTypeObject __pyx_type_5redux_17_combine_reducers_CombinedReducer = {
   0, /*tp_setattro*/
   0, /*tp_as_buffer*/
   Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_VERSION_TAG|Py_TPFLAGS_CHECKTYPES|Py_TPFLAGS_HAVE_NEWBUFFER|Py_TPFLAGS_BASETYPE|Py_TPFLAGS_HAVE_GC, /*tp_flags*/
-  0, /*tp_doc*/
+  PyDoc_STR("Cython implementation of combined reducer."), /*tp_doc*/
   __pyx_tp_traverse_5redux_17_combine_reducers_CombinedReducer, /*tp_traverse*/
   __pyx_tp_clear_5redux_17_combine_reducers_CombinedReducer, /*tp_clear*/
   0, /*tp_richcompare*/
@@ -6179,15 +6181,15 @@ static int __Pyx_modinit_type_init_code(__pyx_mstatetype *__pyx_mstate) {
   if (PyObject_SetAttr(__pyx_m, __pyx_mstate_global->__pyx_n_u_CombinedReducer, (PyObject *) __pyx_mstate->__pyx_ptype_5redux_17_combine_reducers_CombinedReducer) < (0)) __PYX_ERR(0, 29, __pyx_L1_error)
   if (__Pyx_setup_reduce((PyObject *) __pyx_mstate->__pyx_ptype_5redux_17_combine_reducers_CombinedReducer) < (0)) __PYX_ERR(0, 29, __pyx_L1_error)
   #if CYTHON_USE_TYPE_SPECS
-  __pyx_mstate->__pyx_ptype_5redux_17_combine_reducers___pyx_defaults = (PyTypeObject *) __Pyx_PyType_FromModuleAndSpec(__pyx_m, &__pyx_type_5redux_17_combine_reducers___pyx_defaults_spec, NULL); if (unlikely(!__pyx_mstate->__pyx_ptype_5redux_17_combine_reducers___pyx_defaults)) __PYX_ERR(0, 173, __pyx_L1_error)
-  if (__Pyx_fix_up_extension_type_from_spec(&__pyx_type_5redux_17_combine_reducers___pyx_defaults_spec, __pyx_mstate->__pyx_ptype_5redux_17_combine_reducers___pyx_defaults) < (0)) __PYX_ERR(0, 173, __pyx_L1_error)
+  __pyx_mstate->__pyx_ptype_5redux_17_combine_reducers___pyx_defaults = (PyTypeObject *) __Pyx_PyType_FromModuleAndSpec(__pyx_m, &__pyx_type_5redux_17_combine_reducers___pyx_defaults_spec, NULL); if (unlikely(!__pyx_mstate->__pyx_ptype_5redux_17_combine_reducers___pyx_defaults)) __PYX_ERR(0, 174, __pyx_L1_error)
+  if (__Pyx_fix_up_extension_type_from_spec(&__pyx_type_5redux_17_combine_reducers___pyx_defaults_spec, __pyx_mstate->__pyx_ptype_5redux_17_combine_reducers___pyx_defaults) < (0)) __PYX_ERR(0, 174, __pyx_L1_error)
   #else
   __pyx_mstate->__pyx_ptype_5redux_17_combine_reducers___pyx_defaults = &__pyx_type_5redux_17_combine_reducers___pyx_defaults;
   #endif
   #if !CYTHON_COMPILING_IN_LIMITED_API
   #endif
   #if !CYTHON_USE_TYPE_SPECS
-  if (__Pyx_PyType_Ready(__pyx_mstate->__pyx_ptype_5redux_17_combine_reducers___pyx_defaults) < (0)) __PYX_ERR(0, 173, __pyx_L1_error)
+  if (__Pyx_PyType_Ready(__pyx_mstate->__pyx_ptype_5redux_17_combine_reducers___pyx_defaults) < (0)) __PYX_ERR(0, 174, __pyx_L1_error)
   #endif
   #if CYTHON_COMPILING_IN_CPYTHON && PY_VERSION_HEX >= 0x030E0000
   PyUnstable_Object_EnableDeferredRefcount((PyObject*)__pyx_mstate->__pyx_ptype_5redux_17_combine_reducers___pyx_defaults);
@@ -6674,47 +6676,47 @@ __Pyx_RefNannySetupContext("PyInit__combine_reducers", 0);
   if (__Pyx_SetItemOnTypeDict(__pyx_mstate_global->__pyx_ptype_5redux_17_combine_reducers_CombinedReducer, __pyx_mstate_global->__pyx_n_u_setstate_cython, __pyx_t_2) < (0)) __PYX_ERR(1, 16, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
 
-  /* "redux/_combine_reducers.pyx":173
+  /* "redux/_combine_reducers.pyx":174
  *         )
  * 
  * def combine_reducers(             # <<<<<<<<<<<<<<
  *     state_type,
  *     action_type=BaseAction,
 */
-  __pyx_t_2 = __Pyx_CyFunction_New(&__pyx_mdef_5redux_17_combine_reducers_1combine_reducers, 0, __pyx_mstate_global->__pyx_n_u_combine_reducers, NULL, __pyx_mstate_global->__pyx_n_u_redux__combine_reducers, __pyx_mstate_global->__pyx_d, ((PyObject *)__pyx_mstate_global->__pyx_codeobj_tab[2])); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 173, __pyx_L1_error)
+  __pyx_t_2 = __Pyx_CyFunction_New(&__pyx_mdef_5redux_17_combine_reducers_1combine_reducers, 0, __pyx_mstate_global->__pyx_n_u_combine_reducers, NULL, __pyx_mstate_global->__pyx_n_u_redux__combine_reducers, __pyx_mstate_global->__pyx_d, ((PyObject *)__pyx_mstate_global->__pyx_codeobj_tab[2])); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 174, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
   #if CYTHON_COMPILING_IN_CPYTHON && PY_VERSION_HEX >= 0x030E0000
   PyUnstable_Object_EnableDeferredRefcount(__pyx_t_2);
   #endif
-  if (!__Pyx_CyFunction_InitDefaults(__pyx_t_2, __pyx_mstate_global->__pyx_ptype_5redux_17_combine_reducers___pyx_defaults)) __PYX_ERR(0, 173, __pyx_L1_error)
+  if (!__Pyx_CyFunction_InitDefaults(__pyx_t_2, __pyx_mstate_global->__pyx_ptype_5redux_17_combine_reducers___pyx_defaults)) __PYX_ERR(0, 174, __pyx_L1_error)
 
-  /* "redux/_combine_reducers.pyx":175
+  /* "redux/_combine_reducers.pyx":176
  * def combine_reducers(
  *     state_type,
  *     action_type=BaseAction,             # <<<<<<<<<<<<<<
  *     event_type=BaseEvent,
  *     **reducers,
 */
-  __Pyx_GetModuleGlobalName(__pyx_t_4, __pyx_mstate_global->__pyx_n_u_BaseAction); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 175, __pyx_L1_error)
+  __Pyx_GetModuleGlobalName(__pyx_t_4, __pyx_mstate_global->__pyx_n_u_BaseAction); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 176, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_4);
   __Pyx_CyFunction_Defaults(struct __pyx_defaults, __pyx_t_2)->arg0 = __pyx_t_4;
   __Pyx_GIVEREF(__pyx_t_4);
   __pyx_t_4 = 0;
 
-  /* "redux/_combine_reducers.pyx":176
+  /* "redux/_combine_reducers.pyx":177
  *     state_type,
  *     action_type=BaseAction,
  *     event_type=BaseEvent,             # <<<<<<<<<<<<<<
  *     **reducers,
  * ):
 */
-  __Pyx_GetModuleGlobalName(__pyx_t_4, __pyx_mstate_global->__pyx_n_u_BaseEvent); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 176, __pyx_L1_error)
+  __Pyx_GetModuleGlobalName(__pyx_t_4, __pyx_mstate_global->__pyx_n_u_BaseEvent); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 177, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_4);
   __Pyx_CyFunction_Defaults(struct __pyx_defaults, __pyx_t_2)->arg1 = __pyx_t_4;
   __Pyx_GIVEREF(__pyx_t_4);
   __pyx_t_4 = 0;
   __Pyx_CyFunction_SetDefaultsGetter(__pyx_t_2, __pyx_pf_5redux_17_combine_reducers_4__defaults__);
-  if (PyDict_SetItem(__pyx_mstate_global->__pyx_d, __pyx_mstate_global->__pyx_n_u_combine_reducers, __pyx_t_2) < (0)) __PYX_ERR(0, 173, __pyx_L1_error)
+  if (PyDict_SetItem(__pyx_mstate_global->__pyx_d, __pyx_mstate_global->__pyx_n_u_combine_reducers, __pyx_t_2) < (0)) __PYX_ERR(0, 174, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
 
   /* "(tree fragment)":4
@@ -6832,24 +6834,24 @@ static int __Pyx_InitConstants(__pyx_mstatetype *__pyx_mstate) {
   CYTHON_UNUSED_VAR(__pyx_mstate);
   {
     const struct { const unsigned int length: 8; } index[] = {{1},{179},{1},{8},{7},{6},{2},{9},{27},{17},{147},{14},{10},{23},{9},{20},{24},{28},{30},{15},{33},{35},{21},{10},{7},{20},{7},{6},{11},{7},{15},{18},{10},{11},{18},{16},{19},{8},{4},{20},{11},{8},{8},{5},{10},{6},{6},{8},{9},{12},{3},{3},{9},{26},{13},{5},{3},{4},{8},{14},{10},{8},{4},{7},{8},{7},{3},{14},{12},{11},{10},{30},{14},{12},{10},{17},{13},{7},{8},{13},{23},{4},{12},{10},{12},{19},{5},{10},{8},{6},{6},{12},{4},{5},{6},{11},{109},{50},{57}};
-    #if (CYTHON_COMPRESS_STRINGS) == 2 /* compression: bz2 (981 bytes) */
-const char* const cstring = "BZh91AY&SYH\241XA\000\000@\177\377\347\315\375\300\344\327\364\335\277\351\377\200\277\377\377\345\300@@@@@@@@@@@@\000@\000P\003~\266\031\000\001\333\r!2j\217\324\200\364\217OTh\003\322=F\200\000\000\000h\001\352\036\243\324\323O\024\365\010\250i\246\200zF\3214\000\000\000\001\240\000\000\000\000\000\005j\201\240\000\003C@\032\000\r\000\000\006\201\240\310\r\001\243@\340\001\2404\r\000\r4\310\0004i\220\001\243&\010\014@\000\tM\023H\004h)\265<\250\361\2512\0324\0004\r\000\000\014\200h4z&JW\2647\365\374\007\3747\205!t\026\236,\031L\262X\320\252x\361\021\201]vl\357\315K\211P\021\331o\034P\234\204Z\035\361\302\345DFf|\234\021\300g\222@v\312\202\025I\007R\2314\346\017\346\350\347\234NC\304$\027\207\2205rd`\0046\005\202-\241\205\324A\201\3055Pm\002F\r\312V@\331\241u\033\341\345\233&\010U\342\350\333\317\332\346\355\333~\253\037Z|1\324e\224\261\253\303\367\375T\223\201\207KDt\314\322ah\322v\313\237\271\334\313\251\267\305\\#\306.\033\025E\217\220\377\222\033p\3564\204)\353\034\251K\367T\252\273x::.\241\247\227-t\232]\020\261*\377Mqh\t\004\356\t\363VP\022\204\004$\026_\001\020\345\321\t\353\240y\222\204,\307q\331\020\034B\374+\335\r/Y\226\005\234\215k\231\"+\261+L\002W~\036\004\0361\314G\246\325\301\261\227\216\325\325|Zh\"\264\t\372\216\004:\240\016b 0\351\253m.\261(|\031\344\032W\344Kk\231\334\035\321\255k\361U\007y@\213h[\024\255\373\265X)\225\274L\314s\332\355\273\206\031\006\034\331F\327\242!\235\023\203n\254\221\003\321\323\224I-\225\204\02693v\356\376V\261f\022\035\201\204\rH\333|\274<\274\276f#V\323\010\277K*d\310@n\312 \n\221\202u\0242\304\337V\320-\351\225[\013\367h\364v\034\237\346\014Z\225\230#\261\351a4\322\344\0316\245)\213\2565\377|\227\255\234\335{\343\252'0\346}\354d\230(c\202\321\014\306<\343j\272'y\254\233\0251\327\330\203\324LI\277Vci(\3157[\275\354\016g\254fH\315@\222 \236$\304K\260$\220\342\333\362\330[r\266\254Z\314\333QT\3369%\030\330M\235\026\230\266\322\374\264_^\363\031\202\004\227\033\006@\233\213\010\273f\212\266\353\301\311\315\232\325\262\274""\014\255|\365\324iMb38Q\262\033\227w\016\277\321\346X\306C6\276\016\332y/\305\010\305lF\265\253\216\255\233d\320\332[@\031_\203\261\023\016R\322\343\2066\312\261\336\301\324\346\331\327 V&|\2035\225\207J\274\370\321\261wg*Y\254qDF\006\035\344Kq\265\326\306\036\246\315[x\016f\253>V\322\363\332\261\230\300\261Q\3232C\254/\223Nr\324\322\034\214h\304\2434\241)\023\326\313Jh\304j\325\213\020t\362\360\\ofc,\216\254P\275\035b\375\367\345\300r\330M\357\355\354\320\267\231\370\351m\320\206Ij\367z\244k\327\311\277\262\200B\030b^\010J\323\2000\211jZ\353$P\324\006\006\275\204\364-\271\276\221\341\035\0239!|\363\372\311@\270\277\026Q\371\230\273\022\3174\317\374A9>\331\005aI\220U\033V\034\376\024{V\025\367\350\207\247\266\214+\356\254\0370\226`P\300\266T\277B\377\305\334\221N\024$\022(V\020@";
-    PyObject *data = __Pyx_DecompressString(cstring, 981, 2);
+    #if (CYTHON_COMPRESS_STRINGS) == 2 /* compression: bz2 (983 bytes) */
+const char* const cstring = "BZh91AY&SYi\371\275<\000\000@\177\377\346\315\375\300\344\327\364\335\277\351\377\200\277\377\377\345\300@@@@@@@@@@@@\000@\000P\003~\266\031\000\001!\244#MQ\3454\030\236\232\230\200yOSM\006\200\000\000\320\302\007\251\247\244\323L\305=B*\032i\240\036\221\264M\006\200\000\000\r\000\000\000\000\000\0008h\000\006\203A\2400@\r\r4\310\006\206\2152\000b\006\200\016\032\000\001\240\320h\014\020\003CM2\001\241\243L\200\030\201\240\001)\244h\201\250\320SjyQ\343Rd4h\000h4\0004\003 \032\r\036\211\223\nv\206\376\277\200\377\206\361$.\202\343\006\361\3042YL\242yx\311bV\272\356\267\202\2251\242@G\2230\300\371\310A\261j\027\326\240\210L\315\323\2028\014\372\256\003\027\322\020\226\220t\245\230\3440\1777G<\342r\036!\"\304<\201\254\024%\000!\270.\021m\214.\242,\216)\005F\320$`\340\245\244\r\252\027Q\276.X\254H\222\247\027F\336~\3277r\3545U\365\247\307-E\255\014j\361}\377T\340\340c\322\321.\231\232L-\032N\341{\367{\266\352m\361\323\031y\005\343d\246\262\362\237\362Cn\035\306\200\222\216\261\312\224?yB\243\267\207\243\242\371\232ym\256q;\345%\221G\355\323&\220@'pO\232\254\301) $\220W\t\004\244\345\362\222zh\036 \231%\030\3531y\001d*\335\\q[\3425\001\177Kze\350\013 D\341\200]Ybh!4\3071\036s\212w\201\375\027\025I\261\201\300E\200\023t\026\010a \034\304@f\316O\032\3542\272\033\006\232\203D\374\211ms;\303\2745\315\206J\200\357\010\021t\313\245:a\273UE\020\267\211\231\216{\235\267p\306\301\2175\245\265\346\2113\2421m\324\202R\036n\234\232Il\244\220U\310\213\367x-s\025\306\003\2600\201\247-\270C\311\341\341\3632\032\227\030\313\r,\247fB\003u\245 (K\024\352S-\221\276\215\240[\323*68n\321\351\3549?\314X\271*\342\216\307\251\214OK\222,\332\224&/\274\327\375\362`\266su\360\227TNc\314\373\330\262`\231\226+D\231\214\271\306\325|\243y\254\212\251\345\257\261#\326LA\277Vci&\315\027\335\275\352\034\317If@\3150\202R#\211\022\224;\002I\016-\277=K\257WQ\213\231\233j(\233\311 \233\033\010\257E\306M\264\302\3320\247}\214\301\002K\215F@\233\213\010\277f\2126\354\001\310\315\232\345\262\234\013\\\371\353""\240\320\232\250\314\3416\260\334\273\270u\373~uX\260\315\257\203\266\236L2B2[\021\255j\343\253f\33046\226\320\005\260\305\330\224I\311\334^p\312\350Uw\250\3523l\351`UL\366\014\325\252t\251\317\224\333'vr\205u\216)JX\230\367\321\r\306\347[\030z\0335m\3409\232\244y\233L\017r\254\306%T\3353$:\307\0104\347\r=!\310\306\214\211\263B\022\201=+q=\031\rJ1T\035;xo7\2631k\035YL\301\035c\r\370[\200\345\322M\360\355\354\314\273\231\370\351m\322C$\265v\272\244\265\353\344\337\331D\002R\365\0201\026\"\231\247\313U\256Ju\254\025\222\265m\350k\317\366\301$\017\311j\346\036\253\267~\352a\256\354x\262\376\324U\210\244\2166\341vBm\317\300\360i\227i\016+\013\177\tn<*\363\313\253^\314\264\347\370\321\367\013\263\2313\022\350P\347\203\377\027rE8P\220i\371\275<";
+    PyObject *data = __Pyx_DecompressString(cstring, 983, 2);
     if (unlikely(!data)) __PYX_ERR(0, 1, __pyx_L1_error)
     const char* const bytes = __Pyx_PyBytes_AsString(data);
     #if !CYTHON_ASSUME_SAFE_MACROS
     if (likely(bytes)); else { Py_DECREF(data); __PYX_ERR(0, 1, __pyx_L1_error) }
     #endif
-    #elif (CYTHON_COMPRESS_STRINGS) != 0 /* compression: zlib (858 bytes) */
-const char* const cstring = "x\332}T\275o\0337\024\217\001%\025\340\"\216\333\240\355\026\032\010\220\242h\32480\320\242.j8\211\322\006\005T[V\233\361\201\"\237$V'\362t$\025\035\020\264\0365\336x\243G\215\0325z\314\250Q\243\376\204\374\t%\357N\222?\324\002w\344\373\346\373\370\221\225\2322HL\207\032\36226\035%\211\320\204c \232\030Q\203AL\264\211\0043\030y#IN\252'O\017~8 Tr\022\341_\310\214&\3326Y@\265FMT\2134\255\010\214\220\304\304!\352\ny\323\"\261\262D\"rb\024\t\235\335U\007\323AI4\032O\220'TJe\250\021J\202s\027\262\375\204p\021\271C\304\000\275\367k\032h\254\034Q\316\301\031\"\027\2326\003D\351\3276\023:\247x\204\334\016\277\003\246zM!\021<\3130\322\2250\036f\252J\223j\301 \313Pc\320\252\010\016\276n\027\223\324\224D\242\"\222\311\227\236\033\225\332e\212@\031sA\234\354\277M\262Z\377G\357\363\270\252\376\311\267\\\266\265\262\021\303\237_P\215\307\314\367\304S/\363\232\352ybg\336\337\213\253\003\224\346\272.\367\271.{#\205\331$\257c[h\263\331\347\017\031m\322\362B}\203\255@\321n`\031\234\000n\033\270q\027\215Y\233\204\001\232u6\332\006f\235k\355\367\006\234U\033\000'\361\320\375\257\034\034\241\206CS\307V\303\265\356O\032\321\314._\263v\346\244\006X#\3123:\226L\250\nS\221\262\016\243\250\2511Q\033\215+\356\n$X\340Q#\\$\027\030\233\224uo\"\351&\017\202\027\"\267\2071\000\247\206fc\207\226\300\200\353+\022\324\0341,\314|)\371\206~\202\331\371\031\245\227~-+Y\276\032\245\002'h/\273\007\035\034:\340\212^\317\032\017{\241=\342\263F.\023s\273o%d\252\242fa\260\247\273\030\273\317E\353QW\247[\273\270\016\344x\305\255\337\001$\355\341j\305w\000*\364\017\203\212B\032\007\212\362P\205\000\356^\001\353 \353j\333\313\271\342\334\214.\262\365\244//\247\254\014\005\353\2723n\300#\327\016\212<\000\372\226\006\371\351+`\301-\210\255\0048\\\222\321r4\253\021\371\216\347\267\377\326\303\340\357b\006\313\242PGql\321\254\202\025Xa\003p3n}\211\001<\007\305\333eC7s\264\032W~\326\n\356\377\203\001\r,\352\363\255y\351\351\370t\334\232\034\237o},\337\271{\177\324H\276HLzx\301g\337\034N\017\246\177\177h\314N\353""\363\322\247\243_\222\375\344u\372\355\005\235\227>9\037\214\336&\325\364az:/\177\226\354\315\313_&\375E\371\253t\313\353\372\363\362\316l\347\331\24449\236\274\235\376v\371\356\003]\\\227\364\317\267\026\017v\347;\017>\336\273sw{\364x\324J^$tQz\230\374\232V/v\027\245\235\321?)M\337\217\217\246{\363\322\366\350\307\344\324y\224\036\245\375\031y6\331\236\036^v\263\244>O\216.\276\036\357\215\367\375\261\357\223\357S\227\311\376dw\366\374\325emV?\363\256\373\377\002st\206Y";
-    PyObject *data = __Pyx_DecompressString(cstring, 858, 1);
+    #elif (CYTHON_COMPRESS_STRINGS) != 0 /* compression: zlib (857 bytes) */
+const char* const cstring = "x\332}T\275o\0337\024\217\001\005\025\340\242\266\333\240\355\026\032\010\220\242h\324\2700\320\242.b8\211\322\006\005T[V\233\361\201\"\237$V'\362t$\025\035\0204\0365\336x\243G\215\0325z\314\250Q\243\376\204\374\t%\357N\222?\324\002w\344\373\346\373\370\221\225\2322HL\207\032\362\"6\035%\211\320\204c \232\030Q\203AL\264\211\0043\030y#IN\253\247O\016\177:$Tr\022\341\337\310\214&\3326Y@\265FMT\2134\255\010\214\220\304\304!\352\ny\335\"\261\262D\"rb\024\t\235\335u\007\323AI4\032O\220\307TJe\250\021J\202s\027\262\375\230p\021\271C\304\000\275\367+\032h\254\034S\316\301\031\"\027\2326\003D\351\3276\023:\247x\204\334\016\277\007\246zM!\021<\3130\322\2250\036f\252J\223j\301 \313Pc\320\252\010\016\276n\027\223\324\224D\242\"\222\311\227\236\033\225\332e\212@\031sA\234\354\277M\262Z\377G\357\363\270\256\376\305\267\\\266\265\262\021\303g\317\251\306\023\346{\342\251\027yM\365<\261s\357\357\305\325\001JsS\227\373\334\224\275\226\302l\222\327\261-\264\331\354\363\247\2146iy\241\276\305V\240h7\260\014N\000w\r\334\270\213\306\254M\302\000\315:\033m\003\263\316\265\366G\003\316\253\r\200\323x\350\376\227\016\216P\303\241\251c\253\341Z\367\027\215hf\227\257Y;sR\003\254\021\345\031\035K&T\205\251HY\207Q\324\324\230\250\215\306\025w\r\022,\360\250\021.\222\013\214M\312\272\267\221t\233\007\301\013\221\333\303\030\200SC\263\261CK`\300\3655\tj\216\030\026f\276\224|C?\301\354\374\214\322K\277\226\225,_\215R\201\023\264\227\335\203\016\016\035pE\257g\215\207\275\320\036\361Y#\227\211\271\335\267\0222UQ\2630\330\323]\214\335\347\242\365\250\253\323\255]\\\007r\274\342\326\357\000\222\366p\265\342[\000\025\372\207AE!\215\003Ey\250B\000w\257\200u\220u\265\355\345\\qnF\027\331z\322\227\227SV\206\202u\335\031\267\340\221k\007E\036\000}K\203\374\364\025\260\340\016\304V\002\034.\311h9\232\325\210|\307\363\333\177\347a\360w1\203eQ\250\2438\266hV\301\n\254\260\001\270\031\267\276\304\000\236\203\342\355\262\241\2339Z\215+?k\005\367\377\341\200\006\026\365\305\326\274\364d|6nMN.\266>\226\357""\335\377l\324H\276LLzt\311g\337\036M\017\247\377|h\314\316\352\363\322\247\243_\223\203\344U\372\335%\235\227>\271\030\214\336$\325\364Az6/\177\236\354\317\313_%\375E\371\353t\313\353\372\363\362\316l\347\351\24449\231\274\231\376~\365\366\003]\334\224\364/\266\026\273{\363\235\335\217\273\367\356o\217\036\215Z\311\363\204.J\017\222\337\322\352\345\336\242\2643z\237\322\364\335\370x\272?/m\217~N\316\234G\351a\332\237\221\247\223\355\351\321U7K\352\213\344\370\362\233\361\376\370\300\037\373.\3711u\231\034L\366f?\274\274\252\315\352\347\336\365\340_wH\206c";
+    PyObject *data = __Pyx_DecompressString(cstring, 857, 1);
     if (unlikely(!data)) __PYX_ERR(0, 1, __pyx_L1_error)
     const char* const bytes = __Pyx_PyBytes_AsString(data);
     #if !CYTHON_ASSUME_SAFE_MACROS
     if (likely(bytes)); else { Py_DECREF(data); __PYX_ERR(0, 1, __pyx_L1_error) }
     #endif
     #else /* compression: none (1631 bytes) */
-const char* const bytes = ".Note that Cython is deliberately stricter than PEP-484 and rejects subclasses of builtin types. If you need to pass subclasses then set the 'annotation_typing' directive to False.?add_notedisableenablegcisenabledredux/_combine_reducers.pyxredux.basic_typesself.id_ is not None or self.reducers is not None or self.state_accessor is not None or self.state_class is not None or self.state_type is not None<stringsource>BaseActionBaseCombineReducerStateBaseEventCombineReducerActionCombineReducerInitActionCombineReducerRegisterActionCombineReducerUnregisterActionCombinedReducerCombinedReducer.__reduce_cython__CombinedReducer.__setstate_cython__CompleteReducerResultInitActionNOT_SET__Pyx_PyDict_NextRefTypeVaractionaction_typeactions__annotations__asyncio.coroutinesattrgetterbasic_typescline_in_tracebackcombine_reducerscombine_reducers_idcombinedcopy__dataclass_fields__dataclassesdeepcopy__dict___dictevent_typeeventsfields__func__functools__getstate__hexid_immutableis_complete_reducer_result_is_coroutineitemskeykeys__main__make_immutable__module____name__name__new__operatorpayloadpop__pyx_checksum__pyx_result__pyx_state__pyx_type__pyx_unpickle_CombinedReducer__pyx_vtable____qualname____reduce____reduce_cython____reduce_ex__reducerreducersreducers_copyredux._combine_reducersself__set_name__setdefault__setstate____setstate_cython__statestate_type__test__typingupdateuse_setstateuuiduuid4values\200\001\330\004-\250Q\250f\260A\200\001\360\010\000\005\016\210T\220\026\220t\230;\240d\320*;\2704\270~\310T\320QR\330\004\014\210G\2201\220F\230,\240a\330\004\007\200v\210W\220E\230\024\230Q\330\010\022\220!\330\010\027\220q\340\010\030\230\001\330\004\007\200q\330\010\017\320\0170\260\004\260A\260W\270K\300w\310a\340\010\017\320\0170\260\004\260A\260W\270K\300q\200\001\340\020\021\330\017\020\360\006\000\005\013\210$\210f\220B\220a\340\004\024\220H\230E\240\021\340\004\017\210\177\230a\230|\250?\270!\330\004\013\210:\220Q\200\001\340\004\037\230q\320 0\260\013\270;\300k\320QR\330\004""\023\220?\240(\250!\2501\330\004\007\200|\2207\230!\330\0101\260\021\3202D\300N\320RS\330\004\013\2101";
+const char* const bytes = ".Note that Cython is deliberately stricter than PEP-484 and rejects subclasses of builtin types. If you need to pass subclasses then set the 'annotation_typing' directive to False.?add_notedisableenablegcisenabledredux/_combine_reducers.pyxredux.basic_typesself.id_ is not None or self.reducers is not None or self.state_accessor is not None or self.state_class is not None or self.state_type is not None<stringsource>BaseActionBaseCombineReducerStateBaseEventCombineReducerActionCombineReducerInitActionCombineReducerRegisterActionCombineReducerUnregisterActionCombinedReducerCombinedReducer.__reduce_cython__CombinedReducer.__setstate_cython__CompleteReducerResultInitActionNOT_SET__Pyx_PyDict_NextRefTypeVaractionaction_typeactions__annotations__asyncio.coroutinesattrgetterbasic_typescline_in_tracebackcombine_reducerscombine_reducers_idcombinedcopy__dataclass_fields__dataclassesdeepcopy__dict___dictevent_typeeventsfields__func__functools__getstate__hexid_immutableis_complete_reducer_result_is_coroutineitemskeykeys__main__make_immutable__module____name__name__new__operatorpayloadpop__pyx_checksum__pyx_result__pyx_state__pyx_type__pyx_unpickle_CombinedReducer__pyx_vtable____qualname____reduce____reduce_cython____reduce_ex__reducerreducersreducers_copyredux._combine_reducersself__set_name__setdefault__setstate____setstate_cython__statestate_type__test__typingupdateuse_setstateuuiduuid4values\200\001\330\004-\250Q\250f\260A\200\001\360\010\000\005\016\210T\220\026\220t\230;\240d\320*;\2704\270~\310T\320QR\330\004\014\210G\2201\220F\230,\240a\330\004\007\200v\210W\220E\230\024\230Q\330\010\022\220!\330\010\027\220q\340\010\030\230\001\330\004\007\200q\330\010\017\320\0170\260\004\260A\260W\270K\300w\310a\340\010\017\320\0170\260\004\260A\260W\270K\300q\200\001\340\020\021\330\017\020\360\020\000\005\013\210$\210f\220B\220a\340\004\024\220H\230E\240\021\340\004\017\210\177\230a\230|\250?\270!\330\004\013\210:\220Q\200\001\340\004\037\230q\320 0\260\013\270;\300k\320QR\330\004""\023\220?\240(\250!\2501\330\004\007\200|\2207\230!\330\0101\260\021\3202D\300N\320RS\330\004\013\2101";
     PyObject *data = NULL;
     CYTHON_UNUSED_VAR(__Pyx_DecompressString);
     #endif
@@ -6953,7 +6955,7 @@ static int __Pyx_CreateCodeObjects(__pyx_mstatetype *__pyx_mstate) {
     __pyx_mstate_global->__pyx_codeobj_tab[1] = __Pyx_PyCode_New(descr, varnames, __pyx_mstate->__pyx_kp_u_stringsource, __pyx_mstate->__pyx_n_u_setstate_cython, __pyx_mstate->__pyx_kp_b_iso88591_QfA, tuple_dedup_map); if (unlikely(!__pyx_mstate_global->__pyx_codeobj_tab[1])) goto bad;
   }
   {
-    const __Pyx_PyCode_New_function_description descr = {3, 0, 0, 7, (unsigned int)(CO_OPTIMIZED|CO_NEWLOCALS|CO_VARKEYWORDS), 173};
+    const __Pyx_PyCode_New_function_description descr = {3, 0, 0, 7, (unsigned int)(CO_OPTIMIZED|CO_NEWLOCALS|CO_VARKEYWORDS), 174};
     PyObject* const varnames[] = {__pyx_mstate->__pyx_n_u_state_type, __pyx_mstate->__pyx_n_u_action_type, __pyx_mstate->__pyx_n_u_event_type, __pyx_mstate->__pyx_n_u_reducers, __pyx_mstate->__pyx_n_u_id, __pyx_mstate->__pyx_n_u_reducers_copy, __pyx_mstate->__pyx_n_u_combined};
     __pyx_mstate_global->__pyx_codeobj_tab[2] = __Pyx_PyCode_New(descr, varnames, __pyx_mstate->__pyx_kp_u_redux__combine_reducers_pyx, __pyx_mstate->__pyx_n_u_combine_reducers, __pyx_mstate->__pyx_kp_b_iso88591_fBa_HE_a_Q, tuple_dedup_map); if (unlikely(!__pyx_mstate_global->__pyx_codeobj_tab[2])) goto bad;
   }
