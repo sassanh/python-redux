@@ -1,4 +1,3 @@
-# ruff: noqa: D100
 """Build configuration for Cython extensions."""
 
 from setuptools import setup

@@ -7,6 +7,7 @@ from typing import TYPE_CHECKING
 
 # Re-export basic types for compatibility with legacy imports
 from redux.basic_types import *  # noqa: F403
+
 _FORCE_PYTHON = os.environ.get('REDUX_FORCE_PYTHON', '0') == '1'
 
 if TYPE_CHECKING:

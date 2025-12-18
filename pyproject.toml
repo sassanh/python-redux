@@ -67,6 +67,7 @@ sanity = ["typecheck", "lint", "test"]
 
 [tool.ruff]
 target-version = 'py311'
+extend-exclude = ["*.pyi"]
 
 [tool.ruff.lint]
 select = ['ALL']
@@ -81,6 +82,8 @@ multiline-quotes = "double"
 
 [tool.ruff.lint.per-file-ignores]
 "tests/*" = ["S101", "PLR0915", "PLR2004"]
+"benchmarks/*" = ["S101", "ANN", "D100", "D101", "D103", "D205", "D212", "D400", "D415", "PLR2004", "ARG001"]
+"profile_optimization.py" = ["ANN", "D100", "D101", "D103", "ARG001", "ARG005", "E741", "SLF001"]
 
 [tool.ruff.format]
 quote-style = 'single'
@@ -90,6 +93,7 @@ profile = "black"
 
 [tool.pyright]
 exclude = ['typings', '.venv']
+extraPaths = ["/opt/homebrew/lib/python3.11/site-packages"]
 filterwarnings = 'error'
 
 [tool.pytest.ini_options]

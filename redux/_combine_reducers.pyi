@@ -1,4 +1,3 @@
-from __future__ import annotations
 
 import copy
 import functools
@@ -13,7 +12,6 @@ from .basic_types import (
     Action,
     BaseAction,
     BaseCombineReducerState,
-    BaseEvent,
     CombineReducerAction,
     CombineReducerInitAction,
     CombineReducerRegisterAction,
@@ -37,8 +35,8 @@ AnyAction = TypeVar('AnyAction', bound=BaseAction)
 
 def combine_reducers(
     state_type: type[CombineReducerState],
-    action_type: type[Action] = BaseAction,
-    event_type: type[Event] = BaseEvent,
+    action_type: type[Action] = ...,
+    event_type: type[Event] = ...,
     **reducers: ReducerType,
 ) -> tuple[ReducerType[CombineReducerState, Action, Event], str]:
     _ = action_type, event_type

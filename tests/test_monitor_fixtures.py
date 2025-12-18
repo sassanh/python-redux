@@ -1,4 +1,4 @@
-# ruff: noqa: D100, D101, D102, D103, D104, D107
+# ruff: noqa: D100, D101, D103
 from __future__ import annotations
 
 from dataclasses import replace
@@ -113,8 +113,8 @@ def test_closed_snapshot_store(
         assert store_snapshot._is_closed  # noqa: SLF001
         with pytest.raises(
             RuntimeError,
-            match='^Snapshot context is closed, make sure you are not calling `take` '
-            'after `FinishEvent` is dispatched.$',
+            match=r'^Snapshot context is closed, make sure you are not calling `take` '
+            r'after `FinishEvent` is dispatched.$',
         ):
             store_snapshot.take()
 

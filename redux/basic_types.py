@@ -1,4 +1,4 @@
-# ruff: noqa: A003, D100, D101, D102, D103, D104, D105, D107
+# ruff: noqa: D100, D101, D102, D103, D107
 from __future__ import annotations
 
 from collections.abc import Awaitable, Callable, Coroutine, Sequence
@@ -119,13 +119,13 @@ class EventMiddleware(Protocol, Generic[Event]):
 
 
 def default_autorun() -> type[Autorun]:
-    from redux.autorun import Autorun
+    from redux.autorun import Autorun  # noqa: PLC0415  # noqa: PLC0415
 
     return Autorun
 
 
 def default_side_effect_runner() -> type[SideEffectRunner]:
-    from redux.side_effect_runner import SideEffectRunner
+    from redux.side_effect_runner import SideEffectRunner  # noqa: PLC0415
 
     return SideEffectRunner
 
@@ -151,7 +151,11 @@ class StoreOptions(Immutable, Generic[Action, Event]):
 
 # Autorun
 
-AutoAwait = TypeVar('AutoAwait', bound=Literal[True, False, None], infer_variance=True)
+AutoAwait = TypeVar(
+    'AutoAwait',
+    bound=(Literal[True, False] | None),
+    infer_variance=True,
+)
 
 NOT_SET = object()
 
@@ -168,10 +172,10 @@ class AutorunOptionsType(Immutable, Generic[ReturnType, AutoAwait]):
 
     @overload
     def __init__(
-        self: AutorunOptionsType[ReturnType, Literal[None]],  # type: ignore[reportInvalidTypeVar]
+        self: AutorunOptionsType[ReturnType, None],  # type: ignore[reportInvalidTypeVar]
         *,
         default_value: ReturnType | None = None,
-        auto_await: Literal[None] | None = None,
+        auto_await: None = None,
         initial_call: bool = True,
         reactive: bool = True,
         memoization: bool = True,
@@ -275,12 +279,12 @@ class MethodAutorunReturnType(
 class AutorunDecorator(Protocol, Generic[ReturnType, SelectorOutput, AutoAwait]):
     @overload
     def __call__(
-        self: AutorunDecorator[ReturnType, SelectorOutput, Literal[None]],
+        self: AutorunDecorator[ReturnType, SelectorOutput, None],
         func: Callable[Concatenate[SelectorOutput, Args], Awaitable[ReturnType]],
     ) -> AutorunReturnType[Args, None]: ...
     @overload
     def __call__(
-        self: AutorunDecorator[ReturnType, SelectorOutput, Literal[None]],
+        self: AutorunDecorator[ReturnType, SelectorOutput, None],
         func: Callable[
             Concatenate[MethodSelf, SelectorOutput, Args],
             Awaitable[ReturnType],
@@ -289,7 +293,7 @@ class AutorunDecorator(Protocol, Generic[ReturnType, SelectorOutput, AutoAwait])
 
     @overload
     def __call__(
-        self: AutorunDecorator[ReturnType, SelectorOutput, Literal[None]],
+        self: AutorunDecorator[ReturnType, SelectorOutput, None],
         func: Callable[
             Concatenate[SelectorOutput, Args],
             ReturnType,
@@ -297,7 +301,7 @@ class AutorunDecorator(Protocol, Generic[ReturnType, SelectorOutput, AutoAwait])
     ) -> AutorunReturnType[Args, ReturnType]: ...
     @overload
     def __call__(
-        self: AutorunDecorator[ReturnType, SelectorOutput, Literal[None]],
+        self: AutorunDecorator[ReturnType, SelectorOutput, None],
         func: Callable[
             Concatenate[MethodSelf, SelectorOutput, Args],
             ReturnType,

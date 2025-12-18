@@ -1,4 +1,4 @@
-# ruff: noqa: D100, D101, D102, D103, D104, D107
+# ruff: noqa: D102
 """Benchmarks for python-redux Store operations."""
 
 from __future__ import annotations
@@ -126,7 +126,6 @@ def test_dispatch_with_payload(benchmark, store: BenchStore) -> None:
 
 def test_dispatch_batch(benchmark, store: BenchStore) -> None:
     """Benchmark batch dispatch (list of actions)."""
-
     actions = [IncrementAction() for _ in range(100)]
 
     def run() -> None:
@@ -212,7 +211,6 @@ def run_benchmark() -> None:
     for _ in range(50000):
         store.dispatch(IncrementAction())
 
-    print(f'Final state value: {store.state.value if store.state else None}')
     store.dispatch(FinishAction())
 
 

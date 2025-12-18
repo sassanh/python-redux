@@ -102,7 +102,6 @@ class StoreSnapshot(Generic[State]):
             )
             raise RuntimeError(msg)
 
-        from pathlib import Path
 
         filename = self.get_filename(title)
         path = Path(self.results_dir / filename)

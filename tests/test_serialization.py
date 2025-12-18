@@ -1,9 +1,10 @@
-# ruff: noqa: D100, D101, D102, D103, D104, D107
+# ruff: noqa: D100, D101, D103
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
 import pytest
+from immutable import Immutable
 
 from redux.main import Store
 
@@ -55,8 +56,6 @@ def test_invalid() -> None:
 
 
 def test_immutable() -> None:
-    from immutable import Immutable
-
     class State(Immutable):
         integer: int
         floating_poing: float

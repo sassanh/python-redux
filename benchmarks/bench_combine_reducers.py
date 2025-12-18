@@ -1,16 +1,17 @@
 
 from __future__ import annotations
-import uuid
+
 from typing import Any
+
 import pytest
+
 from redux import (
     BaseAction,
-    BaseEvent,
-    CompleteReducerResult,
     InitAction,
     combine_reducers,
 )
 from redux.basic_types import Immutable
+
 
 class State(Immutable):
     value: int
@@ -29,46 +30,46 @@ def create_reducers(count: int):
     return {f'r{i}': counter_reducer for i in range(count)}
 
 @pytest.mark.benchmark(group='combine_reducers_creation')
-def test_creation(benchmark):
+def test_creation(benchmark) -> None:
     reducers = create_reducers(10)
-    
-    def run():
+
+    def run() -> None:
         combine_reducers(State, **reducers)
-        
+
     benchmark(run)
 
 @pytest.mark.benchmark(group='combine_reducers_dispatch')
-def test_dispatch_10_reducers(benchmark):
+def test_dispatch_10_reducers(benchmark) -> None:
     reducers = create_reducers(10)
     reducer, _ = combine_reducers(State, **reducers)
     state = reducer(None, InitAction()).state
     action = IncrementAction()
-    
-    def run():
+
+    def run() -> None:
         reducer(state, action)
-        
+
     benchmark(run)
 
 @pytest.mark.benchmark(group='combine_reducers_dispatch')
-def test_dispatch_50_reducers(benchmark):
+def test_dispatch_50_reducers(benchmark) -> None:
     reducers = create_reducers(50)
     reducer, _ = combine_reducers(State, **reducers)
     state = reducer(None, InitAction()).state
     action = IncrementAction()
-    
-    def run():
+
+    def run() -> None:
         reducer(state, action)
-        
+
     benchmark(run)
 
 @pytest.mark.benchmark(group='combine_reducers_dispatch')
-def test_dispatch_100_reducers(benchmark):
+def test_dispatch_100_reducers(benchmark) -> None:
     reducers = create_reducers(100)
     reducer, _ = combine_reducers(State, **reducers)
     state = reducer(None, InitAction()).state
     action = IncrementAction()
-    
-    def run():
+
+    def run() -> None:
         reducer(state, action)
-        
+
     benchmark(run)

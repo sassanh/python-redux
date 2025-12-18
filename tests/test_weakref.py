@@ -1,9 +1,9 @@
-# ruff: noqa: D100, D101, D102, D103, D104, D107
+# ruff: noqa: D100, D101, D102, D103, D107
 from __future__ import annotations
 
 import weakref
 from dataclasses import replace
-from typing import TYPE_CHECKING, TypeAlias
+from typing import TYPE_CHECKING, Any, TypeAlias, cast
 
 import pytest
 from immutable import Immutable
@@ -67,6 +67,8 @@ class AutorunClass:
 
     def method_without_keep_ref(self: AutorunClass, _: int) -> int:
         pytest.fail('This should never be called')
+        return 0
+
 
 
 class SubscriptionClass:
@@ -130,6 +132,7 @@ def test_autorun(
     )
     def render_without_keep_ref(_: int) -> int:
         pytest.fail('This should never be called')
+        return 0
 
     ref = weakref.ref(render_with_keep_ref)
     del render_with_keep_ref
@@ -365,6 +368,6 @@ def test_event_subscription_method(
     def subscriptions_ran() -> None:
         method = mocked_method_ref()
         assert method is not None
-        method.assert_called_once_with(DummyEvent())
+        cast('Any', method).assert_called_once_with(DummyEvent())
 
     subscriptions_ran()
