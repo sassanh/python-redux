@@ -3,6 +3,7 @@
 ## Upcoming
 
 - refactor: use custom value `NOT_SET = object()` instead of `None` to signal the absence of a value for the `default_value` parameter in `AutorunOptions` and internally in `Autorun` class for properties storing last selector result and last call result
+- build: switch versioning source to `version.py`, support Python 3.14
 
 ## Version 0.24.0
 

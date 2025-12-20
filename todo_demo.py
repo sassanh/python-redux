@@ -1,4 +1,4 @@
-# ruff: noqa: A003, D100, D101, D102, D103, D104, D105, D107, T201
+# ruff: noqa: D100, D101, D103, T201
 from __future__ import annotations
 
 import time

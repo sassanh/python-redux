@@ -5,6 +5,7 @@ from __future__ import annotations
 import asyncio
 import inspect
 import queue
+import time
 import weakref
 from collections import defaultdict
 from collections.abc import Awaitable, Iterable, Sequence
@@ -62,7 +63,7 @@ if TYPE_CHECKING:
     from collections.abc import Callable
 
 
-class Store(Generic[State, Action, Event], SerializationMixin):
+class Store(SerializationMixin, Generic[State, Action, Event]):
     """Redux store for managing state and side effects."""
 
     def __init__(
@@ -284,8 +285,6 @@ class Store(Generic[State, Action, Event], SerializationMixin):
 
     def _wait_for_store_to_finish(self: Store[State, Action, Event]) -> None:
         """Wait for the store to finish."""
-        import time
-
         while True:
             if (
                 self._actions == []
