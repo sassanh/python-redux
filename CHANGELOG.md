@@ -6,6 +6,7 @@
 - build: switch versioning source to `version.py`, support Python 3.14
 - refactor: improve weakref handling in store listeners and event handlers, remove manual `weakref` handling in `SideEffectRunner`, optimize `Autorun` checks and subscription logic
 - test: add tests for subscription lifecycle
+- ci: add code coverage check to `integration_delivery` workflow
 
 ## Version 0.24.0
 
