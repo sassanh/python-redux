@@ -5,6 +5,7 @@
 - refactor: use custom value `NOT_SET = object()` instead of `None` to signal the absence of a value for the `default_value` parameter in `AutorunOptions` and internally in `Autorun` class for properties storing last selector result and last call result
 - build: switch versioning source to `version.py`, support Python 3.14
 - refactor: improve weakref handling in store listeners and event handlers, remove manual `weakref` handling in `SideEffectRunner`, optimize `Autorun` checks and subscription logic
+- test: add tests for subscription lifecycle
 
 ## Version 0.24.0
 
