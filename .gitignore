@@ -95,3 +95,9 @@ redux/_version.py
 
 # mypy
 .mypy_cache/
+
+# Cython
+*.c
+*.so
+*.pyd
+c_source/

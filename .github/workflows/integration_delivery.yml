@@ -132,6 +132,88 @@ jobs:
           fail_ci_if_error: false
           token: ${{ secrets.CODECOV_TOKEN }}
 
+  transpile:
+    name: Transpile to C
+    needs: dependencies
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        name: Checkout
+
+      - uses: actions/setup-python@v5
+        name: Setup Python
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v3
+        with:
+          enable-cache: true
+
+      - name: Create virtualenv
+        run: |
+          uv venv --system-site-packages
+
+      - name: Transpile
+        run: uv run --frozen poe transpile
+
+      - name: Collect C Source
+        run: |
+          mkdir -p c_source
+          find redux -name "*.c" -exec cp --parents {} c_source \;
+          # Extract version for binary build
+          git fetch --prune --unshallow
+          git fetch --depth=1 origin +refs/tags/*:refs/tags/*
+          uvx hatch version > c_source/VERSION
+
+      - name: Upload C Source
+        uses: actions/upload-artifact@v4
+        with:
+          name: c-source
+          path: c_source
+          include-hidden-files: true
+
+  build_wheels:
+    name: Build Wheels
+    needs: transpile
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    steps:
+      - uses: actions/checkout@v4
+        name: Checkout
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: c-source
+          path: .
+
+      - name: Swap Build System
+        run: |
+          mv pyproject_binary.toml pyproject.toml
+          mv setup_binary.py setup.py
+        shell: bash
+
+      - name: Read Version
+        id: version
+        shell: bash
+        run: |
+          ls -R
+          echo "VERSION=$(cat VERSION)" >> "$GITHUB_ENV"
+          echo "Read version: $(cat VERSION)"
+
+      - name: Build wheels
+        uses: pypa/cibuildwheel@v2.22.0
+        env:
+          CIBW_BUILD: cp311-* cp312-* cp313-* cp314-*
+          CIBW_ENVIRONMENT: PRETEND_VERSION=${{ env.VERSION }}
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: wheels-${{ matrix.os }}
+          path: ./wheelhouse/*.whl
+
   build:
     name: Build
     needs:
@@ -215,6 +297,7 @@ jobs:
       - lint
       - test
       - build
+      - build_wheels
     runs-on: ubuntu-latest
     environment:
       name: pypi
@@ -233,6 +316,12 @@ jobs:
         with:
           name: binary
           path: dist
+
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: wheels-*
+          path: dist
+          merge-multiple: true
 
       - name: Publish to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1
@@ -271,6 +360,13 @@ jobs:
         with:
           name: binary
           path: artifacts
+
+      - name: Procure Wheels
+        uses: actions/download-artifact@v4
+        with:
+          pattern: wheels-*
+          path: artifacts
+          merge-multiple: true
 
       - name: Extract Changelog
         id: changelog

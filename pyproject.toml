@@ -62,6 +62,7 @@ todo_demo = "todo_demo:main"
 
 [tool.poe.tasks]
 lint = "ruff check . --unsafe-fixes"
+transpile = "python scripts/transpile.py"
 typecheck = "pyright -p pyproject.toml ."
 test = "pytest --cov --cov-report=term-missing --cov-report=html --cov-report=xml"
 sanity = ["typecheck", "lint", "test"]
