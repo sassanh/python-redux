@@ -65,7 +65,7 @@ class AutorunClass:
         self.store_snapshot.take(title='autorun_method_with_keep_ref')
         return value
 
-    def method_without_keep_ref(self: AutorunClass, _: int) -> int:
+    def method_without_keep_ref(self: AutorunClass, _: int) -> None:
         pytest.fail('This should never be called')
 
 
@@ -128,7 +128,7 @@ def test_autorun(
         lambda state: state.value,
         options=AutorunOptions(keep_ref=False, initial_call=False),
     )
-    def render_without_keep_ref(_: int) -> int:
+    def render_without_keep_ref(_: int) -> None:
         pytest.fail('This should never be called')
 
     ref = weakref.ref(render_with_keep_ref)

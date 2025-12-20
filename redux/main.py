@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import asyncio
+import contextlib
 import inspect
 import queue
 import time
@@ -120,19 +121,11 @@ class Store(SerializationMixin, Generic[State, Action, Event]):
 
     def _call_listeners(self: Store[State, Action, Event], state: State) -> None:
         for listener_ in self._listeners.copy():
-            if isinstance(listener_, weakref.ref):
-                listener = listener_()
-                if listener is None:
-                    msg = (
-                        'Listener has been garbage collected. '
-                        'Consider using `keep_ref=True` if it suits your use case.'
-                    )
-                    raise RuntimeError(msg)
-            else:
-                listener = listener_
-            result = listener(state)
-            if asyncio.iscoroutine(result) and self.store_options.task_creator:
-                self.store_options.task_creator(result)
+            listener = listener_() if isinstance(listener_, weakref.ref) else listener_
+            if listener is not None:
+                result = listener(state)
+                if asyncio.iscoroutine(result) and self.store_options.task_creator:
+                    self.store_options.task_creator(result)
 
     def _run_actions(self: Store[State, Action, Event]) -> None:
         while len(self._actions) > 0:
@@ -248,7 +241,8 @@ class Store(SerializationMixin, Generic[State, Action, Event]):
         """Subscribe to state changes."""
 
         def unsubscribe(_: weakref.ref | None = None) -> None:
-            return self._listeners.remove(listener_ref)
+            with contextlib.suppress(KeyError):
+                self._listeners.remove(listener_ref)
 
         if keep_ref:
             listener_ref = listener
@@ -269,17 +263,18 @@ class Store(SerializationMixin, Generic[State, Action, Event]):
         keep_ref: bool = True,
     ) -> SubscribeEventCleanup:
         """Subscribe to events."""
+
+        def unsubscribe(_: weakref.ref | None = None) -> None:
+            self._event_handlers[cast('Event', event_type)].discard(handler_ref)
+
         if keep_ref:
             handler_ref = handler
         elif inspect.ismethod(handler):
-            handler_ref = weakref.WeakMethod(handler)
+            handler_ref = weakref.WeakMethod(handler, unsubscribe)
         else:
-            handler_ref = weakref.ref(handler)
+            handler_ref = weakref.ref(handler, unsubscribe)
 
         self._event_handlers[cast('Event', event_type)].add(handler_ref)
-
-        def unsubscribe() -> None:
-            self._event_handlers[cast('Event', event_type)].discard(handler_ref)
 
         return SubscribeEventCleanup(unsubscribe=unsubscribe, handler=handler)
 
@@ -438,7 +433,7 @@ class Store(SerializationMixin, Generic[State, Action, Event]):
 
             signature = signature_without_selector(func)
             wrapped = wraps(cast('Any', func))(wrapper)
-            wrapped.__signature__ = signature  # pyright: ignore [reportAttributeAccessIssue]
+            wrapped.__signature__ = signature  # type: ignore [reportAttributeAccessIssue]
 
             return wrapped
 

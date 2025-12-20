@@ -112,8 +112,8 @@ def inverse_reducer(
 
 reducer, reducer_id = combine_reducers(
     state_type=StateType,
-    action_type=ActionType,  # pyright: ignore [reportArgumentType]
-    event_type=SleepEvent | PrintEvent,  # pyright: ignore [reportArgumentType]
+    action_type=ActionType,  # type: ignore [reportArgumentType]
+    event_type=SleepEvent | PrintEvent,  # type: ignore [reportArgumentType]
     straight=straight_reducer,
     base10=base10_reducer,
 )

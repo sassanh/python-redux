@@ -17,7 +17,7 @@ from redux.basic_types import FinishEvent, State
 if TYPE_CHECKING:
     from collections.abc import Callable
 
-    from _pytest.fixtures import SubRequest  # pyright: ignore[reportPrivateImportUsage]
+    from _pytest.fixtures import SubRequest  # type: ignore[reportPrivateImportUsage]
 
     from redux.main import Store
 
@@ -101,8 +101,6 @@ class StoreSnapshot(Generic[State]):
                 'after `FinishEvent` is dispatched.'
             )
             raise RuntimeError(msg)
-
-        from pathlib import Path
 
         filename = self.get_filename(title)
         path = Path(self.results_dir / filename)

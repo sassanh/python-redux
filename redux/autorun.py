@@ -128,7 +128,7 @@ class Autorun(
         else:
             self._func = weakref.ref(func, self.unsubscribe)
         self._is_coroutine = (
-            asyncio.coroutines._is_coroutine  # pyright: ignore [reportAttributeAccessIssue]  # noqa: SLF001
+            asyncio.coroutines._is_coroutine  # type: ignore [reportAttributeAccessIssue]  # noqa: SLF001
             if asyncio.iscoroutinefunction(func) and options.auto_await is False
             else None
         )
@@ -231,11 +231,9 @@ class Autorun(
             Args,
             ReturnType,
         ],
-        state: State | None,
+        state: State,
     ) -> bool:
         """Check if the autorun should be called based on the current state."""
-        if state is None:
-            return False
         try:
             selector_result = self._selector(state)
         except AttributeError:
@@ -317,7 +315,7 @@ class Autorun(
         if self._should_be_called or args or kwargs or not self._options.memoization:
             self._should_be_called = False
             self.call(*args, **kwargs)
-        return cast('ReturnType', self._latest_value)
+        return self._latest_value
 
     def __repr__(
         self: Autorun[
@@ -349,7 +347,7 @@ class Autorun(
         ],
     ) -> ReturnType:
         """Get the latest value of the autorun function."""
-        return cast('ReturnType', self._latest_value)
+        return self._latest_value
 
     def subscribe(
         self: Autorun[
@@ -379,7 +377,7 @@ class Autorun(
             callback_ref = weakref.ref(callback)
         self._subscriptions.add(callback_ref)
 
-        if initial_run:
+        if initial_run and self.value is not NOT_SET:
             callback(self.value)
 
         def unsubscribe() -> None:

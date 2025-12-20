@@ -92,7 +92,6 @@ profile = "black"
 
 [tool.pyright]
 exclude = ['typings', '.venv']
-filterwarnings = 'error'
 
 [tool.pytest.ini_options]
 log_cli = true
