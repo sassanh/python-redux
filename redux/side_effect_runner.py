@@ -5,6 +5,7 @@ from __future__ import annotations
 import contextlib
 import inspect
 import threading
+import weakref
 from asyncio import Handle, iscoroutine
 from typing import TYPE_CHECKING, Any, Generic, cast
 
@@ -40,7 +41,13 @@ class SideEffectRunner(threading.Thread, Generic[Event]):
             try:
                 if task is None:
                     break
-                event_handler, event = task
+                event_handler_, event = task
+                if isinstance(event_handler_, weakref.ref):
+                    event_handler = event_handler_()
+                    if event_handler is None:
+                        continue
+                else:
+                    event_handler = event_handler_
                 parameters = 1
                 with contextlib.suppress(Exception):
                     parameters = len(

@@ -1,5 +1,9 @@
 # Changelog
 
+## Upcoming
+
+- fix: handle weakref event handlers in `SideEffectRunner`
+
 ## Version 0.25.0
 
 - refactor: use custom value `NOT_SET = object()` instead of `None` to signal the absence of a value for the `default_value` parameter in `AutorunOptions` and internally in `Autorun` class for properties storing last selector result and last call result

@@ -19,6 +19,7 @@ from redux.basic_types import (
     StoreOptions,
 )
 from redux.main import Store
+from redux.side_effect_runner import SideEffectRunner
 
 if TYPE_CHECKING:
     from collections.abc import Generator
@@ -368,3 +369,71 @@ def test_event_subscription_method(
         method.assert_called_once_with(DummyEvent())
 
     subscriptions_ran()
+
+
+def test_event_subscription_with_ref_no_keep_ref(
+    store: StoreType,
+    wait_for: WaitFor,
+    mocker: MockerFixture,
+) -> None:
+    # Create a handler that we will keep alive ourselves
+    handler = mocker.stub()
+
+    # Subscribe with keep_ref=False
+    store.subscribe_event(
+        DummyEvent,
+        handler,
+        keep_ref=False,
+    )
+
+    # Dispatch event
+    store._dispatch([DummyEvent()])  # noqa: SLF001
+
+    # Check if handler was called
+    @wait_for
+    def subscriptions_ran() -> None:
+        handler.assert_called_once_with(DummyEvent())
+
+    subscriptions_ran()
+
+
+def test_event_subscription_with_dead_ref(
+    wait_for: WaitFor,
+) -> None:
+    import queue
+    import threading
+
+    task_queue = queue.Queue()
+    runner = SideEffectRunner(task_queue=task_queue, create_task=None)
+    runner.start()
+
+    # Create a dead weakref
+    class Handler:
+        pass
+
+    h = Handler()
+    ref = weakref.ref(h)
+    del h
+
+    # assert dead
+    assert ref() is None
+
+    # Put into queue
+    task_queue.put((ref, DummyEvent()))
+
+    # Put a sentinel to know it processed
+    completed = threading.Event()
+
+    def sentinel(_: DummyEvent) -> None:
+        completed.set()
+
+    task_queue.put((sentinel, DummyEvent()))
+
+    @wait_for
+    def done() -> None:
+        assert completed.is_set()
+
+    done()
+
+    task_queue.put(None)  # stop
+    runner.join()
