@@ -67,7 +67,7 @@ def store() -> Store:
                 return TodoState(
                     items=[
                         TodoItem(
-                            id=uuid.uuid4().hex,
+                            id='first-item',
                             content='Initial Item',
                             timestamp=time.time(),
                         ),
@@ -90,7 +90,7 @@ def store() -> Store:
             return CompleteReducerResult(
                 state=replace(
                     state,
-                    actions=[item for item in state.items if item.id != action.id],
+                    items=[item for item in state.items if item.id != action.id],
                 ),
                 events=[CallApiEvent(parameters={})],
             )
@@ -121,6 +121,7 @@ def test_todo(store_snapshot: StoreSnapshot, store: Store) -> None:
 
     # dispatch:
     store.dispatch(AddTodoItemAction(content='New Item', timestamp=time.time()))
-    store_snapshot.take()
+
+    store.dispatch(RemoveTodoItemAction(id='first-item'))
 
     store.dispatch(FinishAction())

@@ -5,12 +5,12 @@ on:
     branches:
       - main
     tags:
-      - 'v*'
+      - "v*"
   pull_request:
   workflow_dispatch:
 
 env:
-  PYTHON_VERSION: '3.11.9'
+  PYTHON_VERSION: "3.11.9"
 
 jobs:
   dependencies:
@@ -70,16 +70,22 @@ jobs:
       - dependencies
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-        name: Checkout
+      - name: Checkout
+        uses: actions/checkout@v4
 
       - name: Install uv
         uses: astral-sh/setup-uv@v3
         with:
           enable-cache: true
 
-      - name: Lint
-        run: uvx ruff check
+      - name: Extract Ruff version from pyproject.toml
+        run: |
+          SPEC=$(grep -Po '"ruff\K[^"]+' pyproject.toml | head -1)
+          RUFF_VER=$(echo "$SPEC" | sed -E 's/.*(>=|==)\s*//')
+          echo "RUFF_VER=$RUFF_VER" >>$GITHUB_ENV
+
+      - name: Run Ruff
+        run: uvx ruff@${{ env.RUFF_VER }} check .
 
   test:
     name: Test
@@ -164,7 +170,7 @@ jobs:
           # Extract version for binary build
           git fetch --prune --unshallow
           git fetch --depth=1 origin +refs/tags/*:refs/tags/*
-          uvx hatch version > c_source/VERSION
+          uvx hatch version >c_source/VERSION
 
       - name: Upload C Source
         uses: actions/upload-artifact@v4
@@ -200,7 +206,7 @@ jobs:
         shell: bash
         run: |
           ls -R
-          echo "VERSION=$(cat VERSION)" >> "$GITHUB_ENV"
+          echo "VERSION=$(cat VERSION)" >>"$GITHUB_ENV"
           echo "Read version: $(cat VERSION)"
 
       - name: Build wheels
@@ -268,8 +274,7 @@ jobs:
           fi
 
       - name: Build
-        run:
-          SETUPTOOLS_SCM_PRETEND_VERSION=${{
+        run: SETUPTOOLS_SCM_PRETEND_VERSION=${{
           steps.extract-version.outputs.VERSION }} uv build
 
       - name: Upload wheel
@@ -301,8 +306,7 @@ jobs:
     runs-on: ubuntu-latest
     environment:
       name: pypi
-      url:
-        https://pypi.org/project/${{ needs.build.outputs.name }}/${{
+      url: https://pypi.org/project/${{ needs.build.outputs.name }}/${{
         needs.build.outputs.version }}
     permissions:
       id-token: write
@@ -340,8 +344,7 @@ jobs:
     runs-on: ubuntu-latest
     environment:
       name: release
-      url:
-        https://github.com/${{ github.repository }}/releases/tag/v${{
+      url: https://github.com/${{ github.repository }}/releases/tag/v${{
         needs.build.outputs.version }}
     permissions:
       contents: write

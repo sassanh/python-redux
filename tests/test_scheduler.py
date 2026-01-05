@@ -64,43 +64,48 @@ StoreType: TypeAlias = Store[StateType, IncrementAction | InitAction, FinishEven
 
 
 class Scheduler(threading.Thread):
-    def __init__(self: Scheduler) -> None:
+    loop: asyncio.AbstractEventLoop
+    queue: asyncio.Queue[tuple[Callable[[], None], float]]
+    exception: Exception | None = None
+
+    def __init__(self) -> None:
         super().__init__()
         self.stopped = False
         self._callbacks: list[tuple[Callable[[], None], float]] = []
+        self.queue = asyncio.Queue()
         self.loop = asyncio.new_event_loop()
         asyncio.set_event_loop(self.loop)
-        self.tasks: set[asyncio.Task] = set()
 
-    def run(self: Scheduler) -> None:
-        self.loop.run_forever()
-
-    def set(self: Scheduler, callback: Callable[[], None], *, interval: bool) -> None:
-        self.loop.call_soon_threadsafe(
-            self.loop.create_task,
-            self.call_callback(callback, interval=interval),
-        )
-
-    async def call_callback(
-        self: Scheduler,
+    def schedule_callback(
+        self,
         callback: Callable[[], None],
         *,
         interval: bool,
     ) -> None:
-        if self.stopped:
-            return
-        self.tasks.add(self.loop.create_task(asyncio.to_thread(callback)))
-        if interval:
-            await asyncio.sleep(0.01)
-            self.tasks.add(
-                self.loop.create_task(self.call_callback(callback, interval=interval)),
-            )
+        self.queue.put_nowait((callback, interval))
 
-    async def graceful_stop(self: Scheduler) -> None:
+    def run(self) -> None:
+        self.loop.run_until_complete(self._run())
+
+    async def _run(self) -> None:
+        try:
+            while not self.stopped:
+                try:
+                    callback, interval = self.queue.get_nowait()
+                    callback()
+                    if interval:
+                        await self.queue.put((callback, interval))
+                except asyncio.QueueEmpty:
+                    pass
+                await asyncio.sleep(0.01)
+        except Exception as exception:  # noqa: BLE001
+            self.exception = exception
+
+    async def graceful_stop(self) -> None:
         await asyncio.sleep(0.05)
         self.loop.stop()
 
-    def schedule_stop(self: Scheduler) -> None:
+    def schedule_stop(self) -> None:
         self.stopped = True
         self.loop.call_soon_threadsafe(self.loop.create_task, self.graceful_stop())
 
@@ -124,7 +129,7 @@ def test_scheduler(mocker: MockerFixture) -> None:
         reducer,
         options=StoreOptions(
             auto_init=True,
-            scheduler=scheduler.set,
+            scheduler=scheduler.schedule_callback,
             task_creator=_create_task_with_callback,
             on_finish=scheduler.schedule_stop,
             grace_time_in_seconds=0.2,
@@ -147,6 +152,9 @@ def test_scheduler(mocker: MockerFixture) -> None:
     store.dispatch(FinishAction())
 
     scheduler.join()
+
+    if scheduler.exception is not None:
+        raise scheduler.exception
 
     render.assert_has_calls(
         [call(StateType(value=i)) for i in range(11)] + [call(StateType(value=10))],

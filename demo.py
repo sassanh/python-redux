@@ -85,10 +85,6 @@ class SleepEvent(BaseEvent):
     duration: int
 
 
-class PrintEvent(BaseEvent):
-    message: str
-
-
 def inverse_reducer(
     state: CountStateType | None,
     action: ActionType,
@@ -113,7 +109,7 @@ def inverse_reducer(
 reducer, reducer_id = combine_reducers(
     state_type=StateType,
     action_type=ActionType,  # type: ignore [reportArgumentType]
-    event_type=SleepEvent | PrintEvent,  # type: ignore [reportArgumentType]
+    event_type=SleepEvent,  # type: ignore [reportArgumentType]
     straight=straight_reducer,
     base10=base10_reducer,
 )
@@ -128,6 +124,7 @@ def main() -> None:
     )
 
     def event_handler(event: SleepEvent) -> None:
+        print(f'Sleeping for {event.duration} seconds...')
         time.sleep(event.duration)
 
     store.subscribe_event(SleepEvent, event_handler)

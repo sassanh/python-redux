@@ -8,7 +8,7 @@ from typing import TYPE_CHECKING
 
 from immutable import Immutable
 
-from redux import BaseAction, Store
+from redux import BaseAction, Store, StoreOptions
 from redux.basic_types import (
     BaseEvent,
     CompleteReducerResult,
@@ -61,35 +61,48 @@ def reducer(
                 ),
             ],
         )
-    if isinstance(action, AddTodoItemAction):
-        return replace(
-            state,
-            items=[
-                *state.items,
-                TodoItem(
-                    id=uuid.uuid4().hex,
-                    content=action.content,
-                    timestamp=action.timestamp,
-                ),
-            ],
-        )
-    if isinstance(action, RemoveTodoItemAction):
-        return CompleteReducerResult(
-            state=replace(
+
+    match action:
+        case AddTodoItemAction(content=content, timestamp=timestamp):
+            return replace(
                 state,
-                actions=[item for item in state.items if item.id != action.id],
-            ),
-            events=[CallApiEvent(parameters={})],
-        )
-    return state
+                items=[
+                    *state.items,
+                    TodoItem(
+                        id=uuid.uuid4().hex,
+                        content=content,
+                        timestamp=timestamp,
+                    ),
+                ],
+            )
+        case RemoveTodoItemAction(id=id):
+            return CompleteReducerResult(
+                state=replace(
+                    state,
+                    items=[item for item in state.items if item.id != id],
+                ),
+                events=[CallApiEvent(parameters={})],
+            )
+        case _:
+            return state
 
 
 def main() -> None:
-    store = Store(reducer)
+    store = Store(reducer, StoreOptions(auto_init=True))
 
     # subscription:
-    dummy_render = print
-    store._subscribe(dummy_render)  # noqa: SLF001
+    last_state = []
+
+    def renderer(state: TodoState) -> None:
+        if state.items:
+            # Keep track of the first item's ID for removal demo
+            if not last_state:
+                last_state.append(state.items[0].id)
+            else:
+                last_state[0] = state.items[0].id
+        print(state)
+
+    store._subscribe(renderer)  # noqa: SLF001
 
     # autorun:
     @store.autorun(
@@ -109,3 +122,6 @@ def main() -> None:
     store.dispatch(AddTodoItemAction(content='New Item', timestamp=time.time()))
 
     store.dispatch(FinishAction())
+    if last_state:
+        store.dispatch(RemoveTodoItemAction(id=last_state[0]))
+    time.sleep(0.1)
