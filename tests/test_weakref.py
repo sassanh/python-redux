@@ -437,3 +437,34 @@ def test_event_subscription_with_dead_ref(
 
     task_queue.put(None)  # stop
     runner.join()
+
+
+def test_event_subscription_with_live_ref(
+    wait_for: WaitFor,
+    mocker: MockerFixture,
+) -> None:
+    """Test that SideEffectRunner correctly dereferences live weakrefs."""
+    import queue
+
+    task_queue = queue.Queue()
+    runner = SideEffectRunner(task_queue=task_queue, create_task=None)
+    runner.start()
+
+    # Create a handler and keep it alive
+    handler = mocker.stub()
+    ref = weakref.ref(handler)
+
+    # The weakref is alive
+    assert ref() is not None
+
+    # Put the weakref (not the handler directly) into the queue
+    task_queue.put((ref, DummyEvent()))
+
+    @wait_for
+    def handler_called() -> None:
+        handler.assert_called_once_with(DummyEvent())
+
+    handler_called()
+
+    task_queue.put(None)  # stop
+    runner.join()
