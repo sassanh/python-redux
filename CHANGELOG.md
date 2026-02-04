@@ -1,5 +1,9 @@
 # Changelog
 
+## Upcoming
+
+- chore: provide project information in `pyproject_binary.toml`
+
 ## Version 0.25.1
 
 - fix: handle weakref event handlers in `SideEffectRunner`
