@@ -167,6 +167,7 @@ jobs:
         run: |
           mkdir -p c_source
           find redux -name "*.c" -exec cp --parents {} c_source \;
+          cp README.md c_source/
           # Extract version for binary build
           git fetch --prune --unshallow
           git fetch --depth=1 origin +refs/tags/*:refs/tags/*

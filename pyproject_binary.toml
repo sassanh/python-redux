@@ -1,3 +1,28 @@
+[project]
+name = "python-redux"
+dynamic = ["version"]
+description = "Redux implementation for Python (Binary Extension)"
+license = { text = "Apache-2.0" }
+authors = [{ name = "Sassan Haradji", email = "me@sassanh.com" }]
+maintainers = [{ name = "Sassan Haradji", email = "me@sassanh.com" }]
+readme = "README.md"
+requires-python = ">=3.11"
+keywords = ['python', 'store', 'redux', 'reactive', 'autorun', 'view']
+dependencies = ["python-immutable >= 1.1.1", "python-strtobool >= 1.0.0"]
+classifiers = [
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Programming Language :: Python :: 3.14",
+  "Programming Language :: Python :: 3 :: Only",
+]
+
+[project.urls]
+homepage = 'https://github.com/sassanh/python-redux/'
+repository = 'https://github.com/sassanh/python-redux/'
+documentation = 'https://github.com/sassanh/python-redux/'
+changelog = 'https://github.com/sassanh/python-redux/blob/main/CHANGELOG.md'
+
 [build-system]
 requires = ["setuptools>=68", "wheel", "cython>=3.0", "hatch-vcs"]
 build-backend = "setuptools.build_meta"
