@@ -1,6 +1,6 @@
 # Changelog
 
-## Upcoming
+## Version 0.25.1
 
 - fix: handle weakref event handlers in `SideEffectRunner`
 - test: add more performance tests
