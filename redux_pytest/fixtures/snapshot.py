@@ -42,7 +42,7 @@ class StoreSnapshot(Generic[State]):
         self.test_counter: dict[str | None, int] = defaultdict(int)
         file = path.with_suffix('').name
         self.results_dir = Path(
-            path.parent / 'results' / file / test_id.split('::')[-1][5:],
+            path.parent / 'results' / file / test_id.rsplit('::', maxsplit=1)[-1][5:],
         )
         if self.results_dir.exists():
             prefix_element = ''

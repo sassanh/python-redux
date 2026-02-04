@@ -144,7 +144,7 @@ def main() -> None:
         print('Autorun:', base10_value)
         return base10_value.count
 
-    render.subscribe(lambda a: print(a))
+    render.subscribe(print)
 
     print(f'Render output {render()}')
 

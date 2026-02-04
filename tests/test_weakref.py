@@ -105,7 +105,7 @@ def store(event_loop: LoopThread) -> Generator[StoreType, None, None]:
         ),
     )
     yield store
-    store.subscribe_event(FinishEvent, lambda: event_loop.stop())
+    store.subscribe_event(FinishEvent, event_loop.stop)
     store.dispatch(FinishAction())
 
 

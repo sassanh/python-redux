@@ -4,6 +4,7 @@
 
 - fix: handle weakref event handlers in `SideEffectRunner`
 - test: add more performance tests
+- chore: update ruff to the latest version 0.15.0
 
 ## Version 0.25.0
 
