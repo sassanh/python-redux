@@ -10,9 +10,10 @@ def transpile() -> None:
     """Found all python files in redux/ and transpile them to C files using Cython."""
     root = Path(__file__).parent.parent
     redux_dir = root / 'redux'
+    redux_pytest_dir = root / 'redux_pytest'
 
     # Find all .py files
-    py_files = list(redux_dir.rglob('*.py'))
+    py_files = [*redux_dir.rglob('*.py'), *redux_pytest_dir.rglob('*.py')]
 
     source_files = []
 
