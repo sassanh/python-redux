@@ -3,6 +3,7 @@
 ## Upcoming
 
 - chore: provide project information in `pyproject_binary.toml`
+- chore: create binary wheels for a wider range of operating systems and architectures, use dedicated runners for each build to avoid emulation and get faster results
 
 ## Version 0.25.1
 
