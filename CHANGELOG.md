@@ -1,6 +1,6 @@
 # Changelog
 
-## [Unreleased]
+## Version 0.25.4
 
 - fix: add missing `redux_pytest` packages to binary wheels in github actions
 
