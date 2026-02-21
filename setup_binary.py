@@ -5,7 +5,7 @@ import os
 import sys
 from pathlib import Path
 
-from setuptools import Extension, find_packages, setup
+from setuptools import Extension, setup
 
 # Add root to path to import version
 root = Path(__file__).parent
@@ -23,16 +23,17 @@ except ImportError:
 
 
 def get_extensions() -> list[Extension]:
-    """Dynamically find all C extensions in the redux/ directory."""
+    """Dynamically find all C extensions in the redux/ and redux_pytest/ directories."""
     extensions: list[Extension] = []
-    # Find all .c files in redux/
-    for path in (root / 'redux').rglob('*.c'):
-        # Construct module name: redux/store.c -> redux.store
-        # relatives_to root
-        rel_path = path.relative_to(root)
-        module_name = str(rel_path.with_suffix('')).replace(os.sep, '.')
+    # Find all .c files in redux/ and redux_pytest/
+    for directory in ['redux', 'redux_pytest']:
+        for path in (root / directory).rglob('*.c'):
+            # Construct module name: redux/store.c -> redux.store
+            # relatives_to root
+            rel_path = path.relative_to(root)
+            module_name = str(rel_path.with_suffix('')).replace(os.sep, '.')
 
-        extensions.append(Extension(module_name, [str(rel_path)]))
+            extensions.append(Extension(module_name, [str(rel_path)]))
     return extensions
 
 
@@ -42,7 +43,6 @@ setup(
     description='Redux implementation for Python (Binary Extension)',
     long_description=(root / 'README.md').read_text(encoding='utf-8'),
     long_description_content_type='text/markdown',
-    packages=find_packages(include=['redux', 'redux.*']),
     ext_modules=get_extensions(),
     include_package_data=True,
     author='Sassan Haradji',

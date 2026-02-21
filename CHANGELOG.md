@@ -1,5 +1,9 @@
 # Changelog
 
+## [Unreleased]
+
+- fix: add missing `redux_pytest` packages to binary wheels in github actions
+
 ## Version 0.25.2
 
 - chore: provide project information in `pyproject_binary.toml`
