@@ -40,9 +40,11 @@ def test_custom_autorun() -> None:
 
     def reducer(state: State | None, action: BaseAction) -> State:
         if state is None:
-            if isinstance(action, InitAction):
-                return State(value=0)
-            raise InitializationActionError(action)
+            match action:
+                case InitAction():
+                    return State(value=0)
+                case _:
+                    raise InitializationActionError(action)
 
         return state
 

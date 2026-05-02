@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- refactor: replace `if isinstance(action, ...)` chains with Python `match` statement in all reducers across demos, tests, and README
+
 ## Version 0.25.4
 
 - fix: add missing `redux_pytest` packages to binary wheels in github actions

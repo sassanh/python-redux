@@ -51,20 +51,21 @@ def reducer(
     action: Action,
 ) -> ReducerResult[StateType, Action, FinishEvent]:
     if state is None:
-        if isinstance(action, InitAction):
-            return StateType(value=0)
-        raise InitializationActionError(action)
+        match action:
+            case InitAction():
+                return StateType(value=0)
+            case _:
+                raise InitializationActionError(action)
 
-    if isinstance(action, IncrementAction):
-        return replace(state, value=state.value + 1)
-
-    if isinstance(action, DecrementAction):
-        return replace(state, value=state.value - 1)
-
-    if isinstance(action, IncrementByTwoAction):
-        return replace(state, value=state.value + 2)
-
-    return state
+    match action:
+        case IncrementAction():
+            return replace(state, value=state.value + 1)
+        case DecrementAction():
+            return replace(state, value=state.value - 1)
+        case IncrementByTwoAction():
+            return replace(state, value=state.value + 2)
+        case _:
+            return state
 
 
 StoreType = Store[StateType, Action, FinishEvent]

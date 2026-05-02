@@ -56,14 +56,18 @@ def straight_reducer(
     action: ActionType,
 ) -> CountStateType:
     if state is None:
-        if isinstance(action, InitAction):
-            return CountStateType(count=0)
-        raise InitializationActionError(action)
-    if isinstance(action, IncrementAction):
-        return CountStateType(count=state.count + 1)
-    if isinstance(action, DecrementAction):
-        return CountStateType(count=state.count - 1)
-    return state
+        match action:
+            case InitAction():
+                return CountStateType(count=0)
+            case _:
+                raise InitializationActionError(action)
+    match action:
+        case IncrementAction():
+            return CountStateType(count=state.count + 1)
+        case DecrementAction():
+            return CountStateType(count=state.count - 1)
+        case _:
+            return state
 
 
 def base10_reducer(
@@ -71,14 +75,18 @@ def base10_reducer(
     action: ActionType,
 ) -> CountStateType:
     if state is None:
-        if isinstance(action, InitAction):
-            return CountStateType(count=10)
-        raise InitializationActionError(action)
-    if isinstance(action, IncrementAction):
-        return CountStateType(count=state.count + 1)
-    if isinstance(action, DecrementAction):
-        return CountStateType(count=state.count - 1)
-    return state
+        match action:
+            case InitAction():
+                return CountStateType(count=10)
+            case _:
+                raise InitializationActionError(action)
+    match action:
+        case IncrementAction():
+            return CountStateType(count=state.count + 1)
+        case DecrementAction():
+            return CountStateType(count=state.count - 1)
+        case _:
+            return state
 
 
 class SleepEvent(BaseEvent):
@@ -90,20 +98,24 @@ def inverse_reducer(
     action: ActionType,
 ) -> ReducerResult[CountStateType, ActionType, SleepEvent]:
     if state is None:
-        if isinstance(action, InitAction):
-            return CountStateType(count=0)
-        raise InitializationActionError(action)
-    if isinstance(action, IncrementAction):
-        return CountStateType(count=state.count - 1)
-    if isinstance(action, DecrementAction):
-        return CountStateType(count=state.count + 1)
-    if isinstance(action, DoNothingAction):
-        return CompleteReducerResult(
-            state=state,
-            actions=[IncrementAction()],
-            events=[SleepEvent(duration=3)],
-        )
-    return state
+        match action:
+            case InitAction():
+                return CountStateType(count=0)
+            case _:
+                raise InitializationActionError(action)
+    match action:
+        case IncrementAction():
+            return CountStateType(count=state.count - 1)
+        case DecrementAction():
+            return CountStateType(count=state.count + 1)
+        case DoNothingAction():
+            return CompleteReducerResult(
+                state=state,
+                actions=[IncrementAction()],
+                events=[SleepEvent(duration=3)],
+            )
+        case _:
+            return state
 
 
 reducer, reducer_id = combine_reducers(

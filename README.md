@@ -75,34 +75,36 @@ def reducer(
                 ),
             ],
         )
-    if isinstance(action, AddTodoItemAction):
-        return replace(
-            state,
-            items=[
-                *state.items,
-                ToDoItem(
-                    id=uuid.uuid4().hex,
-                    content=action.content,
-                ),
-            ],
-        )
-    if isinstance(action, RemoveTodoItemAction):
-        return replace(
-            state,
-            actions=[item for item in state.items if item.id != action.id],
-        )
-    if isinstance(action, MarkTodoItemDone):
-        return CompleteReducerResult(
-            state=replace(
+    match action:
+        case AddTodoItemAction():
+            return replace(
                 state,
                 items=[
-                    replace(item, is_done=True) if item.id == action.id else item
-                    for item in state.items
+                    *state.items,
+                    ToDoItem(
+                        id=uuid.uuid4().hex,
+                        content=action.content,
+                    ),
                 ],
-            ),
-            events=[CallApi(parameters={})],
-        )
-    return state
+            )
+        case RemoveTodoItemAction():
+            return replace(
+                state,
+                actions=[item for item in state.items if item.id != action.id],
+            )
+        case MarkTodoItemDone():
+            return CompleteReducerResult(
+                state=replace(
+                    state,
+                    items=[
+                        replace(item, is_done=True) if item.id == action.id else item
+                        for item in state.items
+                    ],
+                ),
+                events=[CallApi(parameters={})],
+            )
+        case _:
+            return state
 
 
 store = Store(reducer)
@@ -154,7 +156,7 @@ store.dispatch(FinishAction())
 - Reduce boilerplate by dropping `type` property, payload classes and action creators:
 
   - Each action is a subclass of `BaseAction`.
-  - Its type is checked by utilizing `isinstance` (no need for `type` property).
+  - Its type is checked by using Python's `match` statement (no need for `type` property).
   - Its payload are its direct properties (no need for a separate `payload` object).
   - Its creator is its auto-generated constructor.
 

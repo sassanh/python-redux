@@ -63,38 +63,42 @@ def store() -> Store:
         action: BaseAction,
     ) -> ReducerResult[TodoState, BaseAction, CallApiEvent]:
         if state is None:
-            if isinstance(action, InitAction):
-                return TodoState(
+            match action:
+                case InitAction():
+                    return TodoState(
+                        items=[
+                            TodoItem(
+                                id='first-item',
+                                content='Initial Item',
+                                timestamp=time.time(),
+                            ),
+                        ],
+                    )
+                case _:
+                    raise InitializationActionError(action)
+        match action:
+            case AddTodoItemAction():
+                return replace(
+                    state,
                     items=[
+                        *state.items,
                         TodoItem(
-                            id='first-item',
-                            content='Initial Item',
-                            timestamp=time.time(),
+                            id=uuid.uuid4().hex,
+                            content=action.content,
+                            timestamp=action.timestamp,
                         ),
                     ],
                 )
-            raise InitializationActionError(action)
-        if isinstance(action, AddTodoItemAction):
-            return replace(
-                state,
-                items=[
-                    *state.items,
-                    TodoItem(
-                        id=uuid.uuid4().hex,
-                        content=action.content,
-                        timestamp=action.timestamp,
+            case RemoveTodoItemAction():
+                return CompleteReducerResult(
+                    state=replace(
+                        state,
+                        items=[item for item in state.items if item.id != action.id],
                     ),
-                ],
-            )
-        if isinstance(action, RemoveTodoItemAction):
-            return CompleteReducerResult(
-                state=replace(
-                    state,
-                    items=[item for item in state.items if item.id != action.id],
-                ),
-                events=[CallApiEvent(parameters={})],
-            )
-        return state
+                    events=[CallApiEvent(parameters={})],
+                )
+            case _:
+                return state
 
     return Store(reducer, options=StoreOptions(auto_init=True))
 

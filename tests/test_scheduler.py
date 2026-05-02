@@ -48,16 +48,20 @@ def reducer(
     action: Action,
 ) -> ReducerResult[StateType, Action, Event]:
     if state is None:
-        if isinstance(action, InitAction):
-            return StateType(value=0)
-        raise InitializationActionError(action)
+        match action:
+            case InitAction():
+                return StateType(value=0)
+            case _:
+                raise InitializationActionError(action)
 
-    if isinstance(action, IncrementAction):
-        return CompleteReducerResult(
-            state=replace(state, value=state.value + 1),
-            events=[WaitEvent()],
-        )
-    return state
+    match action:
+        case IncrementAction():
+            return CompleteReducerResult(
+                state=replace(state, value=state.value + 1),
+                events=[WaitEvent()],
+            )
+        case _:
+            return state
 
 
 StoreType: TypeAlias = Store[StateType, IncrementAction | InitAction, FinishEvent]

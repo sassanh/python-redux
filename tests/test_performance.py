@@ -39,14 +39,17 @@ def reducer(
     action: Action,
 ) -> StateType | CompleteReducerResult[StateType, Action, FinishEvent]:
     if state is None:
-        if isinstance(action, InitAction):
-            return StateType(value=0)
-        raise InitializationActionError(action)
+        match action:
+            case InitAction():
+                return StateType(value=0)
+            case _:
+                raise InitializationActionError(action)
 
-    if isinstance(action, IncrementAction):
-        return replace(state, value=state.value + 1)
-
-    return state
+    match action:
+        case IncrementAction():
+            return replace(state, value=state.value + 1)
+        case _:
+            return state
 
 
 class StoreType(Store[StateType, Action, FinishEvent]):
@@ -100,17 +103,20 @@ def event_emitting_reducer(
     action: Action,
 ) -> StateType | CompleteReducerResult[StateType, Action, SomeEvent | FinishEvent]:
     if state is None:
-        if isinstance(action, InitAction):
-            return StateType(value=0)
-        raise InitializationActionError(action)
+        match action:
+            case InitAction():
+                return StateType(value=0)
+            case _:
+                raise InitializationActionError(action)
 
-    if isinstance(action, IncrementAction):
-        return CompleteReducerResult(
-            state=replace(state, value=state.value + 1),
-            events=[SomeEvent()],
-        )
-
-    return state
+    match action:
+        case IncrementAction():
+            return CompleteReducerResult(
+                state=replace(state, value=state.value + 1),
+                events=[SomeEvent()],
+            )
+        case _:
+            return state
 
 
 class EventEmittingStoreType(Store[StateType, Action, SomeEvent | FinishEvent]):

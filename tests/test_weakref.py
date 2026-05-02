@@ -49,13 +49,17 @@ StoreType: TypeAlias = Store[
 
 def reducer(state: StateType | None, action: IncrementAction | InitAction) -> StateType:
     if state is None:
-        if isinstance(action, InitAction):
-            return StateType(value=0)
-        raise InitializationActionError(action)
+        match action:
+            case InitAction():
+                return StateType(value=0)
+            case _:
+                raise InitializationActionError(action)
 
-    if isinstance(action, IncrementAction):
-        return replace(state, value=state.value + 1)
-    return state
+    match action:
+        case IncrementAction():
+            return replace(state, value=state.value + 1)
+        case _:
+            return state
 
 
 class AutorunClass:

@@ -41,14 +41,17 @@ def _reducer(
     action: Action,
 ) -> _StateType:
     if state is None:
-        if isinstance(action, InitAction):
-            return _StateType(value=0)
-        raise InitializationActionError(action)
+        match action:
+            case InitAction():
+                return _StateType(value=0)
+            case _:
+                raise InitializationActionError(action)
 
-    if isinstance(action, _IncrementAction):
-        return replace(state, value=state.value + 1)
-
-    return state
+    match action:
+        case _IncrementAction():
+            return replace(state, value=state.value + 1)
+        case _:
+            return state
 
 
 @pytest.fixture(name='store')

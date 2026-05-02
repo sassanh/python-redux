@@ -36,18 +36,21 @@ def reducer(
     action: Action,
 ) -> StateType | CompleteReducerResult[StateType, Action, FinishEvent]:
     if state is None:
-        if isinstance(action, InitAction):
-            return StateType(value1=0, value2=0)
-        raise InitializationActionError(action)
+        match action:
+            case InitAction():
+                return StateType(value1=0, value2=0)
+            case _:
+                raise InitializationActionError(action)
 
-    if isinstance(action, IncrementAction):
-        field_name = f'value{action.which}'
-        return replace(
-            state,
-            **{field_name: getattr(state, field_name) + 1},
-        )
-
-    return state
+    match action:
+        case IncrementAction():
+            field_name = f'value{action.which}'
+            return replace(
+                state,
+                **{field_name: getattr(state, field_name) + 1},
+            )
+        case _:
+            return state
 
 
 StoreType = Store[StateType, Action, FinishEvent]

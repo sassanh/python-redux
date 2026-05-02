@@ -48,18 +48,22 @@ def reducer(
     action: Action,
 ) -> StateType | CompleteReducerResult[StateType, Action, IncrementEvent]:
     if state is None:
-        if isinstance(action, InitAction):
-            return StateType(value=0, mirrored_value=0)
-        raise InitializationActionError(action)
+        match action:
+            case InitAction():
+                return StateType(value=0, mirrored_value=0)
+            case _:
+                raise InitializationActionError(action)
 
-    if isinstance(action, IncrementAction):
-        return CompleteReducerResult(
-            state=replace(state, value=state.value + 1),
-            events=[IncrementEvent(post_value=state.value + 1)],
-        )
-    if isinstance(action, SetMirroredValueAction):
-        return replace(state, mirrored_value=action.value)
-    return state
+    match action:
+        case IncrementAction():
+            return CompleteReducerResult(
+                state=replace(state, value=state.value + 1),
+                events=[IncrementEvent(post_value=state.value + 1)],
+            )
+        case SetMirroredValueAction():
+            return replace(state, mirrored_value=action.value)
+        case _:
+            return state
 
 
 Action = IncrementAction | SetMirroredValueAction | InitAction | FinishAction

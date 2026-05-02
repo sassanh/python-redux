@@ -42,20 +42,22 @@ def reducer(
     action: Action,
 ) -> StateType | ReducerResult[StateType, Action, SomeEvent | FinishEvent]:
     if state is None:
-        if isinstance(action, InitAction):
-            return StateType(value=0)
-        raise InitializationActionError(action)
+        match action:
+            case InitAction():
+                return StateType(value=0)
+            case _:
+                raise InitializationActionError(action)
 
-    if isinstance(action, IncrementAction):
-        return CompleteReducerResult(
-            state=replace(state, value=state.value + 1),
-            events=[SomeEvent()],
-        )
-
-    if isinstance(action, DecrementAction):
-        return replace(state, value=state.value - 1)
-
-    return state
+    match action:
+        case IncrementAction():
+            return CompleteReducerResult(
+                state=replace(state, value=state.value + 1),
+                events=[SomeEvent()],
+            )
+        case DecrementAction():
+            return replace(state, value=state.value - 1)
+        case _:
+            return state
 
 
 class StoreType(Store[StateType, Action, FinishEvent | SomeEvent]):
@@ -74,9 +76,11 @@ def test_identity_action_middleware(store: StoreType) -> None:
 
     def middleware(action: Action) -> Action:
         calls.append(action)
-        if isinstance(action, IncrementAction):
-            return DecrementAction()
-        return action
+        match action:
+            case IncrementAction():
+                return DecrementAction()
+            case _:
+                return action
 
     store.register_action_middleware(middleware)
 
