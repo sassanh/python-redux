@@ -5,7 +5,7 @@ import os
 import sys
 from pathlib import Path
 
-from setuptools import Extension, setup
+from setuptools import Extension, find_packages, setup
 
 # Add root to path to import version
 root = Path(__file__).parent
@@ -45,6 +45,7 @@ setup(
     long_description_content_type='text/markdown',
     ext_modules=get_extensions(),
     include_package_data=True,
+    packages=find_packages(include=['redux*', 'redux_pytest*']),
     author='Sassan Haradji',
     author_email='me@sassanh.com',
     url='https://github.com/sassanh/python-redux/',

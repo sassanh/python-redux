@@ -3,6 +3,8 @@
 ## Unreleased
 
 - refactor: replace `if isinstance(action, ...)` chains with Python `match` statement in all reducers across demos, tests, and README
+- feat: add `poe test-binary` task to run tests against compiled Cython extensions
+- ci: add `test-binary` job to GitHub Actions workflow to verify compiled extensions pass all tests
 
 ## Version 0.25.4
 

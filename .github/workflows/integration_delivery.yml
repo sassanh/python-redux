@@ -138,6 +138,33 @@ jobs:
           fail_ci_if_error: false
           token: ${{ secrets.CODECOV_TOKEN }}
 
+  test-binary:
+    name: Test Binary
+    needs:
+      - dependencies
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        name: Checkout
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v3
+        with:
+          enable-cache: true
+
+      - name: Create virtualenv
+        run: |
+          uv venv --system-site-packages
+
+      - name: Run Binary Tests
+        run: |
+          uv run --frozen poe test-binary
+
   transpile:
     name: Transpile to C
     needs: dependencies
@@ -334,6 +361,7 @@ jobs:
       - type-check
       - lint
       - test
+      - test-binary
       - build
       - build_wheels
     runs-on: ubuntu-latest
